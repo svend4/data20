@@ -272,14 +272,59 @@
 
 ---
 
+### 15. find_related.py
+**До**: 149 строк
+**После**: 564 строки
+**Прирост**: +415 строк (x3.8)
+
+**Добавлено**:
+- ✅ TF-IDF similarity (cosine distance в векторном пространстве)
+- ✅ Jaccard similarity (пересечение множеств токенов)
+- ✅ Tag-based similarity (сравнение тегов статей)
+- ✅ Hybrid recommendation (weighted: TF-IDF 40% + Jaccard 20% + Tags 30% + Category 10%)
+- ✅ Similarity graph (визуализация связей между статьями)
+- ✅ Auto-linking suggestions (рекомендации по перелинковке)
+- ✅ Comprehensive caching (tfidf_cache, similarity_cache)
+- ✅ Document frequency analysis (IDF компонента)
+- ✅ Cosine similarity (скалярное произведение векторов)
+- ✅ Statistics (распределение сходства в базе)
+- ✅ Stop-words filtering (очистка от частых слов)
+- ✅ Multiple algorithms (tfidf, jaccard, tags, hybrid)
+
+---
+
+### 16. calculate_difficulty.py
+**До**: 186 строк
+**После**: 804 строки
+**Прирост**: +618 строк (x4.3)
+
+**Добавлено**:
+- ✅ Flesch Reading Ease (классическая формула читаемости 0-100)
+- ✅ Flesch-Kincaid Grade Level (уровень образования 0-18)
+- ✅ Coleman-Liau Index (CLI, альтернативная формула)
+- ✅ Automated Readability Index (ARI, для технических текстов)
+- ✅ SMOG Index (Simple Measure of Gobbledygook)
+- ✅ Gunning Fog Index (сложность для бизнес-текстов)
+- ✅ Lexical diversity (Type-Token Ratio, лексическое разнообразие)
+- ✅ Vocabulary metrics (avg word length, complex words, rare words)
+- ✅ Syllable counting (подсчёт слогов с кэшированием)
+- ✅ Code complexity analysis (циклы, условия, функции)
+- ✅ Learning path generation (рекомендованный порядок изучения)
+- ✅ Difficulty distribution (статистика по уровням)
+- ✅ Interactive HTML visualization (фильтры, прогресс-бары, responsive)
+- ✅ Comprehensive scoring (6 категорий: readability, vocabulary, code, terms, prerequisites, math)
+- ✅ Export formats (JSON, Markdown, HTML)
+
+---
+
 ## 📈 Общая статистика
 
 | Метрика | Значение |
 |---------|----------|
-| **Файлов расширено** | 14 |
-| **Строк до** | 1,619 |
-| **Строк после** | 6,426 |
-| **Добавлено строк** | +4,807 |
+| **Файлов расширено** | 16 |
+| **Строк до** | 1,954 |
+| **Строк после** | 7,794 |
+| **Добавлено строк** | +5,840 |
 | **Средний прирост** | x4.0 |
 
 ---
@@ -295,6 +340,14 @@
 - **Levenshtein distance** - fuzzy string matching
 - **Clustering coefficient** - graph clustering metric
 - **MD5 hashing** - file integrity verification
+- **Cosine similarity** - vector space similarity (TF-IDF)
+- **Jaccard similarity** - set-based similarity
+- **Flesch-Kincaid** - readability formulas (6 types)
+- **Coleman-Liau Index** - character-based readability
+- **SMOG Index** - polysyllable-based complexity
+- **Gunning Fog Index** - business text readability
+- **Syllable counting** - linguistic analysis
+- **Type-Token Ratio** - lexical diversity measurement
 
 ### Форматы
 - **RDF Turtle** - semantic web standard
@@ -302,33 +355,42 @@
 - **CSV** - tabular export
 - **KWIC** - linguistic concordance format
 - **Manifest** - backup metadata
+- **Schema.org JSON-LD** - structured data for SEO
+- **RSS/XML** - feed generation
+- **Interactive HTML** - JavaScript visualizations
 
 ### Паттерны
 - **Two-pass processing** - first entities, then relations
 - **Incremental backups** - hash-based change detection
 - **Combined scoring** - weighted multi-algorithm approach
 - **ANSI highlighting** - terminal color output
+- **Hybrid recommendations** - multi-algorithm weighted averaging
+- **Comprehensive caching** - performance optimization
+- **Learning path generation** - prerequisite-based ordering
 
 ---
 
-## 🔄 Следующие файлы для расширения
+## 🔄 Статус расширения файлов
 
-По размеру (строк):
+**Все рекомендованные маленькие файлы (Tier 1) успешно расширены!**
 
-1. **sitemap_generator.py** - 101 строка
-   - Может добавить: ping search engines, priority calculation, multi-sitemap, sitemap index
-
-2. **find_orphans.py** - 123 строки
-   - Может добавить: orphan classification, fix suggestions, graph visualization
-
-3. **reading_progress.py** - 126 строк
-   - Может добавить: reading speed, estimated time, progress tracking, achievements
-
-4. **auto_tagger.py** - 130 строк
-   - Может добавить: ML-based tagging, tag suggestions, tag hierarchies, confidence scores
-
-5. **generate_breadcrumbs.py** - 131 строка
-   - Может добавить: smart path detection, multiple paths, context-aware breadcrumbs
+Расширенные файлы (по порядку):
+1. ✅ summary_generator.py (75 → 352)
+2. ✅ knowledge_graph_builder.py (84 → 348)
+3. ✅ archive_builder.py (77 → 375)
+4. ✅ network_analyzer.py (112 → 440)
+5. ✅ search_concordance.py (64 → 439)
+6. ✅ sitemap_generator.py (101 → 402)
+7. ✅ find_orphans.py (123 → 443)
+8. ✅ reading_progress.py (126 → 427)
+9. ✅ auto_tagger.py (130 → 510)
+10. ✅ recent_changes.py (135 → 446)
+11. ✅ index_figures.py (161 → 535)
+12. ✅ generate_breadcrumbs.py (131 → 541)
+13. ✅ build_glossary.py (160 → 520)
+14. ✅ timeline_generator.py (140 → 648)
+15. ✅ find_related.py (149 → 564)
+16. ✅ calculate_difficulty.py (186 → 804)
 
 ---
 
@@ -448,4 +510,4 @@ if distance <= max_distance:
 
 **Автор**: Claude
 **Дата**: 2026-01-02
-**Статус**: ✅ ЗАВЕРШЁН (14 файлов расширены с продвинутыми функциями, +4,807 строк кода)
+**Статус**: ✅ ЗАВЕРШЁН ПОЛНОСТЬЮ! (16 файлов расширены с продвинутыми алгоритмами, +5,840 строк кода)
