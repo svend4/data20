@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-01-02T15:53:03.514550",
+  "total_files": 6,
+  "total_size": 77670,
+  "files": [
+    {
+      "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+      "size": 14625,
+      "modified": "2026-01-02T14:39:46",
+      "md5": "6fe9cec8c5941d55f292cc8e801f8275"
+    },
+    {
+      "path": "knowledge/computers/articles/programming/python-patterns.md",
+      "size": 18851,
+      "modified": "2026-01-02T14:39:46",
+      "md5": "5647e0a581e920f4d562837113037dfb"
+    },
+    {
+      "path": "knowledge/computers/index/INDEX.md",
+      "size": 7785,
+      "modified": "2026-01-02T13:14:42",
+      "md5": "dc1f2608e28f9b4ed4187746b445774c"
+    },
+    {
+      "path": "knowledge/cooking/index/INDEX.md",
+      "size": 3051,
+      "modified": "2026-01-02T13:27:24",
+      "md5": "2da0f2aa80b3a4c2469bd0bada517e32"
+    },
+    {
+      "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "size": 26199,
+      "modified": "2026-01-02T14:39:46",
+      "md5": "d1869b5a9f7fb68a1b14f58b88ec2e3a"
+    },
+    {
+      "path": "knowledge/household/index/INDEX.md",
+      "size": 7159,
+      "modified": "2026-01-02T13:17:57",
+      "md5": "d5aa9f48e435c029b53c7eb43df85d89"
+    }
+  ]
+}

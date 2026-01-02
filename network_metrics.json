@@ -1,0 +1,85 @@
+{
+  "graph_properties": {
+    "nodes": 6,
+    "edges": 3,
+    "density": 0.1,
+    "diameter": 1,
+    "avg_path_length": 0.5,
+    "connected_components": 3,
+    "largest_component": 2
+  },
+  "nodes": {
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "pagerank": 0.025000000000000005,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 1,
+        "in_degree": 0,
+        "total_degree": 1
+      }
+    },
+    "knowledge/household/articles/appliances": {
+      "title": "appliances",
+      "pagerank": 0.04625000000000001,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 0,
+        "in_degree": 1,
+        "total_degree": 1
+      }
+    },
+    "knowledge/computers/articles/programming": {
+      "title": "programming",
+      "pagerank": 0.04625000000000001,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 0,
+        "in_degree": 1,
+        "total_degree": 1
+      }
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "pagerank": 0.025000000000000005,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 1,
+        "in_degree": 0,
+        "total_degree": 1
+      }
+    },
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "pagerank": 0.025000000000000005,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 1,
+        "in_degree": 0,
+        "total_degree": 1
+      }
+    },
+    "knowledge/computers/articles/ai": {
+      "title": "ai",
+      "pagerank": 0.04625000000000001,
+      "betweenness": 0.0,
+      "closeness": 1.0,
+      "clustering": 0.0,
+      "degree": {
+        "out_degree": 0,
+        "in_degree": 1,
+        "total_degree": 1
+      }
+    }
+  }
+}
