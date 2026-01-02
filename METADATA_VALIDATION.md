@@ -1,46 +1,43 @@
-# ✓ Отчёт: Валидация метаданных
+# 📋 Metadata Validation Report
 
-> Проверка корректности frontmatter
+> Generated: 2026-01-02 18:27:33
 
-## Статистика
+## 📊 Statistics
 
-- **Всего статей**: 3
-- **✅ Валидных**: 0
-- **❌ С ошибками**: 3
-- **Успешность**: 0.0%
+- **Total articles**: 3
+- **✅ Valid**: 0
+- **❌ Invalid**: 3
+- **Average quality score**: 75.0/100
+- **Success rate**: 0.0%
 
-## ❌ Статьи с ошибками
+## 🎯 Quality Distribution
 
-### knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md
+- **Grade A**: 0 articles
+- **Grade B**: 0 articles
+- **Grade C**: 3 articles
+- **Grade D**: 0 articles
+- **Grade F**: 0 articles
 
-**Ошибки:**
-- ❌ date: Неверный тип (ожидается str)
-- ❌ difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)
-
-**Предупреждения:**
-- ⚠️  Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade
+## ❌ Invalid Articles
 
 ### knowledge/computers/articles/programming/python-patterns.md
 
-**Ошибки:**
-- ❌ date: Неверный тип (ожидается str)
-- ❌ difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)
-
-**Предупреждения:**
-- ⚠️  Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, code_lines, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade
+**Errors:**
+- date: Invalid format (pattern: \d{4}-\d{2}-\d{2})
+- date: Invalid date format (expected YYYY-MM-DD)
+- difficulty: Invalid value (allowed: beginner, intermediate, advanced)
 
 ### knowledge/computers/articles/ai/llm-overview-2026.md
 
-**Ошибки:**
-- ❌ date: Неверный тип (ожидается str)
-- ❌ difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)
+**Errors:**
+- date: Invalid format (pattern: \d{4}-\d{2}-\d{2})
+- date: Invalid date format (expected YYYY-MM-DD)
+- difficulty: Invalid value (allowed: beginner, intermediate, advanced)
 
-**Предупреждения:**
-- ⚠️  Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade
+### knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md
 
-## 💡 Рекомендации
+**Errors:**
+- date: Invalid format (pattern: \d{4}-\d{2}-\d{2})
+- date: Invalid date format (expected YYYY-MM-DD)
+- difficulty: Invalid value (allowed: beginner, intermediate, advanced)
 
-1. Убедитесь, что все обязательные поля присутствуют: `title`, `tags`, `category`
-2. Проверьте формат даты (должен быть YYYY-MM-DD)
-3. Difficulty должен быть: легкий, средний или сложный
-4. Tags должен содержать минимум 1 тег
