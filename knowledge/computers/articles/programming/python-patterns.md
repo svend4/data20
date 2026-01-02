@@ -1,12 +1,22 @@
 ---
-title: "Паттерны проектирования в Python"
+title: Паттерны проектирования в Python
 date: 2026-01-02
-tags: [Python, паттерны-проектирования, ООП, архитектура, best-practices]
+tags:
+- Python
+- паттерны-проектирования
+- ООП
+- архитектура
+- best-practices
 category: computers
 subcategory: programming
 status: published
-source: "Коллекция примеров и best practices"
-related: [../software/dev-tools.md, ../ai/llm-overview-2026.md]
+source: Коллекция примеров и best practices
+related:
+- ../software/dev-tools.md
+- ../ai/llm-overview-2026.md
+pagerank: 0.05
+pagerank_inlinks: 0
+pagerank_outlinks: 1
 ---
 
 # Паттерны проектирования в Python

@@ -1,0 +1,98 @@
+{
+  "root": {
+    "name": "root",
+    "level": 0,
+    "path": "",
+    "article_count": 3,
+    "direct_articles": 0,
+    "children": [
+      {
+        "name": "household",
+        "level": 1,
+        "path": "household",
+        "article_count": 1,
+        "direct_articles": 0,
+        "children": [
+          {
+            "name": "appliances",
+            "level": 2,
+            "path": "household → appliances",
+            "article_count": 1,
+            "direct_articles": 0,
+            "children": [
+              {
+                "name": "холодильник",
+                "level": 3,
+                "path": "household → appliances → холодильник",
+                "article_count": 1,
+                "direct_articles": 1,
+                "children": [],
+                "metadata": {}
+              }
+            ],
+            "metadata": {}
+          }
+        ],
+        "metadata": {}
+      },
+      {
+        "name": "computers",
+        "level": 1,
+        "path": "computers",
+        "article_count": 2,
+        "direct_articles": 0,
+        "children": [
+          {
+            "name": "programming",
+            "level": 2,
+            "path": "computers → programming",
+            "article_count": 1,
+            "direct_articles": 0,
+            "children": [
+              {
+                "name": "Python",
+                "level": 3,
+                "path": "computers → programming → Python",
+                "article_count": 1,
+                "direct_articles": 1,
+                "children": [],
+                "metadata": {}
+              }
+            ],
+            "metadata": {}
+          },
+          {
+            "name": "artificial-intelligence",
+            "level": 2,
+            "path": "computers → artificial-intelligence",
+            "article_count": 1,
+            "direct_articles": 0,
+            "children": [
+              {
+                "name": "AI",
+                "level": 3,
+                "path": "computers → artificial-intelligence → AI",
+                "article_count": 1,
+                "direct_articles": 1,
+                "children": [],
+                "metadata": {}
+              }
+            ],
+            "metadata": {}
+          }
+        ],
+        "metadata": {}
+      }
+    ],
+    "metadata": {}
+  },
+  "statistics": {
+    "total_articles": 3,
+    "total_nodes": 8,
+    "categories": 2,
+    "subcategories": 3,
+    "topics": 3,
+    "max_depth": 3,
+    "avg_depth": 2.125
+  }
+}

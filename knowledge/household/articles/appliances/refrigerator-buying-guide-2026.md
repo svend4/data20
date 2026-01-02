@@ -1,12 +1,23 @@
 ---
-title: "Руководство по выбору холодильника в 2026 году"
+title: Руководство по выбору холодильника в 2026 году
 date: 2026-01-02
-tags: [холодильник, бытовая-техника, покупка, руководство, энергоэффективность, умный-дом]
+tags:
+- холодильник
+- бытовая-техника
+- покупка
+- руководство
+- энергоэффективность
+- умный-дом
 category: household
 subcategory: appliances
 status: published
-source: "Обзоры техники и тесты"
-related: [../energy/energy-efficiency-classes.md, ../electronics/smart-home-zigbee.md]
+source: Обзоры техники и тесты
+related:
+- ../energy/energy-efficiency-classes.md
+- ../electronics/smart-home-zigbee.md
+pagerank: 0.05
+pagerank_inlinks: 0
+pagerank_outlinks: 0
 ---
 
 # Руководство по выбору холодильника в 2026 году

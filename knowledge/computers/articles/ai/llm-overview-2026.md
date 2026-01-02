@@ -1,12 +1,24 @@
 ---
-title: "Обзор больших языковых моделей 2026 года"
+title: Обзор больших языковых моделей 2026 года
 date: 2026-01-02
-tags: [AI, LLM, машинное-обучение, нейронные-сети, GPT, Claude, открытые-модели]
+tags:
+- AI
+- LLM
+- машинное-обучение
+- нейронные-сети
+- GPT
+- Claude
+- открытые-модели
 category: computers
 subcategory: artificial-intelligence
 status: published
-source: "Технические новости и документация"
-related: [ai-in-development.md, ../../programming/python-patterns.md]
+source: Технические новости и документация
+related:
+- ai-in-development.md
+- ../../programming/python-patterns.md
+pagerank: 0.0925
+pagerank_inlinks: 1
+pagerank_outlinks: 0
 ---
 
 # Обзор больших языковых моделей 2026 года
