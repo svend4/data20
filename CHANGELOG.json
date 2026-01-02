@@ -1,0 +1,462 @@
+{
+  "metadata": {
+    "generated": "2026-01-02T19:03:13.661667",
+    "format": "keep-a-changelog",
+    "semver": "semantic-versioning"
+  },
+  "versions": [
+    {
+      "version": "Unreleased",
+      "date": "2026-01-02",
+      "changes": {
+        "changed": [
+          {
+            "message": "🧪 Test artifacts: Updated indexes and export samples",
+            "hash": "3002efd",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 [TIER 4 COMPLETE] Финальный отчёт: 7/7 файлов (+2,934 строк)",
+            "hash": "5172e96",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📚 [Tier 4-7/7] build_concordance.py: 269→694 строк (+425, x2.6)",
+            "hash": "973281f",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔄 [Tier 4-6/7] version_history.py: 263→767 строк (+504, x2.9)",
+            "hash": "5a36b93",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📈 [Tier 4-4/7] generate_statistics.py: 252→628 строк (+376, x2.5)",
+            "hash": "257844d",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 [Tier 4-3/7] metadata_validator.py: 247→642 строки (+395, x2.6)",
+            "hash": "7167174",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔗 [Tier 4-2/7] build_graph.py: 247→725 строк (+478, x2.9)",
+            "hash": "0132f73",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔍 [Tier 4-1/7] validate.py: 243→722 строки (+479, x3.0)",
+            "hash": "39f0012",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🧪 Test artifacts: Updated indexes and export samples",
+            "hash": "a1a680e",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 [TIER 3 COMPLETE] Финальный отчёт: 4/4 файлов (+1,458 строк)",
+            "hash": "d182d5a",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "⚡ [Tier 3-4/4] update_indexes.py: 241→722 строки (+481, x3.0)",
+            "hash": "d91d9d6",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🎨 [Tier 3-3/4] export_manager.py: 241→527 строк (+286, x2.2)",
+            "hash": "6a4e4b7",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔗 [Tier 3-2/4] external_links_tracker.py: 222→562 строки (+340, x2.5)",
+            "hash": "32535c9",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📥 [Tier 3-1/4] process_inbox.py: 221→572 строки (+351, x2.6)",
+            "hash": "81d787d",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 [TIER 2 COMPLETE] Финальный отчёт: 6/6 файлов (+2,775 строк)",
+            "hash": "f0e165b",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🏷️ [Tier 2-6/6] weighted_tags.py: 195→617 строк (+422, x3.2)",
+            "hash": "9d27cef",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔍 [Tier 2-5/6] find_duplicates.py: 193→641 строка (+448, x3.3)",
+            "hash": "14ec19d",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "",
+            "hash": "- Jacca",
+            "author": "A∩B",
+            "date": "A∪B"
+          },
+          {
+            "message": "🔗 [Tier 2-4/6] check_links.py: 192→668 строк (+476, x3.5)",
+            "hash": "a0b6320",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔍 [Tier 2] Расширен search_index.py - BM25 поисковая система",
+            "hash": "a6c62a2",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🔗 [Tier 2] Расширены master_index.py и cross_references.py",
+            "hash": "78b19e2",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🎉 [ФИНАЛ] Расширены последние 2 файла: find_related.py и calculate_difficulty.py",
+            "hash": "560dec8",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🎉 ФИНАЛ: Расширение инструментов #14 завершено - timeline_generator.py",
+            "hash": "122240e",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": " Прирост ",
+            "hash": "",
+            "author": " Файл ",
+            "date": " После "
+          },
+          {
+            "message": "---------",
+            "hash": "",
+            "author": "------",
+            "date": "-------"
+          },
+          {
+            "message": " +277 (x4.7) ",
+            "hash": "",
+            "author": " summary_generator.py ",
+            "date": " 352 "
+          },
+          {
+            "message": " +264 (x4.1) ",
+            "hash": "",
+            "author": " knowledge_graph_builder.py ",
+            "date": " 348 "
+          },
+          {
+            "message": " +298 (x4.9) ",
+            "hash": "",
+            "author": " archive_builder.py ",
+            "date": " 375 "
+          },
+          {
+            "message": " +328 (x3.9) ",
+            "hash": "",
+            "author": " network_analyzer.py ",
+            "date": " 440 "
+          },
+          {
+            "message": " +375 (x6.9) ",
+            "hash": "",
+            "author": " search_concordance.py ",
+            "date": " 439 "
+          },
+          {
+            "message": " +301 (x4.0) ",
+            "hash": "",
+            "author": " sitemap_generator.py ",
+            "date": " 402 "
+          },
+          {
+            "message": " +320 (x3.6) ",
+            "hash": "",
+            "author": " find_orphans.py ",
+            "date": " 443 "
+          },
+          {
+            "message": " +301 (x3.4) ",
+            "hash": "",
+            "author": " reading_progress.py ",
+            "date": " 427 "
+          },
+          {
+            "message": " +380 (x3.9) ",
+            "hash": "",
+            "author": " auto_tagger.py ",
+            "date": " 510 "
+          },
+          {
+            "message": " +311 (x3.3) ",
+            "hash": "",
+            "author": " recent_changes.py ",
+            "date": " 446 "
+          },
+          {
+            "message": " **+374 (x3.3)** ",
+            "hash": "",
+            "author": " **index_figures.py** ",
+            "date": " **535** "
+          },
+          {
+            "message": " **+410 (x4.1)** ",
+            "hash": "",
+            "author": " **generate_breadcrumbs.py** ",
+            "date": " **541** "
+          },
+          {
+            "message": " **+360 (x3.3)** ",
+            "hash": "",
+            "author": " **build_glossary.py** ",
+            "date": " **520** "
+          },
+          {
+            "message": " **+508 (x4.6)** ",
+            "hash": "",
+            "author": " **timeline_generator.py** ",
+            "date": " **648** "
+          },
+          {
+            "message": "🚀 Расширение инструментов #11-13: Figures, Breadcrumbs, Glossary",
+            "hash": "3d1d76b",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🚀 Расширение файлов: auto_tagger.py и recent_changes.py - 10/10 файлов завершено",
+            "hash": "21373d9",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "🚀 Расширение маленьких файлов: +1,542 строк кода",
+            "hash": "5112ed3",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 7 - FINALE] 🎉 ВСЕ 47 МЕТОДОВ РЕАЛИЗОВАНЫ!",
+            "hash": "a7cae71",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 6] Простые и средние методы: Валидация, поиск и экспорт",
+            "hash": "658441a",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 5] Продвинутые методы: Анализ, рекомендации и статистика",
+            "hash": "2ccf975",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📋 Финальный отчёт по всем 22 реализованным методам",
+            "hash": "e599481",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 3] Простые методы: Навигация, индексация и проверка",
+            "hash": "1adde34",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 2] Средние методы: Thesaurus, Weighted Tags, Difficulty Level",
+            "hash": "723d19f",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Batch 1] Простые методы: Marginalia, Chain References, Reading Time, Quality Metrics",
+            "hash": "d80f265",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Advanced Methods] Простые и средние методы классификации и поиска",
+            "hash": "7a72704",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Epic] От Средневековья до Далёкого Будущего - полный спектр методов",
+            "hash": "a5f0bbf",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": " Статус ",
+            "hash": "",
+            "author": " Эпоха ",
+            "date": " Эффект "
+          },
+          {
+            "message": "--------",
+            "hash": "",
+            "author": "-------",
+            "date": "--------"
+          },
+          {
+            "message": " ✅ Concordance ",
+            "hash": "",
+            "author": " Средневековье ",
+            "date": " ⭐⭐⭐⭐ "
+          },
+          {
+            "message": " ✅ Boolean + TF-IDF ",
+            "hash": "",
+            "author": " Компьютерная ",
+            "date": " ⭐⭐⭐⭐⭐ "
+          },
+          {
+            "message": " 📋 Запланировано ",
+            "hash": "",
+            "author": " AI ",
+            "date": " ⭐⭐⭐⭐⭐ "
+          },
+          {
+            "message": " 🔮 Когда-нибудь ",
+            "hash": "",
+            "author": " Будущее ",
+            "date": " ⭐⭐⭐⭐⭐⭐ "
+          },
+          {
+            "message": "[Tools] Расширенная автоматизация и документация",
+            "hash": "5a994bc",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "[Initial] Создана система управления знаниями (Knowledge Base)",
+            "hash": "3c3b4b2",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "Initial commit",
+            "hash": "e10ca5b",
+            "author": "svend4",
+            "date": "2026-01-02"
+          }
+        ],
+        "added": [
+          {
+            "message": "⚡ [Tier 4-5/7] add_dewey.py: 253→530 строк (+277, x2.1)",
+            "hash": "686121a",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📄 Добавлены сгенерированные файлы от master_index и cross_references",
+            "hash": "cceb687",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 Добавлен детальный анализ оставшихся 44 файлов для расширения",
+            "hash": "3f0505e",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📋 Добавлен финальный отчёт о завершении проекта - 47/47 методов",
+            "hash": "0391903",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📋 Добавлен финальный отчёт о завершении проекта - 47/47 методов",
+            "hash": "48ba31b",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 Добавлены сгенерированные файлы от расширенных инструментов",
+            "hash": "e74cdc2",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📋 Добавлен финальный отчёт о завершении проекта - 47/47 методов",
+            "hash": "24ac3ac",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📊 Добавлен детальный отчёт по Batch 5",
+            "hash": "30da687",
+            "author": "Claude",
+            "date": "2026-01-02"
+          },
+          {
+            "message": "📋 Добавлен полный отчёт по реализованным методам",
+            "hash": "1215666",
+            "author": "Claude",
+            "date": "2026-01-02"
+          }
+        ]
+      },
+      "breaking_changes": [],
+      "contributors": [
+        "Claude (45)",
+        "A∩B (1)",
+        " Файл  (1)",
+        "------ (1)",
+        " summary_generator.py  (1)",
+        " knowledge_graph_builder.py  (1)",
+        " archive_builder.py  (1)",
+        " network_analyzer.py  (1)",
+        " search_concordance.py  (1)",
+        " sitemap_generator.py  (1)",
+        " find_orphans.py  (1)",
+        " reading_progress.py  (1)",
+        " auto_tagger.py  (1)",
+        " recent_changes.py  (1)",
+        " **index_figures.py**  (1)",
+        " **generate_breadcrumbs.py**  (1)",
+        " **build_glossary.py**  (1)",
+        " **timeline_generator.py**  (1)",
+        " Эпоха  (1)",
+        "------- (1)",
+        " Средневековье  (1)",
+        " Компьютерная  (1)",
+        " AI  (1)",
+        " Будущее  (1)",
+        "svend4 (1)"
+      ],
+      "commit_count": 69
+    }
+  ]
+}
