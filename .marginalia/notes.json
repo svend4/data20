@@ -1,0 +1,24 @@
+{
+  "knowledge/computers/articles/ai/llm-overview-2026.md": [
+    {
+      "id": 1,
+      "text": "Проверить актуальность моделей на конец 2026 года",
+      "position": "section:Современные модели",
+      "type": "warning",
+      "author": "Reviewer",
+      "date": "2026-01-02T14:22:13.879308",
+      "resolved": false
+    }
+  ],
+  "knowledge/computers/articles/programming/python-patterns.md": [
+    {
+      "id": 1,
+      "text": "Добавить примеры использования async/await паттернов",
+      "position": "general",
+      "type": "idea",
+      "author": "Developer",
+      "date": "2026-01-02T14:22:22.808189",
+      "resolved": false
+    }
+  ]
+}

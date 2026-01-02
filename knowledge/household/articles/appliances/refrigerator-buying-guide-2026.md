@@ -18,6 +18,18 @@ related:
 pagerank: 0.05
 pagerank_inlinks: 0
 pagerank_outlinks: 0
+reading_time: 6 мин
+reading_time_minutes: 6
+word_count: 1155
+quality_score: 49
+quality_grade: F
+quality_metrics:
+  completeness: 88
+  structure: 35
+  links: 30
+  examples: 0
+  readability: 50
+  freshness: 100
 ---
 
 # Руководство по выбору холодильника в 2026 году

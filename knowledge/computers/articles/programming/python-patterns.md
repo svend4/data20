@@ -17,6 +17,19 @@ related:
 pagerank: 0.05
 pagerank_inlinks: 0
 pagerank_outlinks: 1
+reading_time: 11 мин
+reading_time_minutes: 11
+word_count: 281
+code_lines: 441
+quality_score: 65
+quality_grade: C
+quality_metrics:
+  completeness: 88
+  structure: 35
+  links: 30
+  examples: 70
+  readability: 78
+  freshness: 100
 ---
 
 # Паттерны проектирования в Python

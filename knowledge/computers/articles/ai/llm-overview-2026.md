@@ -19,6 +19,18 @@ related:
 pagerank: 0.0925
 pagerank_inlinks: 1
 pagerank_outlinks: 0
+reading_time: 4 мин
+reading_time_minutes: 4
+word_count: 553
+quality_score: 57
+quality_grade: D
+quality_metrics:
+  completeness: 88
+  structure: 60
+  links: 30
+  examples: 15
+  readability: 51
+  freshness: 100
 ---
 
 # Обзор больших языковых моделей 2026 года
