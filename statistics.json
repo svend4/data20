@@ -1,66 +1,196 @@
 {
-  "articles": {
-    "total": 3,
-    "by_category": {
-      "household": 1,
-      "computers": 2
+  "overview": {
+    "total_articles": 3,
+    "total_words": 4503,
+    "avg_words_per_article": 1501.0,
+    "total_tags_used": 18,
+    "avg_tags_per_article": 6.0,
+    "with_metadata": 3,
+    "metadata_coverage": 100.0,
+    "avg_readability": 75.16,
+    "total_images": 0,
+    "total_code_blocks": 17
+  },
+  "categories": {
+    "computers": {
+      "count": 2,
+      "total_words": 2666,
+      "avg_words": 1333.0,
+      "min_words": 981,
+      "max_words": 1685,
+      "subcategories": 2,
+      "avg_readability": 79.75
     },
-    "by_difficulty": {
-      "Beginner": 2,
-      "Intermediate": 1
-    },
-    "tags": {
-      "холодильник": 1,
-      "бытовая-техника": 1,
-      "покупка": 1,
-      "руководство": 1,
-      "энергоэффективность": 1,
-      "умный-дом": 1,
-      "Python": 1,
-      "паттерны-проектирования": 1,
-      "ООП": 1,
-      "архитектура": 1,
-      "best-practices": 1,
-      "AI": 1,
-      "LLM": 1,
-      "машинное-обучение": 1,
-      "нейронные-сети": 1,
-      "GPT": 1,
-      "Claude": 1,
-      "открытые-модели": 1
+    "household": {
+      "count": 1,
+      "total_words": 1837,
+      "avg_words": 1837.0,
+      "min_words": 1837,
+      "max_words": 1837,
+      "subcategories": 1,
+      "avg_readability": 65.98
     }
   },
-  "content": {
-    "total_words": 4011,
-    "total_chars": 39389,
-    "total_lines": 1354,
-    "avg_article_length": 1337,
-    "shortest_article": 885,
-    "longest_article": 1630,
-    "total_headings": 137,
-    "total_links": 127,
-    "total_code_blocks": 17,
-    "total_images": 0,
-    "total_tables": 8
-  },
-  "structure": {
-    "internal_links": 117,
-    "external_links": 10,
-    "total_links": 127,
-    "orphaned_articles": 3,
-    "connectivity_ratio": 1.0
-  },
-  "activity": {
-    "total_commits": 10,
-    "recent_commits_30d": 10,
-    "total_authors": 2,
-    "avg_commits_per_day": 0.03
+  "tags": {
+    "unique_tags": 18,
+    "total_tag_uses": 18,
+    "top_tags": [
+      {
+        "tag": "Python",
+        "count": 1
+      },
+      {
+        "tag": "паттерны-проектирования",
+        "count": 1
+      },
+      {
+        "tag": "ООП",
+        "count": 1
+      },
+      {
+        "tag": "архитектура",
+        "count": 1
+      },
+      {
+        "tag": "best-practices",
+        "count": 1
+      },
+      {
+        "tag": "AI",
+        "count": 1
+      },
+      {
+        "tag": "LLM",
+        "count": 1
+      },
+      {
+        "tag": "машинное-обучение",
+        "count": 1
+      },
+      {
+        "tag": "нейронные-сети",
+        "count": 1
+      },
+      {
+        "tag": "GPT",
+        "count": 1
+      },
+      {
+        "tag": "Claude",
+        "count": 1
+      },
+      {
+        "tag": "открытые-модели",
+        "count": 1
+      },
+      {
+        "tag": "холодильник",
+        "count": 1
+      },
+      {
+        "tag": "бытовая-техника",
+        "count": 1
+      },
+      {
+        "tag": "покупка",
+        "count": 1
+      },
+      {
+        "tag": "руководство",
+        "count": 1
+      },
+      {
+        "tag": "энергоэффективность",
+        "count": 1
+      },
+      {
+        "tag": "умный-дом",
+        "count": 1
+      }
+    ],
+    "singleton_tags": 18,
+    "avg_uses_per_tag": 1.0
   },
   "quality": {
-    "articles_with_tags": 3,
-    "articles_with_sources": 3,
-    "articles_with_structure": 3,
-    "avg_quality_score": 4.33,
-    "completeness_ratio": 1.0
-  }
+    "with_good_tags": 3,
+    "with_links": 3,
+    "with_code": 1,
+    "with_headers": 3,
+    "with_images": 0,
+    "short_articles": 0,
+    "medium_articles": 0,
+    "long_articles": 3,
+    "very_readable": 1,
+    "hard_to_read": 0
+  },
+  "growth": {
+    "available": true,
+    "by_month": [],
+    "by_year": [],
+    "total_months": 0,
+    "busiest_month": null,
+    "avg_per_month": 0
+  },
+  "top_articles": {
+    "longest": [
+      {
+        "title": "Руководство по выбору холодильника в 2026 году",
+        "words": 1837
+      },
+      {
+        "title": "Паттерны проектирования в Python",
+        "words": 1685
+      },
+      {
+        "title": "Обзор больших языковых моделей 2026 года",
+        "words": 981
+      }
+    ],
+    "most_linked": [
+      {
+        "title": "Руководство по выбору холодильника в 2026 году",
+        "links": 61
+      },
+      {
+        "title": "Обзор больших языковых моделей 2026 года",
+        "links": 46
+      },
+      {
+        "title": "Паттерны проектирования в Python",
+        "links": 23
+      }
+    ],
+    "most_code": [
+      {
+        "title": "Паттерны проектирования в Python",
+        "code_blocks": 17
+      }
+    ]
+  },
+  "diversity": {
+    "tag_diversity_index": 2.89,
+    "category_distribution": [
+      {
+        "category": "computers",
+        "count": 2
+      },
+      {
+        "category": "household",
+        "count": 1
+      }
+    ],
+    "difficulty_distribution": [
+      {
+        "difficulty": "Beginner",
+        "count": 2
+      },
+      {
+        "difficulty": "Intermediate",
+        "count": 1
+      }
+    ],
+    "balance_score": 83.33
+  },
+  "trends": {},
+  "recommendations": []
 }
