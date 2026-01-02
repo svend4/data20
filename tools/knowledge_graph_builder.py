@@ -10,8 +10,291 @@ Knowledge Graph Builder - Продвинутый построитель граф
 from pathlib import Path
 import yaml
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import json
+import argparse
+from typing import Dict, List, Tuple, Set
+import math
+
+
+class EntityLinker:
+    """Линковка и объединение похожих сущностей"""
+
+    def __init__(self, entities: Dict):
+        self.entities = entities
+
+    def levenshtein_distance(self, s1: str, s2: str) -> int:
+        """Расстояние Левенштейна"""
+        if len(s1) < len(s2):
+            return self.levenshtein_distance(s2, s1)
+
+        if len(s2) == 0:
+            return len(s1)
+
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+
+        return previous_row[-1]
+
+    def find_similar_entities(self, threshold: float = 0.8) -> List[Tuple[str, str, float]]:
+        """Найти похожие сущности (кандидаты на объединение)"""
+        similar_pairs = []
+        entity_names = list(self.entities.keys())
+
+        for i, name1 in enumerate(entity_names):
+            for name2 in entity_names[i+1:]:
+                # Нормализовать
+                norm1 = name1.lower().strip()
+                norm2 = name2.lower().strip()
+
+                if norm1 == norm2:
+                    continue
+
+                # Расчёт схожести
+                distance = self.levenshtein_distance(norm1, norm2)
+                max_len = max(len(norm1), len(norm2))
+                similarity = 1 - (distance / max_len)
+
+                if similarity >= threshold:
+                    similar_pairs.append((name1, name2, similarity))
+
+        return sorted(similar_pairs, key=lambda x: -x[2])
+
+    def merge_entities(self, entity1: str, entity2: str, target_name: str = None):
+        """Объединить две сущности"""
+        if entity1 not in self.entities or entity2 not in self.entities:
+            return
+
+        target = target_name or entity1
+
+        # Объединить упоминания
+        self.entities[target]['mentions'].extend(self.entities[entity2]['mentions'])
+
+        # Объединить алиасы
+        self.entities[target]['aliases'].add(entity2)
+        self.entities[target]['aliases'].update(self.entities[entity2].get('aliases', set()))
+
+        # Удалить вторую сущность
+        del self.entities[entity2]
+
+
+class GraphAnalyzer:
+    """Анализ структуры графа знаний"""
+
+    def __init__(self, entities: Dict, relations: List[Dict]):
+        self.entities = entities
+        self.relations = relations
+
+        # Построить adjacency list
+        self.adjacency = defaultdict(set)
+        for rel in relations:
+            self.adjacency[rel['subject']].add(rel['object'])
+
+    def calculate_degree_centrality(self) -> Dict[str, int]:
+        """Вычислить степень вершин (degree centrality)"""
+        degree = Counter()
+
+        for rel in self.relations:
+            degree[rel['subject']] += 1  # Исходящая степень
+            degree[rel['object']] += 1   # Входящая степень
+
+        return dict(degree)
+
+    def calculate_betweenness_centrality_approx(self) -> Dict[str, float]:
+        """Приблизительная betweenness centrality (упрощённая версия)"""
+        # Подсчитать, сколько раз сущность встречается в отношениях
+        betweenness = Counter()
+
+        # Простая эвристика: сущности с большим количеством связей = высокий betweenness
+        for entity in self.entities:
+            incoming = sum(1 for r in self.relations if r['object'] == entity)
+            outgoing = sum(1 for r in self.relations if r['subject'] == entity)
+
+            # Betweenness approximation
+            betweenness[entity] = incoming * outgoing
+
+        # Нормализация
+        max_val = max(betweenness.values()) if betweenness else 1
+        return {k: v / max_val for k, v in betweenness.items()}
+
+    def find_hubs(self, top_n: int = 10) -> List[Tuple[str, int]]:
+        """Найти хабы (сущности с наибольшим количеством связей)"""
+        degree = self.calculate_degree_centrality()
+        return sorted(degree.items(), key=lambda x: -x[1])[:top_n]
+
+    def calculate_clustering_coefficient(self, entity: str) -> float:
+        """Коэффициент кластеризации для сущности"""
+        neighbors = list(self.adjacency.get(entity, set()))
+
+        if len(neighbors) < 2:
+            return 0.0
+
+        # Подсчитать связи между соседями
+        neighbor_connections = 0
+        for i, n1 in enumerate(neighbors):
+            for n2 in neighbors[i+1:]:
+                if n2 in self.adjacency.get(n1, set()):
+                    neighbor_connections += 1
+
+        # Максимально возможное количество связей
+        max_connections = len(neighbors) * (len(neighbors) - 1) / 2
+
+        return neighbor_connections / max_connections if max_connections > 0 else 0.0
+
+    def detect_communities_simple(self) -> Dict[str, Set[str]]:
+        """Простое обнаружение сообществ (по типам сущностей)"""
+        communities = defaultdict(set)
+
+        for entity_name, entity_data in self.entities.items():
+            entity_type = entity_data.get('type', 'Unknown')
+            communities[entity_type].add(entity_name)
+
+        return dict(communities)
+
+
+class Neo4jExporter:
+    """Экспорт в Neo4j Cypher queries"""
+
+    def __init__(self, entities: Dict, relations: List[Dict]):
+        self.entities = entities
+        self.relations = relations
+
+    def generate_cypher_queries(self) -> List[str]:
+        """Сгенерировать Cypher запросы для Neo4j"""
+        queries = []
+
+        # CREATE запросы для сущностей
+        queries.append("// Создание сущностей")
+        queries.append("")
+
+        for entity_name, entity_data in self.entities.items():
+            safe_name = re.sub(r'[^\w]', '_', entity_name)
+            entity_type = entity_data.get('type', 'Unknown')
+            importance = entity_data.get('importance', 0)
+
+            query = f"CREATE (n_{safe_name}:{entity_type} {{"
+            query += f"name: \"{entity_name}\", "
+            query += f"importance: {importance}"
+            query += "})"
+
+            queries.append(query)
+
+        queries.append("")
+        queries.append("// Создание отношений")
+        queries.append("")
+
+        # CREATE запросы для отношений
+        for i, rel in enumerate(self.relations):
+            subj_safe = re.sub(r'[^\w]', '_', rel['subject'])
+            obj_safe = re.sub(r'[^\w]', '_', rel['object'])
+            pred = rel['predicate'].upper()
+
+            query = f"MATCH (a {{name: \"{rel['subject']}\"}}), (b {{name: \"{rel['object']}\"}})"
+            query2 = f"CREATE (a)-[:{pred}]->(b)"
+
+            queries.append(query)
+            queries.append(query2)
+
+            if i > 50:  # Ограничить для больших графов
+                queries.append(f"\n// ... и ещё {len(self.relations) - i} отношений\n")
+                break
+
+        return queries
+
+    def save_cypher_file(self, output_path: Path):
+        """Сохранить Cypher запросы в файл"""
+        queries = self.generate_cypher_queries()
+
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write("// Neo4j Cypher Import Script\n")
+            f.write("// Импорт графа знаний в Neo4j\n\n")
+            f.write('\n'.join(queries))
+
+        print(f"✅ Neo4j Cypher: {output_path}")
+
+
+class SPARQLQueryGenerator:
+    """Генератор SPARQL запросов"""
+
+    @staticmethod
+    def generate_sample_queries() -> List[Tuple[str, str]]:
+        """Сгенерировать примеры SPARQL запросов"""
+        queries = []
+
+        # 1. Все сущности определённого типа
+        queries.append((
+            "Все технологии",
+            """
+PREFIX kg: <http://example.org/kg#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?entity ?label
+WHERE {
+    ?entity rdf:type kg:Technology .
+    ?entity rdfs:label ?label .
+}
+ORDER BY ?label
+            """.strip()
+        ))
+
+        # 2. Топ сущностей по важности
+        queries.append((
+            "Топ-10 по важности",
+            """
+PREFIX kg: <http://example.org/kg#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?entity ?label ?importance
+WHERE {
+    ?entity rdfs:label ?label .
+    ?entity kg:importance ?importance .
+}
+ORDER BY DESC(?importance)
+LIMIT 10
+            """.strip()
+        ))
+
+        # 3. Отношения между сущностями
+        queries.append((
+            "Все отношения 'uses'",
+            """
+PREFIX kg: <http://example.org/kg#>
+
+SELECT ?subject ?object
+WHERE {
+    ?subject kg:uses ?object .
+}
+            """.strip()
+        ))
+
+        return queries
+
+    @staticmethod
+    def save_sparql_queries(output_path: Path):
+        """Сохранить примеры SPARQL запросов"""
+        queries = SPARQLQueryGenerator.generate_sample_queries()
+
+        lines = []
+        lines.append("# SPARQL Query Examples\n\n")
+        lines.append("Примеры SPARQL запросов для графа знаний.\n\n")
+
+        for title, query in queries:
+            lines.append(f"## {title}\n\n")
+            lines.append("```sparql\n")
+            lines.append(query)
+            lines.append("\n```\n\n")
+
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+
+        print(f"✅ SPARQL примеры: {output_path}")
 
 
 class AdvancedKnowledgeGraphBuilder:
@@ -40,6 +323,11 @@ class AdvancedKnowledgeGraphBuilder:
             'Product': r'\b(ChatGPT|GPT-4|Claude|Gemini)\b',
             'Method': r'\b([А-Я][а-я]+(?:ация|ние|тор|ка))\b'  # Русские существительные
         }
+
+        # Анализаторы
+        self.entity_linker = None
+        self.graph_analyzer = None
+        self.neo4j_exporter = None
 
     def extract_frontmatter_and_content(self, file_path):
         try:
@@ -196,6 +484,11 @@ class AdvancedKnowledgeGraphBuilder:
         print(f"   Сущностей: {len(self.entities)}")
         print(f"   Отношений: {len(self.relations)}\n")
 
+        # Инициализировать анализаторы
+        self.entity_linker = EntityLinker(self.entities)
+        self.graph_analyzer = GraphAnalyzer(self.entities, self.relations)
+        self.neo4j_exporter = Neo4jExporter(self.entities, self.relations)
+
     def calculate_entity_importance(self):
         """Вычислить важность сущностей"""
         for entity_name, entity_data in self.entities.items():
@@ -209,6 +502,71 @@ class AdvancedKnowledgeGraphBuilder:
             )
 
             entity_data['importance'] = mentions_count + relations_count * 2
+
+    def run_entity_linking(self, threshold: float = 0.8):
+        """Провести линковку похожих сущностей"""
+        if not self.entity_linker:
+            print("⚠️  Сначала постройте граф (build_graph)")
+            return
+
+        print(f"\n🔗 Линковка похожих сущностей (порог: {threshold})\n")
+
+        similar = self.entity_linker.find_similar_entities(threshold)
+
+        if not similar:
+            print("   Похожих сущностей не найдено")
+            return
+
+        print(f"Найдено {len(similar)} пар похожих сущностей:")
+        for entity1, entity2, similarity in similar[:10]:
+            print(f"   • {entity1} ≈ {entity2} ({similarity:.2%})")
+
+        if len(similar) > 10:
+            print(f"   ... и ещё {len(similar) - 10}")
+
+    def run_graph_analysis(self):
+        """Провести анализ структуры графа"""
+        if not self.graph_analyzer:
+            print("⚠️  Сначала постройте граф (build_graph)")
+            return
+
+        print("\n📊 Анализ структуры графа\n")
+
+        # Хабы
+        hubs = self.graph_analyzer.find_hubs(top_n=10)
+        if hubs:
+            print("Топ-10 хабов (по степени связности):")
+            for entity, degree in hubs:
+                print(f"   • {entity}: {degree} связей")
+
+        # Сообщества
+        communities = self.graph_analyzer.detect_communities_simple()
+        print(f"\nСообщества (по типам):")
+        for comm_type, members in sorted(communities.items(), key=lambda x: -len(x[1])):
+            print(f"   {comm_type}: {len(members)} сущностей")
+
+        # Centrality (топ-5)
+        betweenness = self.graph_analyzer.calculate_betweenness_centrality_approx()
+        top_betweenness = sorted(betweenness.items(), key=lambda x: -x[1])[:5]
+        if top_betweenness:
+            print(f"\nТоп-5 по betweenness centrality:")
+            for entity, score in top_betweenness:
+                if score > 0:
+                    print(f"   • {entity}: {score:.2f}")
+
+    def export_neo4j(self):
+        """Экспортировать в Neo4j Cypher"""
+        if not self.neo4j_exporter:
+            print("⚠️  Сначала постройте граф (build_graph)")
+            return
+
+        output_path = self.root_dir / "knowledge_graph_neo4j.cypher"
+        self.neo4j_exporter.save_cypher_file(output_path)
+
+    def export_sparql_queries(self):
+        """Экспортировать примеры SPARQL запросов"""
+        output_path = self.root_dir / "SPARQL_QUERIES.md"
+        SPARQLQueryGenerator.save_sparql_queries(output_path)
 
     def generate_markdown_report(self):
         """Создать Markdown отчёт"""
@@ -334,14 +692,122 @@ class AdvancedKnowledgeGraphBuilder:
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='🕸️ Knowledge Graph Builder - Построитель графа знаний',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры использования:
+  %(prog)s                    # Построить граф и создать все отчёты
+  %(prog)s --analyze          # Анализ структуры графа
+  %(prog)s --link             # Поиск похожих сущностей
+  %(prog)s --neo4j            # Экспорт в Neo4j Cypher
+  %(prog)s --sparql           # Генерация SPARQL запросов
+  %(prog)s --all              # Всё: граф + анализы + экспорты
+        """
+    )
+
+    parser.add_argument(
+        '--analyze',
+        action='store_true',
+        help='Провести анализ структуры графа (хабы, centrality, сообщества)'
+    )
+
+    parser.add_argument(
+        '--link',
+        action='store_true',
+        help='Провести линковку похожих сущностей'
+    )
+
+    parser.add_argument(
+        '--link-threshold',
+        type=float,
+        default=0.8,
+        metavar='THRESHOLD',
+        help='Порог схожести для линковки (0.0-1.0, по умолчанию: 0.8)'
+    )
+
+    parser.add_argument(
+        '--neo4j',
+        action='store_true',
+        help='Экспортировать в Neo4j Cypher формат'
+    )
+
+    parser.add_argument(
+        '--sparql',
+        action='store_true',
+        help='Сгенерировать примеры SPARQL запросов'
+    )
+
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Выполнить все анализы и экспорты'
+    )
+
+    parser.add_argument(
+        '--no-report',
+        action='store_true',
+        help='Не создавать markdown отчёт'
+    )
+
+    parser.add_argument(
+        '--no-json',
+        action='store_true',
+        help='Не создавать JSON файл'
+    )
+
+    parser.add_argument(
+        '--no-rdf',
+        action='store_true',
+        help='Не создавать RDF Turtle файл'
+    )
+
+    args = parser.parse_args()
+
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
 
     builder = AdvancedKnowledgeGraphBuilder(root_dir)
+
+    # Построить граф
     builder.build_graph()
-    builder.generate_markdown_report()
-    builder.save_json()
-    builder.export_rdf()
+
+    # Режим --all
+    if args.all:
+        builder.run_graph_analysis()
+        builder.run_entity_linking(args.link_threshold)
+        if not args.no_report:
+            builder.generate_markdown_report()
+        if not args.no_json:
+            builder.save_json()
+        if not args.no_rdf:
+            builder.export_rdf()
+        builder.export_neo4j()
+        builder.export_sparql_queries()
+        return
+
+    # Отдельные анализы
+    if args.analyze:
+        builder.run_graph_analysis()
+
+    if args.link:
+        builder.run_entity_linking(args.link_threshold)
+
+    # Экспорты
+    if args.neo4j:
+        builder.export_neo4j()
+
+    if args.sparql:
+        builder.export_sparql_queries()
+
+    # Действия по умолчанию (если не указаны специфичные флаги)
+    if not any([args.analyze, args.link, args.neo4j, args.sparql]):
+        if not args.no_report:
+            builder.generate_markdown_report()
+        if not args.no_json:
+            builder.save_json()
+        if not args.no_rdf:
+            builder.export_rdf()
 
 
 if __name__ == "__main__":
