@@ -1,0 +1,146 @@
+{
+  "холодильник": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "бытовая-техника": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "покупка": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "руководство": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "энергоэффективность": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "умный-дом": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "Python": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "паттерны-проектирования": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "ООП": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "архитектура": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "best-practices": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "AI": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "LLM": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "машинное-обучение": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "нейронные-сети": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "GPT": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "Claude": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "открытые-модели": {
+    "count": 1,
+    "weight": 1,
+    "idf": 1.099,
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  }
+}

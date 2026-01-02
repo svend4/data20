@@ -1,0 +1,751 @@
+{
+  "холодильник": {
+    "canonical": "холодильник",
+    "synonyms": [
+      "рефрижератор",
+      "морозильник",
+      "refrigerator",
+      "fridge"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "бытовая техника"
+    ],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "бытовая-техника": {
+    "canonical": "бытовая-техника",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "покупка": {
+    "canonical": "покупка",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "руководство": {
+    "canonical": "руководство",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "энергоэффективность": {
+    "canonical": "энергоэффективность",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "умный-дом": {
+    "canonical": "умный-дом",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+    ]
+  },
+  "python": {
+    "canonical": "Python",
+    "synonyms": [
+      "питон",
+      "пайтон"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "программирование"
+    ],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "паттерны-проектирования": {
+    "canonical": "паттерны-проектирования",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "ооп": {
+    "canonical": "ООП",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "архитектура": {
+    "canonical": "архитектура",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "best-practices": {
+    "canonical": "best-practices",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/programming/python-patterns.md"
+    ]
+  },
+  "ai": {
+    "canonical": "AI",
+    "synonyms": [
+      "machine intelligence",
+      "ИИ",
+      "artificial intelligence",
+      "искусственный интеллект"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "компьютерные науки"
+    ],
+    "narrower": [
+      "машинное обучение",
+      "нейронные сети",
+      "LLM",
+      "компьютерное зрение"
+    ],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "llm": {
+    "canonical": "LLM",
+    "synonyms": [
+      "language models",
+      "GPT",
+      "большие языковые модели"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "AI"
+    ],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "машинное-обучение": {
+    "canonical": "машинное-обучение",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "нейронные-сети": {
+    "canonical": "нейронные-сети",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "gpt": {
+    "canonical": "GPT",
+    "synonyms": [
+      "language models",
+      "LLM",
+      "большие языковые модели"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "claude": {
+    "canonical": "Claude",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "открытые-модели": {
+    "canonical": "открытые-модели",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": [
+      "knowledge/computers/articles/ai/llm-overview-2026.md"
+    ]
+  },
+  "искусственный интеллект": {
+    "canonical": "искусственный интеллект",
+    "synonyms": [
+      "machine intelligence",
+      "AI",
+      "ИИ",
+      "artificial intelligence"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "ии": {
+    "canonical": "ИИ",
+    "synonyms": [
+      "AI",
+      "machine intelligence",
+      "artificial intelligence",
+      "искусственный интеллект"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "artificial intelligence": {
+    "canonical": "artificial intelligence",
+    "synonyms": [
+      "machine intelligence",
+      "AI",
+      "ИИ",
+      "искусственный интеллект"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "machine intelligence": {
+    "canonical": "machine intelligence",
+    "synonyms": [
+      "AI",
+      "ИИ",
+      "artificial intelligence",
+      "искусственный интеллект"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "большие языковые модели": {
+    "canonical": "большие языковые модели",
+    "synonyms": [
+      "GPT",
+      "LLM",
+      "language models"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "language models": {
+    "canonical": "language models",
+    "synonyms": [
+      "GPT",
+      "LLM",
+      "большие языковые модели"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "питон": {
+    "canonical": "питон",
+    "synonyms": [
+      "пайтон",
+      "Python"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "пайтон": {
+    "canonical": "пайтон",
+    "synonyms": [
+      "питон",
+      "Python"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "рефрижератор": {
+    "canonical": "рефрижератор",
+    "synonyms": [
+      "fridge",
+      "refrigerator",
+      "морозильник",
+      "холодильник"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "морозильник": {
+    "canonical": "морозильник",
+    "synonyms": [
+      "рефрижератор",
+      "refrigerator",
+      "холодильник",
+      "fridge"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "fridge": {
+    "canonical": "fridge",
+    "synonyms": [
+      "рефрижератор",
+      "refrigerator",
+      "морозильник",
+      "холодильник"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "refrigerator": {
+    "canonical": "refrigerator",
+    "synonyms": [
+      "рефрижератор",
+      "морозильник",
+      "холодильник",
+      "fridge"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "программирование": {
+    "canonical": "программирование",
+    "synonyms": [
+      "programming",
+      "development",
+      "разработка",
+      "coding"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "IT",
+      "компьютерные науки"
+    ],
+    "narrower": [
+      "JavaScript",
+      "Java",
+      "C++",
+      "Python"
+    ],
+    "articles": []
+  },
+  "coding": {
+    "canonical": "coding",
+    "synonyms": [
+      "programming",
+      "программирование",
+      "разработка",
+      "development"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "разработка": {
+    "canonical": "разработка",
+    "synonyms": [
+      "development",
+      "programming",
+      "программирование",
+      "coding"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "development": {
+    "canonical": "development",
+    "synonyms": [
+      "programming",
+      "программирование",
+      "разработка",
+      "coding"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "programming": {
+    "canonical": "programming",
+    "synonyms": [
+      "development",
+      "программирование",
+      "разработка",
+      "coding"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "паттерн": {
+    "canonical": "паттерн",
+    "synonyms": [
+      "шаблон",
+      "template",
+      "pattern"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "шаблон": {
+    "canonical": "шаблон",
+    "synonyms": [
+      "паттерн",
+      "template",
+      "pattern"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "pattern": {
+    "canonical": "pattern",
+    "synonyms": [
+      "шаблон",
+      "паттерн",
+      "template"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "template": {
+    "canonical": "template",
+    "synonyms": [
+      "шаблон",
+      "паттерн",
+      "pattern"
+    ],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "hot": {
+    "canonical": "hot",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "cold"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "cold": {
+    "canonical": "cold",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "hot"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "большой": {
+    "canonical": "большой",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "маленький"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "маленький": {
+    "canonical": "маленький",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "большой"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "новый": {
+    "canonical": "новый",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "старый"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "старый": {
+    "canonical": "старый",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "новый"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "начало": {
+    "canonical": "начало",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "конец"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "конец": {
+    "canonical": "конец",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [
+      "начало"
+    ],
+    "broader": [],
+    "narrower": [],
+    "articles": []
+  },
+  "компьютерные науки": {
+    "canonical": "компьютерные науки",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [
+      "программирование",
+      "AI"
+    ],
+    "articles": []
+  },
+  "it": {
+    "canonical": "IT",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [
+      "программирование"
+    ],
+    "articles": []
+  },
+  "javascript": {
+    "canonical": "JavaScript",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "программирование"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "java": {
+    "canonical": "Java",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "программирование"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "c++": {
+    "canonical": "C++",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "программирование"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "машинное обучение": {
+    "canonical": "машинное обучение",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "AI"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "нейронные сети": {
+    "canonical": "нейронные сети",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "AI"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "компьютерное зрение": {
+    "canonical": "компьютерное зрение",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "AI"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "бытовая техника": {
+    "canonical": "бытовая техника",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "домашнее хозяйство"
+    ],
+    "narrower": [
+      "плита",
+      "стиральная машина",
+      "холодильник"
+    ],
+    "articles": []
+  },
+  "домашнее хозяйство": {
+    "canonical": "домашнее хозяйство",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [],
+    "narrower": [
+      "бытовая техника"
+    ],
+    "articles": []
+  },
+  "плита": {
+    "canonical": "плита",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "бытовая техника"
+    ],
+    "narrower": [],
+    "articles": []
+  },
+  "стиральная машина": {
+    "canonical": "стиральная машина",
+    "synonyms": [],
+    "related": [],
+    "antonyms": [],
+    "broader": [
+      "бытовая техника"
+    ],
+    "narrower": [],
+    "articles": []
+  }
+}

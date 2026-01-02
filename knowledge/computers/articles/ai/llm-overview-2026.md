@@ -31,6 +31,8 @@ quality_metrics:
   examples: 15
   readability: 51
   freshness: 100
+difficulty: Beginner
+difficulty_score: 22
 ---
 
 # Обзор больших языковых моделей 2026 года

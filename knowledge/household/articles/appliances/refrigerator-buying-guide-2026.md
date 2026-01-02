@@ -30,6 +30,8 @@ quality_metrics:
   examples: 0
   readability: 50
   freshness: 100
+difficulty: Beginner
+difficulty_score: 20
 ---
 
 # Руководство по выбору холодильника в 2026 году

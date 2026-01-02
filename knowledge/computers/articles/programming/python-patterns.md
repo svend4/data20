@@ -30,6 +30,8 @@ quality_metrics:
   examples: 70
   readability: 78
   freshness: 100
+difficulty: Intermediate
+difficulty_score: 41
 ---
 
 # Паттерны проектирования в Python
