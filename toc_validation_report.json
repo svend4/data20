@@ -1,0 +1,186 @@
+{
+  "generated": "2026-01-02T19:21:16.282690",
+  "summary": {
+    "files_checked": 3,
+    "total_issues": 1,
+    "broken_links": 3
+  },
+  "results": [
+    {
+      "file": "knowledge/computers/articles/programming/python-patterns.md",
+      "validation": {
+        "valid": false,
+        "issues": [
+          {
+            "type": "duplicate_anchor",
+            "message": "Якорь \"использование\" встречается 12 раз",
+            "anchor": "использование",
+            "severity": "high"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"2. Factory Method (Фабричный метод)\"",
+            "anchor": "2-factory-method-фабричный-метод",
+            "severity": "low"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"3. Builder (Строитель)\"",
+            "anchor": "3-builder-строитель",
+            "severity": "low"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"6. Facade (Фасад)\"",
+            "anchor": "6-facade-фасад",
+            "severity": "low"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"8. Strategy (Стратегия)\"",
+            "anchor": "8-strategy-стратегия",
+            "severity": "low"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"9. Command (Команда)\"",
+            "anchor": "9-command-команда",
+            "severity": "low"
+          },
+          {
+            "type": "skipped_level",
+            "message": "Пропущен уровень: 1 → 3 в \"11. Descriptor (Дескриптор)\"",
+            "anchor": "11-descriptor-дескриптор",
+            "severity": "low"
+          }
+        ],
+        "stats": {
+          "h1": 15,
+          "h2": 9,
+          "h3": 11,
+          "total": 35,
+          "max_depth": 3,
+          "unique_anchors": 24
+        }
+      },
+      "cross_references": {
+        "total_links": 20,
+        "broken_links": [
+          {
+            "link": {
+              "text": "🏠 Главная",
+              "url": "/INDEX.md",
+              "path": "/INDEX.md",
+              "anchor": "",
+              "type": "internal"
+            },
+            "reason": "Файл не найден: /INDEX.md",
+            "severity": "high"
+          }
+        ]
+      },
+      "stats": {
+        "total_headings": 35,
+        "levels": {
+          "h1": 15,
+          "h2": 9,
+          "h3": 11
+        },
+        "max_depth": 3,
+        "min_depth": 1,
+        "avg_heading_length": 21.7,
+        "total_chars": 760
+      }
+    },
+    {
+      "file": "knowledge/computers/articles/ai/llm-overview-2026.md",
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "stats": {
+          "h1": 1,
+          "h2": 13,
+          "h3": 23,
+          "h4": 6,
+          "total": 43,
+          "max_depth": 4,
+          "unique_anchors": 43
+        }
+      },
+      "cross_references": {
+        "total_links": 42,
+        "broken_links": [
+          {
+            "link": {
+              "text": "🏠 Главная",
+              "url": "/INDEX.md",
+              "path": "/INDEX.md",
+              "anchor": "",
+              "type": "internal"
+            },
+            "reason": "Файл не найден: /INDEX.md",
+            "severity": "high"
+          }
+        ]
+      },
+      "stats": {
+        "total_headings": 43,
+        "levels": {
+          "h1": 1,
+          "h2": 13,
+          "h3": 23,
+          "h4": 6
+        },
+        "max_depth": 4,
+        "min_depth": 1,
+        "avg_heading_length": 21.2,
+        "total_chars": 912
+      }
+    },
+    {
+      "file": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "stats": {
+          "h1": 1,
+          "h2": 13,
+          "h3": 36,
+          "h4": 9,
+          "total": 59,
+          "max_depth": 4,
+          "unique_anchors": 59
+        }
+      },
+      "cross_references": {
+        "total_links": 58,
+        "broken_links": [
+          {
+            "link": {
+              "text": "🏠 Главная",
+              "url": "/INDEX.md",
+              "path": "/INDEX.md",
+              "anchor": "",
+              "type": "internal"
+            },
+            "reason": "Файл не найден: /INDEX.md",
+            "severity": "high"
+          }
+        ]
+      },
+      "stats": {
+        "total_headings": 59,
+        "levels": {
+          "h1": 1,
+          "h2": 13,
+          "h3": 36,
+          "h4": 9
+        },
+        "max_depth": 4,
+        "min_depth": 1,
+        "avg_heading_length": 22.5,
+        "total_chars": 1329
+      }
+    }
+  ]
+}
