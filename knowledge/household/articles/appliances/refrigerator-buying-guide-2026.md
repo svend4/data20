@@ -1,38 +1,8 @@
 ---
-title: Руководство по выбору холодильника в 2026 году
-date: 2026-01-02
-tags:
-- холодильник
-- бытовая-техника
-- покупка
-- руководство
-- энергоэффективность
-- умный-дом
-category: household
-subcategory: appliances
-status: published
-source: Обзоры техники и тесты
-related:
-- ../energy/energy-efficiency-classes.md
-- ../electronics/smart-home-zigbee.md
-pagerank: 0.05
-pagerank_inlinks: 0
-pagerank_outlinks: 0
-reading_time: 6 мин
-reading_time_minutes: 6
-word_count: 1155
-quality_score: 49
-quality_grade: F
-quality_metrics:
-  completeness: 88
-  structure: 35
-  links: 30
-  examples: 0
-  readability: 50
-  freshness: 100
-difficulty: Beginner
-difficulty_score: 20
+{'title': 'Руководство по выбору холодильника в 2026 году', 'date': datetime.date(2026, 1, 2), 'tags': ['холодильник', 'бытовая-техника', 'покупка', 'руководство', 'энергоэффективность', 'умный-дом'], 'category': 'household', 'subcategory': 'appliances', 'status': 'published', 'source': 'Обзоры техники и тесты', 'related': ['../energy/energy-efficiency-classes.md', '../electronics/smart-home-zigbee.md'], 'pagerank': 0.05, 'pagerank_inlinks': 0, 'pagerank_outlinks': 0, 'reading_time': '6 мин', 'reading_time_minutes': 6, 'word_count': 1155, 'quality_score': 49, 'quality_grade': 'F', 'quality_metrics': {'completeness': 88, 'structure': 35, 'links': 30, 'examples': 0, 'readability': 50, 'freshness': 100}, 'difficulty': 'Beginner', 'difficulty_score': 20}
 ---
+
+[🏠 Главная](/INDEX.md) → household → appliances → Руководство по выбору холодильника в 2026 году
 
 # Руководство по выбору холодильника в 2026 году
 

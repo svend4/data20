@@ -1,39 +1,8 @@
 ---
-title: Обзор больших языковых моделей 2026 года
-date: 2026-01-02
-tags:
-- AI
-- LLM
-- машинное-обучение
-- нейронные-сети
-- GPT
-- Claude
-- открытые-модели
-category: computers
-subcategory: artificial-intelligence
-status: published
-source: Технические новости и документация
-related:
-- ai-in-development.md
-- ../../programming/python-patterns.md
-pagerank: 0.0925
-pagerank_inlinks: 1
-pagerank_outlinks: 0
-reading_time: 4 мин
-reading_time_minutes: 4
-word_count: 553
-quality_score: 57
-quality_grade: D
-quality_metrics:
-  completeness: 88
-  structure: 60
-  links: 30
-  examples: 15
-  readability: 51
-  freshness: 100
-difficulty: Beginner
-difficulty_score: 22
+{'title': 'Обзор больших языковых моделей 2026 года', 'date': datetime.date(2026, 1, 2), 'tags': ['AI', 'LLM', 'машинное-обучение', 'нейронные-сети', 'GPT', 'Claude', 'открытые-модели'], 'category': 'computers', 'subcategory': 'artificial-intelligence', 'status': 'published', 'source': 'Технические новости и документация', 'related': ['ai-in-development.md', '../../programming/python-patterns.md'], 'pagerank': 0.0925, 'pagerank_inlinks': 1, 'pagerank_outlinks': 0, 'reading_time': '4 мин', 'reading_time_minutes': 4, 'word_count': 553, 'quality_score': 57, 'quality_grade': 'D', 'quality_metrics': {'completeness': 88, 'structure': 60, 'links': 30, 'examples': 15, 'readability': 51, 'freshness': 100}, 'difficulty': 'Beginner', 'difficulty_score': 22}
 ---
+
+[🏠 Главная](/INDEX.md) → computers → artificial-intelligence → Обзор больших языковых моделей 2026 года
 
 # Обзор больших языковых моделей 2026 года
 

@@ -1,38 +1,8 @@
 ---
-title: Паттерны проектирования в Python
-date: 2026-01-02
-tags:
-- Python
-- паттерны-проектирования
-- ООП
-- архитектура
-- best-practices
-category: computers
-subcategory: programming
-status: published
-source: Коллекция примеров и best practices
-related:
-- ../software/dev-tools.md
-- ../ai/llm-overview-2026.md
-pagerank: 0.05
-pagerank_inlinks: 0
-pagerank_outlinks: 1
-reading_time: 11 мин
-reading_time_minutes: 11
-word_count: 281
-code_lines: 441
-quality_score: 65
-quality_grade: C
-quality_metrics:
-  completeness: 88
-  structure: 35
-  links: 30
-  examples: 70
-  readability: 78
-  freshness: 100
-difficulty: Intermediate
-difficulty_score: 41
+{'title': 'Паттерны проектирования в Python', 'date': datetime.date(2026, 1, 2), 'tags': ['Python', 'паттерны-проектирования', 'ООП', 'архитектура', 'best-practices'], 'category': 'computers', 'subcategory': 'programming', 'status': 'published', 'source': 'Коллекция примеров и best practices', 'related': ['../software/dev-tools.md', '../ai/llm-overview-2026.md'], 'pagerank': 0.05, 'pagerank_inlinks': 0, 'pagerank_outlinks': 1, 'reading_time': '11 мин', 'reading_time_minutes': 11, 'word_count': 281, 'code_lines': 441, 'quality_score': 65, 'quality_grade': 'C', 'quality_metrics': {'completeness': 88, 'structure': 35, 'links': 30, 'examples': 70, 'readability': 78, 'freshness': 100}, 'difficulty': 'Intermediate', 'difficulty_score': 41}
 ---
+
+[🏠 Главная](/INDEX.md) → computers → programming → Паттерны проектирования в Python
 
 # Паттерны проектирования в Python
 
