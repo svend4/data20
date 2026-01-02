@@ -9,9 +9,12 @@ Duplicate Detector - Детектор дубликатов
 from pathlib import Path
 import yaml
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import hashlib
 import json
+import argparse
+import math
+from typing import Dict, List, Tuple, Set
 
 
 class DuplicateDetector:
@@ -299,24 +302,227 @@ class DuplicateDetector:
 
         print(f"✅ JSON данные: {output_file}")
 
+    def calculate_cosine_similarity(self, text1: str, text2: str) -> float:
+        """
+        Вычислить cosine similarity с TF-IDF
+
+        cos(θ) = (A·B) / (||A|| × ||B||)
+        """
+        # Токенизация
+        words1 = re.findall(r'\b\w+\b', text1.lower())
+        words2 = re.findall(r'\b\w+\b', text2.lower())
+
+        # TF (Term Frequency)
+        tf1 = Counter(words1)
+        tf2 = Counter(words2)
+
+        # Все уникальные слова
+        all_words = set(tf1.keys()) | set(tf2.keys())
+
+        # Векторы
+        vec1 = [tf1.get(word, 0) for word in all_words]
+        vec2 = [tf2.get(word, 0) for word in all_words]
+
+        # Dot product
+        dot_product = sum(a * b for a, b in zip(vec1, vec2))
+
+        # Magnitudes
+        mag1 = math.sqrt(sum(a * a for a in vec1))
+        mag2 = math.sqrt(sum(b * b for b in vec2))
+
+        if mag1 == 0 or mag2 == 0:
+            return 0.0
+
+        return dot_product / (mag1 * mag2)
+
+    def get_shingles(self, text: str, k: int = 3) -> Set[str]:
+        """
+        Создать k-shingles (n-grams) для текста
+
+        Example: "hello world" with k=3 → {"hel", "ell", "llo", ...}
+        """
+        normalized = self.normalize_text(text)
+        shingles = set()
+
+        for i in range(len(normalized) - k + 1):
+            shingle = normalized[i:i + k]
+            shingles.add(shingle)
+
+        return shingles
+
+    def shingle_similarity(self, text1: str, text2: str, k: int = 3) -> float:
+        """Jaccard similarity на основе shingles"""
+        shingles1 = self.get_shingles(text1, k)
+        shingles2 = self.get_shingles(text2, k)
+
+        if not shingles1 or not shingles2:
+            return 0.0
+
+        intersection = len(shingles1 & shingles2)
+        union = len(shingles1 | shingles2)
+
+        return intersection / union if union > 0 else 0.0
+
+
+class AdvancedDuplicateDetector(DuplicateDetector):
+    """Продвинутый детектор с дополнительными алгоритмами"""
+
+    def find_duplicates_by_cosine(self, threshold: float = 0.8) -> List[Dict]:
+        """Найти дубликаты используя cosine similarity"""
+        print(f"🔍 Поиск дубликатов (cosine similarity >= {threshold})...\n")
+
+        duplicates = []
+        articles_list = list(self.articles.items())
+
+        for i, (path1, data1) in enumerate(articles_list):
+            for path2, data2 in articles_list[i + 1:]:
+                similarity = self.calculate_cosine_similarity(data1['content'], data2['content'])
+
+                if similarity >= threshold:
+                    duplicates.append({
+                        'type': 'cosine_duplicate',
+                        'articles': [
+                            {'path': path1, 'title': data1['title']},
+                            {'path': path2, 'title': data2['title']}
+                        ],
+                        'similarity': similarity,
+                        'method': 'cosine'
+                    })
+
+        print(f"   Найдено пар (cosine): {len(duplicates)}\n")
+        return duplicates
+
+    def find_duplicates_by_shingles(self, threshold: float = 0.7, k: int = 3) -> List[Dict]:
+        """Найти дубликаты используя shingle similarity"""
+        print(f"🔍 Поиск дубликатов (shingles k={k}, threshold={threshold})...\n")
+
+        duplicates = []
+        articles_list = list(self.articles.items())
+
+        for i, (path1, data1) in enumerate(articles_list):
+            for path2, data2 in articles_list[i + 1:]:
+                similarity = self.shingle_similarity(data1['content'], data2['content'], k)
+
+                if similarity >= threshold:
+                    duplicates.append({
+                        'type': 'shingle_duplicate',
+                        'articles': [
+                            {'path': path1, 'title': data1['title']},
+                            {'path': path2, 'title': data2['title']}
+                        ],
+                        'similarity': similarity,
+                        'method': f'shingles-{k}'
+                    })
+
+        print(f"   Найдено пар (shingles): {len(duplicates)}\n")
+        return duplicates
+
+    def analyze_similarity_distribution(self) -> Dict:
+        """Анализ распределения сходства между всеми парами"""
+        print("📊 Анализ распределения сходства...\n")
+
+        similarities = []
+        articles_list = list(self.articles.items())
+
+        for i, (path1, data1) in enumerate(articles_list):
+            for path2, data2 in articles_list[i + 1:]:
+                jaccard = self.calculate_similarity(data1['content'], data2['content'])
+                cosine = self.calculate_cosine_similarity(data1['content'], data2['content'])
+
+                similarities.append({
+                    'pair': (data1['title'], data2['title']),
+                    'jaccard': jaccard,
+                    'cosine': cosine
+                })
+
+        if not similarities:
+            return {}
+
+        # Statistics
+        jaccard_scores = [s['jaccard'] for s in similarities]
+        cosine_scores = [s['cosine'] for s in similarities]
+
+        stats = {
+            'total_pairs': len(similarities),
+            'jaccard': {
+                'mean': sum(jaccard_scores) / len(jaccard_scores),
+                'max': max(jaccard_scores),
+                'min': min(jaccard_scores)
+            },
+            'cosine': {
+                'mean': sum(cosine_scores) / len(cosine_scores),
+                'max': max(cosine_scores),
+                'min': min(cosine_scores)
+            },
+            'top_similar': sorted(similarities, key=lambda x: x['cosine'], reverse=True)[:5]
+        }
+
+        print(f"   Всего пар проанализировано: {stats['total_pairs']}")
+        print(f"   Jaccard: mean={stats['jaccard']['mean']:.3f}, max={stats['jaccard']['max']:.3f}")
+        print(f"   Cosine: mean={stats['cosine']['mean']:.3f}, max={stats['cosine']['max']:.3f}\n")
+
+        return stats
+
 
 def main():
-    import argparse
+    parser = argparse.ArgumentParser(
+        description='🔍 Duplicate Detector - Детектор дубликатов',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры использования:
+  %(prog)s                        # Стандартный поиск дубликатов
+  %(prog)s --advanced             # Продвинутый анализ (cosine, shingles)
+  %(prog)s --analyze              # Анализ распределения сходства
+  %(prog)s --threshold 0.9        # Установить порог сходства
+  %(prog)s --method cosine        # Использовать только cosine similarity
+        """
+    )
 
-    parser = argparse.ArgumentParser(description='Duplicate Detector')
     parser.add_argument('-t', '--threshold', type=float, default=0.8,
-                       help='Порог сходства для near-duplicates (0.0-1.0, по умолчанию: 0.8)')
+                       help='Порог сходства (0.0-1.0, default: 0.8)')
+    parser.add_argument('--advanced', action='store_true',
+                       help='Использовать продвинутые методы (cosine, shingles)')
+    parser.add_argument('--analyze', action='store_true',
+                       help='Анализ распределения сходства')
+    parser.add_argument('--method', type=str, choices=['jaccard', 'cosine', 'shingles', 'all'],
+                       default='all', help='Метод обнаружения дубликатов')
 
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
 
-    detector = DuplicateDetector(root_dir, similarity_threshold=args.threshold)
+    if args.advanced or args.method in ['cosine', 'shingles', 'all']:
+        detector = AdvancedDuplicateDetector(root_dir, similarity_threshold=args.threshold)
+    else:
+        detector = DuplicateDetector(root_dir, similarity_threshold=args.threshold)
+
     detector.collect_articles()
-    detector.find_exact_duplicates()
-    detector.find_near_duplicates()
-    detector.find_similar_titles()
+
+    # Standard methods
+    if args.method in ['jaccard', 'all']:
+        detector.find_exact_duplicates()
+        detector.find_near_duplicates()
+        detector.find_similar_titles()
+
+    # Advanced methods
+    if args.advanced or args.method in ['cosine', 'shingles', 'all']:
+        if isinstance(detector, AdvancedDuplicateDetector):
+            if args.method in ['cosine', 'all']:
+                detector.find_duplicates_by_cosine(args.threshold)
+            if args.method in ['shingles', 'all']:
+                detector.find_duplicates_by_shingles(threshold=0.7, k=3)
+
+    # Analyze
+    if args.analyze and isinstance(detector, AdvancedDuplicateDetector):
+        stats = detector.analyze_similarity_distribution()
+
+        print("📊 Топ-5 самых похожих пар:\n")
+        for i, sim in enumerate(stats.get('top_similar', []), 1):
+            print(f"   {i}. {sim['pair'][0]} ↔ {sim['pair'][1]}")
+            print(f"      Jaccard: {sim['jaccard']:.3f}, Cosine: {sim['cosine']:.3f}\n")
+
+    # Generate reports
     detector.generate_report()
     detector.save_json()
 

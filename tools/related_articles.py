@@ -9,9 +9,11 @@ Related Articles - Рекомендации статей
 from pathlib import Path
 import yaml
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import json
 import math
+import argparse
+from typing import Dict, List, Tuple
 
 
 class RelatedArticlesEngine:
@@ -310,15 +312,150 @@ class RelatedArticlesEngine:
 
         print(f"✅ JSON рекомендации: {output_file}")
 
+    def get_popular_articles(self, limit: int = 10) -> List[Tuple[str, int]]:
+        """Получить популярные статьи (по входящим ссылкам)"""
+        popularity = []
+
+        for article_path in self.articles:
+            incoming_count = len(self.links[article_path]['incoming'])
+            popularity.append((article_path, incoming_count))
+
+        return sorted(popularity, key=lambda x: x[1], reverse=True)[:limit]
+
+    def get_trending_articles_by_tags(self, top_n: int = 10) -> List[Tuple[str, int]]:
+        """Получить статьи с популярными тегами"""
+        # Подсчитать частоту тегов
+        tag_counts = Counter()
+        for article in self.articles.values():
+            for tag in article['tags']:
+                tag_counts[tag] += 1
+
+        # Оценить статьи по популярности их тегов
+        article_scores = []
+
+        for article_path, article_data in self.articles.items():
+            score = sum(tag_counts[tag] for tag in article_data['tags'])
+            article_scores.append((article_path, score))
+
+        return sorted(article_scores, key=lambda x: x[1], reverse=True)[:top_n]
+
+
+class CollaborativeFilteringEngine(RelatedArticlesEngine):
+    """Рекомендации на основе коллаборативной фильтрации"""
+
+    def find_similar_users_by_category(self, category: str) -> List[str]:
+        """Найти статьи той же категории (имитация похожих пользователей)"""
+        similar = []
+
+        for article_path, data in self.articles.items():
+            if data['category'] == category:
+                similar.append(article_path)
+
+        return similar
+
+    def get_category_based_recommendations(self, article_path: str, limit: int = 5) -> List[Tuple[str, float]]:
+        """Рекомендации на основе категории"""
+        if article_path not in self.articles:
+            return []
+
+        category = self.articles[article_path]['category']
+        similar_articles = self.find_similar_users_by_category(category)
+
+        recommendations = []
+
+        for other_article in similar_articles:
+            if other_article == article_path:
+                continue
+
+            # Вычислить сходство
+            score = self.calculate_similarity(article_path, other_article)
+            recommendations.append((other_article, score))
+
+        return sorted(recommendations, key=lambda x: x[1], reverse=True)[:limit]
+
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='🎯 Related Articles - Рекомендательная система',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры использования:
+  %(prog)s                  # Генерировать рекомендации для всех статей
+  %(prog)s --popular        # Показать популярные статьи
+  %(prog)s --trending       # Показать trending статьи (по тегам)
+  %(prog)s --for путь       # Рекомендации для конкретной статьи
+  %(prog)s --collaborative  # Использовать коллаборативную фильтрацию
+        """
+    )
+
+    parser.add_argument('--popular', action='store_true',
+                       help='Показать популярные статьи (по входящим ссылкам)')
+    parser.add_argument('--trending', action='store_true',
+                       help='Показать trending статьи (по популярности тегов)')
+    parser.add_argument('--for', dest='for_article', type=str, metavar='PATH',
+                       help='Рекомендации для конкретной статьи')
+    parser.add_argument('--collaborative', action='store_true',
+                       help='Использовать коллаборативную фильтрацию')
+    parser.add_argument('--limit', type=int, default=5,
+                       help='Количество рекомендаций (default: 5)')
+
+    args = parser.parse_args()
+
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
 
-    engine = RelatedArticlesEngine(root_dir)
+    if args.collaborative:
+        engine = CollaborativeFilteringEngine(root_dir)
+    else:
+        engine = RelatedArticlesEngine(root_dir)
+
     engine.build_index()
-    engine.generate_report()
-    engine.save_json()
+
+    # --popular
+    if args.popular:
+        print("📊 Популярные статьи (по входящим ссылкам):\n")
+        popular = engine.get_popular_articles(limit=args.limit)
+
+        for i, (article_path, incoming_count) in enumerate(popular, 1):
+            title = engine.articles[article_path]['title']
+            print(f"   {i}. {title} ({incoming_count} входящих ссылок)")
+            print(f"      {article_path}\n")
+
+    # --trending
+    if args.trending:
+        print("🔥 Trending статьи (по популярности тегов):\n")
+        trending = engine.get_trending_articles_by_tags(top_n=args.limit)
+
+        for i, (article_path, score) in enumerate(trending, 1):
+            title = engine.articles[article_path]['title']
+            tags = ', '.join(engine.articles[article_path]['tags'])
+            print(f"   {i}. {title} (score: {score})")
+            print(f"      Теги: {tags}")
+            print(f"      {article_path}\n")
+
+    # --for specific article
+    if args.for_article:
+        article_path = args.for_article
+        if article_path not in engine.articles:
+            print(f"⚠️  Статья не найдена: {article_path}")
+            return
+
+        print(f"🎯 Рекомендации для: {engine.articles[article_path]['title']}\n")
+
+        if args.collaborative and isinstance(engine, CollaborativeFilteringEngine):
+            recommendations = engine.get_category_based_recommendations(article_path, args.limit)
+        else:
+            recommendations = engine.get_recommendations(article_path, args.limit)
+
+        for i, (rec_path, score) in enumerate(recommendations, 1):
+            rec_title = engine.articles[rec_path]['title']
+            print(f"   {i}. {rec_title} (score: {score:.2f})")
+            print(f"      {rec_path}\n")
+
+    # Default: generate full report
+    if not any([args.popular, args.trending, args.for_article]):
+        engine.generate_report()
+        engine.save_json()
 
 
 if __name__ == "__main__":
