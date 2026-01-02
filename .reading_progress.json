@@ -1,0 +1,46 @@
+{
+  "articles": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "status": "read",
+      "completed_at": "2026-01-02T16:08:16.675306",
+      "word_count": 1639,
+      "estimated_time_min": 8.2,
+      "actual_time_min": 8.2,
+      "tags": [
+        "холодильник",
+        "бытовая-техника",
+        "покупка",
+        "руководство",
+        "энергоэффективность",
+        "умный-дом"
+      ],
+      "category": "household"
+    }
+  },
+  "sessions": [
+    {
+      "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "timestamp": "2026-01-02T16:08:16.675306",
+      "type": "completed",
+      "reading_time_min": 8.2
+    }
+  ],
+  "statistics": {
+    "total_read": 0,
+    "total_in_progress": 0,
+    "total_unread": 0,
+    "total_reading_time_min": 0,
+    "current_streak": 1,
+    "longest_streak": 1
+  },
+  "achievements": [
+    {
+      "id": "first_article",
+      "name": "📖 Первая статья",
+      "unlocked_at": "2026-01-02T16:08:16.679449"
+    }
+  ],
+  "settings": {
+    "reading_speed_wpm": 200
+  }
+}
