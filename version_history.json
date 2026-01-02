@@ -1,0 +1,173 @@
+{
+  "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+    "commits": [
+      {
+        "hash": "1adde3470bb467b5ea30d7ed835543f4c7ce22e8",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 3] Простые методы: Навигация, индексация и проверка",
+        "added": 59,
+        "removed": 0
+      },
+      {
+        "hash": "723d19fdd00f2d6ec9b08a5ac660a068ccadb05f",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 2] Средние методы: Thesaurus, Weighted Tags, Difficulty Level",
+        "added": 2,
+        "removed": 0
+      },
+      {
+        "hash": "d80f26519fe6b443c55d9f3409daa307f9c56046",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 1] Простые методы: Marginalia, Chain References, Reading Time, Quality Metrics",
+        "added": 12,
+        "removed": 0
+      },
+      {
+        "hash": "7a72704a2e099322c30848565534553ab2ec6a16",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Advanced Methods] Простые и средние методы классификации и поиска",
+        "added": 15,
+        "removed": 4
+      },
+      {
+        "hash": "3c3b4b2033a56cc253da128fb7c0c586840f43fa",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Initial] Создана система управления знаниями (Knowledge Base)",
+        "added": 453,
+        "removed": 0
+      }
+    ],
+    "authors": [
+      "Claude"
+    ],
+    "total_changes": 5,
+    "first_commit": "2026-01-02",
+    "last_commit": "2026-01-02",
+    "lines_added": 541,
+    "lines_removed": 4
+  },
+  "knowledge/computers/articles/programming/python-patterns.md": {
+    "commits": [
+      {
+        "hash": "1adde3470bb467b5ea30d7ed835543f4c7ce22e8",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 3] Простые методы: Навигация, индексация и проверка",
+        "added": 21,
+        "removed": 0
+      },
+      {
+        "hash": "723d19fdd00f2d6ec9b08a5ac660a068ccadb05f",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 2] Средние методы: Thesaurus, Weighted Tags, Difficulty Level",
+        "added": 2,
+        "removed": 0
+      },
+      {
+        "hash": "d80f26519fe6b443c55d9f3409daa307f9c56046",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 1] Простые методы: Marginalia, Chain References, Reading Time, Quality Metrics",
+        "added": 13,
+        "removed": 0
+      },
+      {
+        "hash": "7a72704a2e099322c30848565534553ab2ec6a16",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Advanced Methods] Простые и средние методы классификации и поиска",
+        "added": 14,
+        "removed": 4
+      },
+      {
+        "hash": "3c3b4b2033a56cc253da128fb7c0c586840f43fa",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Initial] Создана система управления знаниями (Knowledge Base)",
+        "added": 596,
+        "removed": 0
+      }
+    ],
+    "authors": [
+      "Claude"
+    ],
+    "total_changes": 5,
+    "first_commit": "2026-01-02",
+    "last_commit": "2026-01-02",
+    "lines_added": 646,
+    "lines_removed": 4
+  },
+  "knowledge/computers/articles/ai/llm-overview-2026.md": {
+    "commits": [
+      {
+        "hash": "1adde3470bb467b5ea30d7ed835543f4c7ce22e8",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 3] Простые методы: Навигация, индексация и проверка",
+        "added": 43,
+        "removed": 0
+      },
+      {
+        "hash": "723d19fdd00f2d6ec9b08a5ac660a068ccadb05f",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 2] Средние методы: Thesaurus, Weighted Tags, Difficulty Level",
+        "added": 2,
+        "removed": 0
+      },
+      {
+        "hash": "d80f26519fe6b443c55d9f3409daa307f9c56046",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Batch 1] Простые методы: Marginalia, Chain References, Reading Time, Quality Metrics",
+        "added": 12,
+        "removed": 0
+      },
+      {
+        "hash": "7a72704a2e099322c30848565534553ab2ec6a16",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Advanced Methods] Простые и средние методы классификации и поиска",
+        "added": 16,
+        "removed": 4
+      },
+      {
+        "hash": "3c3b4b2033a56cc253da128fb7c0c586840f43fa",
+        "author": "Claude",
+        "email": "noreply@anthropic.com",
+        "date": "2026-01-02",
+        "message": "[Initial] Создана система управления знаниями (Knowledge Base)",
+        "added": 212,
+        "removed": 0
+      }
+    ],
+    "authors": [
+      "Claude"
+    ],
+    "total_changes": 5,
+    "first_commit": "2026-01-02",
+    "last_commit": "2026-01-02",
+    "lines_added": 285,
+    "lines_removed": 4
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "articles": {
+    "total": 3,
+    "by_category": {
+      "household": 1,
+      "computers": 2
+    },
+    "by_difficulty": {
+      "Beginner": 2,
+      "Intermediate": 1
+    },
+    "tags": {
+      "холодильник": 1,
+      "бытовая-техника": 1,
+      "покупка": 1,
+      "руководство": 1,
+      "энергоэффективность": 1,
+      "умный-дом": 1,
+      "Python": 1,
+      "паттерны-проектирования": 1,
+      "ООП": 1,
+      "архитектура": 1,
+      "best-practices": 1,
+      "AI": 1,
+      "LLM": 1,
+      "машинное-обучение": 1,
+      "нейронные-сети": 1,
+      "GPT": 1,
+      "Claude": 1,
+      "открытые-модели": 1
+    }
+  },
+  "content": {
+    "total_words": 4011,
+    "total_chars": 39389,
+    "total_lines": 1354,
+    "avg_article_length": 1337,
+    "shortest_article": 885,
+    "longest_article": 1630,
+    "total_headings": 137,
+    "total_links": 127,
+    "total_code_blocks": 17,
+    "total_images": 0,
+    "total_tables": 8
+  },
+  "structure": {
+    "internal_links": 117,
+    "external_links": 10,
+    "total_links": 127,
+    "orphaned_articles": 3,
+    "connectivity_ratio": 1.0
+  },
+  "activity": {
+    "total_commits": 10,
+    "recent_commits_30d": 10,
+    "total_authors": 2,
+    "avg_commits_per_day": 0.03
+  },
+  "quality": {
+    "articles_with_tags": 3,
+    "articles_with_sources": 3,
+    "articles_with_structure": 3,
+    "avg_quality_score": 4.33,
+    "completeness_ratio": 1.0
+  }
+}

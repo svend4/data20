@@ -1,0 +1,63 @@
+{
+  "articles": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "difficulty": "Beginner",
+      "tags": [
+        "холодильник",
+        "бытовая-техника",
+        "покупка",
+        "руководство",
+        "энергоэффективность",
+        "умный-дом"
+      ]
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "difficulty": "Intermediate",
+      "tags": [
+        "Python",
+        "паттерны-проектирования",
+        "ООП",
+        "архитектура",
+        "best-practices"
+      ]
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "difficulty": "Beginner",
+      "tags": [
+        "AI",
+        "LLM",
+        "машинное-обучение",
+        "нейронные-сети",
+        "GPT",
+        "Claude",
+        "открытые-модели"
+      ]
+    }
+  },
+  "graph": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "requires": [],
+      "required_by": [],
+      "depth": 0
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "requires": [],
+      "required_by": [],
+      "depth": 0
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "requires": [],
+      "required_by": [],
+      "depth": 0
+    }
+  },
+  "entry_points": [
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+    "knowledge/computers/articles/programming/python-patterns.md",
+    "knowledge/computers/articles/ai/llm-overview-2026.md"
+  ],
+  "advanced_topics": []
+}

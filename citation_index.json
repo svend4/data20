@@ -1,0 +1,674 @@
+{
+  "articles": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "date": "2026-01-02",
+      "author": "Обзоры техники и тесты"
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "date": "2026-01-02",
+      "author": "Коллекция примеров и best practices"
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "date": "2026-01-02",
+      "author": "Технические новости и документация"
+    }
+  },
+  "citations": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "citation_count": 0,
+      "h_index": 0,
+      "cited_by": [],
+      "cites": [
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Краткое описание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Типы холодильников",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "1. Однокамерные холодильники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "2. Двухкамерные холодильники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "С верхней морозильной камерой",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "С нижней морозильной камерой",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "3. Side-by-Side (французская дверь)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "4. French Door",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "5. Встраиваемые холодильники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Ключевые характеристики",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Объем",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Энергоэффективность",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Система размораживания",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "No Frost (Без инея)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Капельная система (Плачущая стенка)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Компрессор",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Один компрессор",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Два компрессора",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Инверторный компрессор",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Уровень шума",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Климатический класс",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Дополнительные функции",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Зона свежести (Fresh Zone)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Суперзаморозка (Super Freeze)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Антибактериальное покрытие",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Умные функции (Smart Home)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Wi-Fi и управление через приложение",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Камера внутри холодильника",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Производители и бренды",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Премиум-сегмент (100,000+ руб)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Средний сегмент (40,000-100,000 руб)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Бюджетный сегмент (20,000-40,000 руб)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Азиатские бренды",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Чек-лист при выборе",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "1. Размеры и объем",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "2. Энергоэффективность",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "3. Функциональность",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "4. Климат и шум",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "5. Бюджет",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "6. Дополнительно",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Типичные ошибки при выборе",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "1. Не учли размеры",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "2. Выбрали слишком большой объем",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "3. Сэкономили на энергоклассе",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "4. Не проверили отзывы",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "5. Купили модель без инверторного компрессора",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Рекомендации по моделям (2026)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Лучший бюджетный",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Лучший средний класс",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Лучший с умными функциями",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Лучший премиум",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Обслуживание и уход",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Правила эксплуатации",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Регулярное обслуживание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Ключевые моменты",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "Ссылки и источники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/household/articles/appliances",
+          "context": "См. также",
+          "type": "link"
+        }
+      ]
+    },
+    "knowledge/household/articles/appliances": {
+      "citation_count": 57,
+      "h_index": 0,
+      "cited_by": [
+        {
+          "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "context": "Краткое описание",
+          "type": "link"
+        }
+      ],
+      "cites": []
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "citation_count": 0,
+      "h_index": 0,
+      "cited_by": [],
+      "cites": [
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Краткое описание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Порождающие паттерны (Creational Patterns)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "1. Singleton (Одиночка)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "2. Factory Method (Фабричный метод)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "3. Builder (Строитель)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Структурные паттерны (Structural Patterns)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "4. Decorator (Декоратор)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "5. Adapter (Адаптер)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "6. Facade (Фасад)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Поведенческие паттерны (Behavioral Patterns)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "7. Observer (Наблюдатель)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "8. Strategy (Стратегия)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "9. Command (Команда)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Python-специфичные паттерны",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "10. Context Manager (Контекстный менеджер)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "11. Descriptor (Дескриптор)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Ключевые моменты",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "Ссылки и источники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/programming",
+          "context": "См. также",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "context": "Related article",
+          "type": "frontmatter"
+        }
+      ]
+    },
+    "knowledge/computers/articles/programming": {
+      "citation_count": 19,
+      "h_index": 0,
+      "cited_by": [
+        {
+          "article": "knowledge/computers/articles/programming/python-patterns.md",
+          "context": "Краткое описание",
+          "type": "link"
+        }
+      ],
+      "cites": []
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "citation_count": 1,
+      "h_index": 0,
+      "cited_by": [
+        {
+          "article": "knowledge/computers/articles/programming/python-patterns.md",
+          "context": "Related article",
+          "type": "frontmatter"
+        }
+      ],
+      "cites": [
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Краткое описание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Основные игроки на рынке LLM",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Коммерческие модели",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Claude (Anthropic)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "GPT-серия (OpenAI)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Gemini (Google)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Открытые модели",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "LLaMA 4 (Meta)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Mistral AI",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Qwen (Alibaba)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Ключевые характеристики современных LLM",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Размер контекста",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Мультимодальность",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Специализация",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Тенденции развития",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "1. Увеличение эффективности",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "2. Специализация",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "3. Агентные возможности",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "4. Безопасность и этика",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "5. Локальное развертывание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Практическое применение",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Разработка ПО",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Работа с текстом",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Анализ данных",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Персональные ассистенты",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Сравнительная таблица производительности",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Выбор модели для конкретных задач",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Для разработки ПО",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Для анализа больших документов",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Для локального развертывания",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Для бюджетных проектов",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Инструменты для работы с LLM",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "API клиенты",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Локальное развертывание",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Разработка и fine-tuning",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Будущие направления",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Краткосрочная перспектива (2026-2027)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Долгосрочная перспектива (2028+)",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Ключевые моменты",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "Ссылки и источники",
+          "type": "link"
+        },
+        {
+          "article": "knowledge/computers/articles/ai",
+          "context": "См. также",
+          "type": "link"
+        }
+      ]
+    },
+    "knowledge/computers/articles/ai": {
+      "citation_count": 41,
+      "h_index": 1,
+      "cited_by": [
+        {
+          "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "context": "Краткое описание",
+          "type": "link"
+        }
+      ],
+      "cites": []
+    }
+  }
+}
