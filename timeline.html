@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Timeline</title>
+    <style>
+        body { font-family: Arial; padding: 40px; background: #f5f5f5; }
+        .timeline { position: relative; max-width: 800px; margin: 0 auto; }
+        .timeline::before { content: ''; position: absolute; left: 50%; width: 2px;
+                            height: 100%; background: #ddd; }
+        .event { margin-bottom: 40px; position: relative; }
+        .event-content { background: white; padding: 20px; border-radius: 8px;
+                         box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 45%; }
+        .event:nth-child(odd) .event-content { margin-left: 0; }
+        .event:nth-child(even) .event-content { margin-left: 55%; }
+        .event-date { background: #3498db; color: white; padding: 5px 15px;
+                      border-radius: 20px; display: inline-block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">📅 Timeline</h1>
+    <div class="timeline">
+
+        <div class="event">
+            <div class="event-content">
+                <div class="event-date">02.01.2026</div>
+                <h3>Руководство по выбору холодильника в 2026 году</h3>
+                <p><a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Читать →</a></p>
+            </div>
+        </div>
+        <div class="event">
+            <div class="event-content">
+                <div class="event-date">02.01.2026</div>
+                <h3>Паттерны проектирования в Python</h3>
+                <p><a href="knowledge/computers/articles/programming/python-patterns.md">Читать →</a></p>
+            </div>
+        </div>
+        <div class="event">
+            <div class="event-content">
+                <div class="event-date">02.01.2026</div>
+                <h3>Обзор больших языковых моделей 2026 года</h3>
+                <p><a href="knowledge/computers/articles/ai/llm-overview-2026.md">Читать →</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,597 @@
+{
+  "entities": [
+    {
+      "name": "Описание:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Преимущества:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Недостатки:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Для кого:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Характеристики:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "A+++",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "A++",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "B, C, D",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Рекомендация:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Принцип работы:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Современный стандарт:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Нормы:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "SN (субнормальный):",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "N (нормальный):",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "ST (субтропический):",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "T (тропический):",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Универсальный выбор:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Назначение:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Типы:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Сухая зона",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Влажная зона",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Использование:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Технологии:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Эффект:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Возможности:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Протоколы:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Стоит ли переплачивать?",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Минусы:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Liebherr",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Miele",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Sub-Zero",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Smeg",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Bosch",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Siemens",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Samsung",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Electrolux",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Атлант",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Indesit",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Beko",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Candy",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Haier",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Hisense",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Проблема:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Решение:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Атлант ХМ 4425-009 ND",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Bosch KGN39VL17R",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "LG DoorCooling+ GC-B247SBDC",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Liebherr CBNPes 5758",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Расположение:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Температура:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Загрузка:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Раз в месяц:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Раз в 3 месяца:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Раз в 6 месяцев:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Раз в год:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md"
+      ]
+    },
+    {
+      "name": "Реализация через метакласс:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Когда использовать:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Реализация:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md",
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Декоратор класса:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Классическая реализация:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "С использованием contextlib:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/programming/python-patterns.md"
+      ]
+    },
+    {
+      "name": "Claude Opus 4.5",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Claude Sonnet 4.5",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Claude Haiku",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "GPT-5",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "GPT-4 Turbo",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Gemini Ultra",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Gemini Pro",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Короткий контекст:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Средний контекст:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Длинный контекст:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Экстра длинный:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Кодирование:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Математика:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Научные тексты:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "name": "Многоязычность:",
+      "type": "Concept",
+      "mentions": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1308 @@
+{
+  "total_terms": 209,
+  "total_references": 221,
+  "index": {
+    "1. Singleton (Одиночка)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "1. Не учли размеры": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "1. Однокамерные холодильники": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "1. Размеры и объем": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "1. Увеличение эффективности": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "10. Context Manager (Контекстный менеджер)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "11. Descriptor (Дескриптор)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "2. Factory Method (Фабричный метод)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "2. Выбрали слишком большой объем": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "2. Двухкамерные холодильники": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "2. Специализация": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "2. Энергоэффективность": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "3. Builder (Строитель)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "3. Side-by-Side (французская дверь)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "3. Агентные возможности": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "3. Сэкономили на энергоклассе": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "3. Функциональность": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "4. Decorator (Декоратор)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "4. French Door": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "4. Безопасность и этика": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "4. Климат и шум": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "4. Не проверили отзывы": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "5. Adapter (Адаптер)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "5. Бюджет": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "5. Встраиваемые холодильники": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "5. Купили модель без инверторного компрессора": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "5. Локальное развертывание": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "6. Facade (Фасад)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "6. Дополнительно": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "7. Observer (Наблюдатель)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "8. Strategy (Стратегия)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "9. Command (Команда)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "A++": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "A+++": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "AI": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "API клиенты": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "B, C, D": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Beko": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Bosch": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Bosch KGN39VL17R": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Candy": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Claude": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Claude (Anthropic)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Claude Haiku": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Claude Opus 4.5": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Claude Sonnet 4.5": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Electrolux": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "GPT": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "GPT-4 Turbo": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "GPT-5": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "GPT-серия (OpenAI)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Gemini (Google)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Gemini Pro": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Gemini Ultra": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Haier": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Hisense": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Indesit": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "LG DoorCooling+ GC-B247SBDC": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "LLM": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "LLaMA 4 (Meta)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Liebherr": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Liebherr CBNPes 5758": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Miele": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Mistral AI": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "N (нормальный):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "No Frost (Без инея)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Python": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Python-специфичные паттерны": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Qwen (Alibaba)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "SN (субнормальный):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "ST (субтропический):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Samsung": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Siemens": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Smeg": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Sub-Zero": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "T (тропический):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Wi-Fi и управление через приложение": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "best-practices": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Азиатские бренды": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Анализ данных": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Антибактериальное покрытие": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Атлант": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Атлант ХМ 4425-009 ND": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Будущие направления": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Бюджетный сегмент (20,000-40,000 руб)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Влажная зона": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Возможности:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Выбор модели для конкретных задач": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Два компрессора": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Декоратор класса:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Длинный контекст:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Для анализа больших документов": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Для бюджетных проектов": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Для кого:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Для локального развертывания": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Для разработки ПО": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Долгосрочная перспектива (2028+)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Дополнительные функции": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Загрузка:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Зона свежести (Fresh Zone)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Инверторный компрессор": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Инструменты для работы с LLM": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Использование:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Как рассчитать необходимый объем:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Камера внутри холодильника": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Капельная система (Плачущая стенка)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Классическая реализация:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Классы энергопотребления (2026):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Климатический класс": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Ключевые моменты": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Ключевые характеристики": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Ключевые характеристики современных LLM": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Когда использовать:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Кодирование:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Коммерческие модели": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Компрессор": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Короткий контекст:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Краткое описание": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Краткосрочная перспектива (2026-2027)": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Локальное развертывание": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Лучший бюджетный": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Лучший премиум": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Лучший с умными функциями": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Лучший средний класс": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Математика:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Минусы:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Многоязычность:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Мультимодальность": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Назначение:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Научные тексты:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Недостатки:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Нормы:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "ООП": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Обслуживание и уход": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Объем": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Один компрессор": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Описание:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Основные игроки на рынке LLM": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Открытые модели": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Персональные ассистенты": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Поведенческие паттерны (Behavioral Patterns)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Порождающие паттерны (Creational Patterns)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Правила эксплуатации": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Практическое применение": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Преимущества:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Премиум-сегмент (100,000+ руб)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Принцип работы:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Проблема:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Производители и бренды": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Протоколы:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Работа с текстом": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Раз в 3 месяца:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Раз в 6 месяцев:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Раз в год:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Раз в месяц:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Размер контекста": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Разработка ПО": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Разработка и fine-tuning": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Расположение:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Реализация через метакласс:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Реализация:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Регулярное обслуживание": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Рекомендации по моделям (2026)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Рекомендация:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Решение:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "С верхней морозильной камерой": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "С использованием contextlib:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "С нижней морозильной камерой": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Система размораживания": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "См. также": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Современная Python-идиома с dataclass:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Современная альтернатива - декоратор:": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Современный стандарт:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Специализация": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Сравнительная таблица производительности": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Средний контекст:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Средний сегмент (40,000-100,000 руб)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Ссылки и источники": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Стоит ли переплачивать?": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Структурные паттерны (Structural Patterns)": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "Суперзаморозка (Super Freeze)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Сухая зона": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Температура:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Тенденции развития": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Технологии:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Типичные ошибки при выборе": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Типы холодильников": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Типы:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Умные функции (Smart Home)": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Универсальный выбор:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Уровень шума": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Характеристики:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Чек-лист при выборе": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Экономия в год (холодильник 300л):": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Экстра длинный:": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "Энергоэффективность": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "Эффект:": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "архитектура": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "бытовая-техника": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "машинное-обучение": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "нейронные-сети": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "открытые-модели": [
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ],
+    "паттерны-проектирования": [
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      }
+    ],
+    "покупка": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "руководство": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "умный-дом": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "холодильник": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "энергоэффективность": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      }
+    ],
+    "📑 Содержание": [
+      {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году"
+      },
+      {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python"
+      },
+      {
+        "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года"
+      }
+    ]
+  }
+}
