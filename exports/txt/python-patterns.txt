@@ -1,0 +1,608 @@
+Паттерны проектирования в Python
+================================
+
+ Паттерны проектирования в Python
+
+ 📑 Содержание
+
+- Краткое описание
+- Порождающие паттерны 
+  - 1. Singleton 
+  - 2. Factory Method 
+  - 3. Builder 
+- Структурные паттерны 
+  - 4. Decorator 
+  - 5. Adapter 
+  - 6. Facade 
+- Поведенческие паттерны 
+  - 7. Observer 
+  - 8. Strategy 
+  - 9. Command 
+- Python-специфичные паттерны
+  - 10. Context Manager 
+  - 11. Descriptor 
+- Ключевые моменты
+- Ссылки и источники
+- См. также
+ Краткое описание
+Обзор основных паттернов проектирования и их реализация в Python. Рассматриваются классические паттерны Gang of Four  и современные Python-специфичные подходы.
+
+ Порождающие паттерны 
+
+ 1. Singleton 
+
+Назначение: Гарантировать, что у класса есть только один экземпляр, и предоставить глобальную точку доступа к нему.
+
+Реализация через метакласс:
+python
+class SingletonMeta:
+    _instances = {}
+
+    def __call__:
+        if cls not in cls._instances:
+            cls._instancescls = super().__call__
+        return cls._instancescls
+
+class DatabaseConnection:
+    def __init__:
+        self.connection = None
+
+    def connect:
+        if not self.connection:
+            self.connection = "Connected to DB"
+        return self.connection
+
+ Использование
+db1 = DatabaseConnection()
+db2 = DatabaseConnection()
+print   True
+
+
+Современная альтернатива - декоратор:
+python
+from functools import wraps
+
+def singleton:
+    instances = {}
+
+    @wraps
+    def get_instance:
+        if cls not in instances:
+            instancescls = cls
+        return instancescls
+
+    return get_instance
+
+@singleton
+class Config:
+    def __init__:
+        self.settings = {}
+
+
+Когда использовать:
+- Конфигурация приложения
+- Логгер
+- Пул соединений с БД
+- Кеш
+
+ 2. Factory Method 
+
+Назначение: Определить интерфейс для создания объекта, но оставить подклассам решение о том, какой класс инстанцировать.
+
+Реализация:
+python
+from abc import ABC, abstractmethod
+
+class Document:
+    @abstractmethod
+    def open:
+        pass
+
+class PDFDocument:
+    def open:
+        return "Opening PDF document"
+
+class WordDocument:
+    def open:
+        return "Opening Word document"
+
+class DocumentFactory:
+    @staticmethod
+    def create_document -> Document:
+        if doc_type == "pdf":
+            return PDFDocument()
+        elif doc_type == "word":
+            return WordDocument()
+        else:
+            raise ValueError
+
+ Использование
+factory = DocumentFactory()
+doc = factory.create_document
+print)
+
+
+Современная реализация с использованием dict:
+python
+class DocumentFactory:
+    _creators = {
+        "pdf": PDFDocument,
+        "word": WordDocument,
+    }
+
+    @classmethod
+    def register:
+        cls._creatorsname = creator
+
+    @classmethod
+    def create -> Document:
+        creator = cls._creators.get
+        if not creator:
+            raise ValueError
+        return creator()
+
+
+ 3. Builder 
+
+Назначение: Отделить конструирование сложного объекта от его представления.
+
+Реализация с использованием fluent interface:
+python
+class Pizza:
+    def __init__:
+        self.size = None
+        self.cheese = False
+        self.pepperoni = False
+        self.mushrooms = False
+
+    def __str__:
+        return f"Pizza"
+
+class PizzaBuilder:
+    def __init__:
+        self.pizza = Pizza()
+
+    def set_size:
+        self.pizza.size = size
+        return self
+
+    def add_cheese:
+        self.pizza.cheese = True
+        return self
+
+    def add_pepperoni:
+        self.pizza.pepperoni = True
+        return self
+
+    def add_mushrooms:
+        self.pizza.mushrooms = True
+        return self
+
+    def build -> Pizza:
+        return self.pizza
+
+ Использование
+pizza = 
+         .set_size
+         .add_cheese()
+         .add_pepperoni()
+         .build())
+
+
+Современная Python-идиома с dataclass:
+python
+from dataclasses import dataclass, field
+from typing import List
+
+@dataclass
+class Pizza:
+    size: str
+    toppings: Liststr = field
+
+    def add_topping:
+        self.toppings.append
+        return self
+
+ Использование
+pizza = Pizza.add_topping.add_topping
+
+
+ Структурные паттерны 
+
+ 4. Decorator 
+
+Назначение: Динамически добавлять объекту новые обязанности.
+
+Python декораторы - нативная поддержка паттерна:
+python
+import time
+from functools import wraps
+
+def timing_decorator:
+    @wraps
+    def wrapper:
+        start = time.time()
+        result = func
+        end = time.time()
+        print
+        return result
+    return wrapper
+
+def cache_decorator:
+    cache = {}
+
+    @wraps
+    def wrapper:
+        if args not in cache:
+            cacheargs = func
+        return cacheargs
+    return wrapper
+
+@timing_decorator
+@cache_decorator
+def fibonacci:
+    if n < 2:
+        return n
+    return fibonacci + fibonacci
+
+
+Декоратор класса:
+python
+def add_logging:
+    original_init = cls.__init__
+
+    def new_init:
+        print
+        original_init
+
+    cls.__init__ = new_init
+    return cls
+
+@add_logging
+class MyClass:
+    def __init__:
+        self.value = value
+
+
+ 5. Adapter 
+
+Назначение: Преобразовать интерфейс класса к другому интерфейсу, ожидаемому клиентами.
+
+Реализация:
+python
+class EuropeanSocket:
+    def provide_220v:
+        return 220
+
+class USASocket:
+    def provide_110v:
+        return 110
+
+class SocketAdapter:
+    def __init__:
+        self.socket = socket
+
+    def provide_220v:
+        if hasattr:
+            return self.socket.provide_220v()
+        elif hasattr:
+            return self.socket.provide_110v()  2
+        else:
+            raise ValueError
+
+ Использование
+usa_socket = USASocket()
+adapter = SocketAdapter
+print)   220
+
+
+ 6. Facade 
+
+Назначение: Предоставить унифицированный интерфейс к набору интерфейсов подсистемы.
+
+Реализация:
+python
+class CPU:
+    def freeze:
+        print
+
+    def jump:
+        print
+
+    def execute:
+        print
+
+class Memory:
+    def load:
+        print
+
+class HardDrive:
+    def read:
+        return f"Data from sector {lba}"
+
+class ComputerFacade:
+    def __init__:
+        self.cpu = CPU()
+        self.memory = Memory()
+        self.hard_drive = HardDrive()
+
+    def start:
+        self.cpu.freeze()
+        boot_data = self.hard_drive.read
+        self.memory.load
+        self.cpu.jump
+        self.cpu.execute()
+
+ Использование - простой интерфейс
+computer = ComputerFacade()
+computer.start()
+
+
+ Поведенческие паттерны 
+
+ 7. Observer 
+
+Назначение: Определить зависимость один-ко-многим между объектами так, что при изменении состояния одного объекта все зависящие от него оповещаются об этом.
+
+Реализация:
+python
+from abc import ABC, abstractmethod
+from typing import List
+
+class Observer:
+    @abstractmethod
+    def update:
+        pass
+
+class Subject:
+    def __init__:
+        self._observers: ListObserver = 
+
+    def attach:
+        self._observers.append
+
+    def detach:
+        self._observers.remove
+
+    def notify:
+        for observer in self._observers:
+            observer.update
+
+class EmailNotifier:
+    def update:
+        print
+
+class SMSNotifier:
+    def update:
+        print
+
+class NewsPublisher:
+    def publish_news:
+        print
+        self.notify
+
+ Использование
+publisher = NewsPublisher()
+publisher.attach)
+publisher.attach)
+publisher.publish_news
+
+
+ 8. Strategy 
+
+Назначение: Определить семейство алгоритмов, инкапсулировать каждый и сделать их взаимозаменяемыми.
+
+Классическая реализация:
+python
+from abc import ABC, abstractmethod
+
+class SortStrategy:
+    @abstractmethod
+    def sort -> list:
+        pass
+
+class QuickSort:
+    def sort -> list:
+        print
+        return sorted   упрощенно
+
+class MergeSort:
+    def sort -> list:
+        print
+        return sorted   упрощенно
+
+class Sorter:
+    def __init__:
+        self._strategy = strategy
+
+    def set_strategy:
+        self._strategy = strategy
+
+    def sort -> list:
+        return self._strategy.sort
+
+ Использование
+sorter = Sorter)
+result = sorter.sort
+
+
+Python-идиоматическая реализация :
+python
+def quick_sort -> list:
+    print
+    return sorted
+
+def merge_sort -> list:
+    print
+    return sorted
+
+class Sorter:
+    def __init__:
+        self.strategy = strategy
+
+    def sort -> list:
+        return self.strategy
+
+ Использование
+sorter = Sorter
+result = sorter.sort
+
+
+ 9. Command 
+
+Назначение: Инкапсулировать запрос как объект, позволяя параметризовать клиентов с различными запросами, ставить запросы в очередь, логировать их и поддерживать отмену операций.
+
+Реализация:
+python
+from abc import ABC, abstractmethod
+from typing import List
+
+class Command:
+    @abstractmethod
+    def execute:
+        pass
+
+    @abstractmethod
+    def undo:
+        pass
+
+class Light:
+    def on:
+        print
+
+    def off:
+        print
+
+class LightOnCommand:
+    def __init__:
+        self.light = light
+
+    def execute:
+        self.light.on()
+
+    def undo:
+        self.light.off()
+
+class LightOffCommand:
+    def __init__:
+        self.light = light
+
+    def execute:
+        self.light.off()
+
+    def undo:
+        self.light.on()
+
+class RemoteControl:
+    def __init__:
+        self.history: ListCommand = 
+
+    def execute_command:
+        command.execute()
+        self.history.append
+
+    def undo_last:
+        if self.history:
+            command = self.history.pop()
+            command.undo()
+
+ Использование
+light = Light()
+remote = RemoteControl()
+
+remote.execute_command)
+remote.execute_command)
+remote.undo_last()   Light is ON
+
+
+ Python-специфичные паттерны
+
+ 10. Context Manager 
+
+Использование протокола __enter__ и __exit__:
+python
+class DatabaseConnection:
+    def __init__:
+        self.connection_string = connection_string
+        self.connection = None
+
+    def __enter__:
+        print
+        self.connection = "Connected"
+        return self
+
+    def __exit__:
+        print
+        self.connection = None
+        return False   не подавлять исключения
+
+ Использование
+with DatabaseConnection as db:
+    print
+
+
+С использованием contextlib:
+python
+from contextlib import contextmanager
+
+@contextmanager
+def database_connection:
+    print
+    connection = "Connected"
+    try:
+        yield connection
+    finally:
+        print
+
+ Использование
+with database_connection as db:
+    print
+
+
+ 11. Descriptor 
+
+Для валидации и контроля доступа к атрибутам:
+python
+class PositiveNumber:
+    def __init__:
+        self.name = name
+
+    def __get__:
+        if instance is None:
+            return self
+        return instance.__dict__.get
+
+    def __set__:
+        if value < 0:
+            raise ValueError
+        instance.__dict__self.name = value
+
+class BankAccount:
+    balance = PositiveNumber
+
+    def __init__:
+        self.balance = initial_balance
+
+ Использование
+account = BankAccount
+print   100
+ account.balance = -50   ValueError
+
+
+ Ключевые моменты
+- Python поддерживает паттерны на уровне языка 
+- Не все GoF паттерны нужны в Python - язык уже предоставляет более простые решения
+- Используйте паттерны для решения реальных проблем, а не ради самих паттернов
+- Современный Python предпочитает композицию наследованию
+- Функции первого класса упрощают многие поведенческие паттерны
+
+ Ссылки и источники
+1. Python Design Patterns - RefactoringGuru
+2. Design Patterns in Python - GitHub
+3. Fluent Python by Luciano Ramalho
+
+ См. также
+- python-best-practices - Лучшие практики Python
+- clean-code-python - Чистый код на Python
+- async-patterns-python - Асинхронные паттерны
+- testing-patterns - Паттерны тестирования

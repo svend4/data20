@@ -1,0 +1,62 @@
+[
+  {
+    "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+    "valid": false,
+    "errors": [
+      "date: Неверный тип (ожидается str)",
+      "difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)"
+    ],
+    "warnings": [
+      "Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade"
+    ],
+    "missing_fields": [],
+    "invalid_fields": {
+      "date": [
+        "Неверный тип (ожидается str)"
+      ],
+      "difficulty": [
+        "Недопустимое значение (разрешены: легкий, средний, сложный)"
+      ]
+    }
+  },
+  {
+    "path": "knowledge/computers/articles/programming/python-patterns.md",
+    "valid": false,
+    "errors": [
+      "date: Неверный тип (ожидается str)",
+      "difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)"
+    ],
+    "warnings": [
+      "Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, code_lines, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade"
+    ],
+    "missing_fields": [],
+    "invalid_fields": {
+      "date": [
+        "Неверный тип (ожидается str)"
+      ],
+      "difficulty": [
+        "Недопустимое значение (разрешены: легкий, средний, сложный)"
+      ]
+    }
+  },
+  {
+    "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+    "valid": false,
+    "errors": [
+      "date: Неверный тип (ожидается str)",
+      "difficulty: Недопустимое значение (разрешены: легкий, средний, сложный)"
+    ],
+    "warnings": [
+      "Дополнительные поля: difficulty_score, pagerank_inlinks, reading_time_minutes, pagerank_outlinks, status, reading_time, quality_score, pagerank, quality_metrics, word_count, quality_grade"
+    ],
+    "missing_fields": [],
+    "invalid_fields": {
+      "date": [
+        "Неверный тип (ожидается str)"
+      ],
+      "difficulty": [
+        "Недопустимое значение (разрешены: легкий, средний, сложный)"
+      ]
+    }
+  }
+]
