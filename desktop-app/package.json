@@ -1,0 +1,76 @@
+{
+  "name": "data20-desktop",
+  "version": "1.0.0",
+  "description": "Data20 Knowledge Base - Desktop Application",
+  "main": "electron/main.js",
+  "author": "Data20 Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:react\" \"npm run dev:electron\"",
+    "dev:react": "cd ../webapp-react && npm run dev",
+    "dev:electron": "wait-on http://localhost:3000 && electron .",
+    "build": "npm run build:react && npm run build:electron",
+    "build:react": "cd ../webapp-react && npm run build && cp -r dist ../desktop-app/build/",
+    "build:electron": "electron-builder",
+    "build:all": "npm run build:react && electron-builder -mwl",
+    "build:mac": "npm run build:react && electron-builder --mac",
+    "build:win": "npm run build:react && electron-builder --win",
+    "build:linux": "npm run build:react && electron-builder --linux",
+    "package": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.data20.knowledgebase",
+    "productName": "Data20 Knowledge Base",
+    "copyright": "Copyright © 2026 Data20 Team",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "build/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Development",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
