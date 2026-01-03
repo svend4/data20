@@ -1,0 +1,21 @@
+# FastAPI Backend Dependencies
+# Для запуска API: pip install -r api/requirements.txt
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# CORS
+fastapi-cors==0.0.6
+
+# Data
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# Optional (для расширенной функциональности)
+# Раскомментировать при необходимости:
+# aiofiles==23.2.1        # Асинхронная работа с файлами
+# redis==5.0.1            # Кэширование
+# sqlalchemy==2.0.25      # База данных
+# alembic==1.13.1         # Миграции БД
