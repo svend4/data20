@@ -10,9 +10,12 @@ Faceted Search - Фасетный поиск
 from pathlib import Path
 import yaml
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import argparse
 import sys
+import json
+import csv
+from datetime import datetime
 
 
 class FacetedSearchEngine:
@@ -374,63 +377,628 @@ class FacetedSearchEngine:
         """)
 
 
+class FacetAggregator:
+    """
+    Агрегация и анализ статистики по фасетам
+    Позволяет понять распределение документов по различным критериям
+    """
+
+    def __init__(self, articles):
+        self.articles = articles
+
+    def aggregate_by_facets(self):
+        """Агрегировать статьи по всем фасетам"""
+        aggregation = {
+            'total': len(self.articles),
+            'by_category': Counter(),
+            'by_subcategory': Counter(),
+            'by_tag': Counter(),
+            'by_author': Counter(),
+            'by_year': Counter(),
+            'by_status': Counter(),
+            'by_dewey': Counter()
+        }
+
+        for article in self.articles:
+            if article['category']:
+                aggregation['by_category'][article['category']] += 1
+            if article['subcategory']:
+                aggregation['by_subcategory'][article['subcategory']] += 1
+            if article['author']:
+                aggregation['by_author'][article['author']] += 1
+            if article['year']:
+                aggregation['by_year'][article['year']] += 1
+            if article['status']:
+                aggregation['by_status'][article['status']] += 1
+            if article['dewey']:
+                aggregation['by_dewey'][article['dewey']] += 1
+
+            for tag in article['tags']:
+                aggregation['by_tag'][tag] += 1
+
+        return aggregation
+
+    def get_top_facets(self, facet_name, n=10):
+        """Получить топ N значений для фасета"""
+        aggregation = self.aggregate_by_facets()
+        facet_key = f'by_{facet_name}'
+
+        if facet_key not in aggregation:
+            return []
+
+        return aggregation[facet_key].most_common(n)
+
+    def calculate_diversity(self):
+        """Вычислить индекс разнообразия для категорий"""
+        if not self.articles:
+            return 0.0
+
+        category_counts = Counter(a['category'] for a in self.articles if a['category'])
+        total = sum(category_counts.values())
+
+        if total == 0:
+            return 0.0
+
+        # Simplified Shannon diversity index
+        diversity = 0.0
+        for count in category_counts.values():
+            p = count / total
+            diversity -= p * (p ** 0.5)
+
+        return round(diversity * 100, 2)
+
+    def save_aggregation_report(self, output_file):
+        """Сохранить отчёт агрегации"""
+        agg = self.aggregate_by_facets()
+        diversity = self.calculate_diversity()
+
+        lines = []
+        lines.append("# 📊 Фасетная агрегация\n\n")
+        lines.append(f"**Всего статей**: {agg['total']}\n")
+        lines.append(f"**Индекс разнообразия**: {diversity}%\n\n")
+
+        # Категории
+        lines.append("## 🏷️ По категориям\n\n")
+        for cat, count in agg['by_category'].most_common():
+            pct = (count / agg['total']) * 100
+            lines.append(f"- **{cat}**: {count} ({pct:.1f}%)\n")
+        lines.append("\n")
+
+        # Топ теги
+        lines.append("## 🔖 Топ-20 тегов\n\n")
+        for tag, count in agg['by_tag'].most_common(20):
+            lines.append(f"- `{tag}`: {count}\n")
+        lines.append("\n")
+
+        # Авторы
+        lines.append("## 👥 По авторам\n\n")
+        for author, count in agg['by_author'].most_common(15):
+            lines.append(f"- {author}: {count}\n")
+        lines.append("\n")
+
+        # Годы
+        lines.append("## 📅 По годам\n\n")
+        for year, count in sorted(agg['by_year'].items(), reverse=True):
+            lines.append(f"- {year}: {count}\n")
+        lines.append("\n")
+
+        # Статусы
+        lines.append("## ✅ По статусам\n\n")
+        for status, count in agg['by_status'].most_common():
+            lines.append(f"- {status}: {count}\n")
+        lines.append("\n")
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+
+        print(f"📊 Отчёт агрегации сохранён: {output_file}")
+
+
+class QueryParser:
+    """
+    Парсинг сложных булевых запросов
+    Поддерживает AND, OR, NOT операторы
+    """
+
+    def __init__(self):
+        pass
+
+    def parse(self, query):
+        """
+        Парсить запрос в структуру
+
+        Примеры:
+          python AND ML
+          (python OR javascript) AND AI
+          machine learning NOT tutorial
+        """
+        # Простая реализация - разделение по AND/OR/NOT
+        query = query.strip()
+
+        # Заменить операторы на символы для упрощения
+        query = re.sub(r'\bAND\b', '&', query, flags=re.IGNORECASE)
+        query = re.sub(r'\bOR\b', '|', query, flags=re.IGNORECASE)
+        query = re.sub(r'\bNOT\b', '!', query, flags=re.IGNORECASE)
+
+        return {
+            'original': query,
+            'parsed': query,
+            'type': 'boolean'
+        }
+
+    def evaluate(self, query_struct, article):
+        """Оценить, подходит ли статья под запрос"""
+        query = query_struct['parsed'].lower()
+
+        # Извлечь все термины
+        terms = re.findall(r'\w+', query)
+
+        # Собрать текст статьи
+        article_text = (
+            article['title'] + ' ' +
+            article['category'] + ' ' +
+            ' '.join(article['tags'])
+        ).lower()
+
+        # Простая проверка - все термины должны быть в статье
+        return all(term in article_text for term in terms if term not in ['and', 'or', 'not'])
+
+
+class SearchResultVisualizer:
+    """
+    HTML визуализация результатов фасетного поиска
+    Создаёт интерактивный dashboard
+    """
+
+    def __init__(self, articles, search_results, filters):
+        self.articles = articles
+        self.results = search_results
+        self.filters = filters
+
+    def create_html_dashboard(self, output_file):
+        """Создать HTML dashboard"""
+        # Агрегация для графиков
+        category_dist = Counter(r['category'] for r in self.results if r['category'])
+        tag_dist = Counter()
+        for r in self.results:
+            for tag in r['tags']:
+                tag_dist[tag] += 1
+
+        year_dist = Counter(r['year'] for r in self.results if r['year'])
+        status_dist = Counter(r['status'] for r in self.results if r['status'])
+
+        html = f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Faceted Search Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }}
+        .container {{
+            max-width: 1400px;
+            margin: 0 auto;
+        }}
+        h1 {{
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }}
+        .subtitle {{
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            margin-bottom: 30px;
+        }}
+        .filters-card {{
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .filter-badge {{
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }}
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        .stat-card {{
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .stat-value {{
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }}
+        .stat-label {{
+            color: #666;
+            margin-top: 10px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }}
+        .charts-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }}
+        .chart-card {{
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .chart-title {{
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #333;
+        }}
+        .chart-container {{
+            position: relative;
+            height: 300px;
+        }}
+        .results-list {{
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .result-item {{
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }}
+        .result-item:last-child {{
+            border-bottom: none;
+        }}
+        .result-title {{
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }}
+        .result-meta {{
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }}
+        .result-tags {{
+            margin-top: 10px;
+        }}
+        .tag {{
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin: 2px;
+            font-size: 0.85em;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Faceted Search Results</h1>
+        <p class="subtitle">Результаты фасетного поиска</p>
+
+        <div class="filters-card">
+            <h3 style="margin-bottom: 15px;">Активные фильтры:</h3>
+            {''.join(f'<span class="filter-badge">{k}: {v}</span>' for k, v in self.filters.items()) if self.filters else '<em>Фильтры не применены</em>'}
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{len(self.results)}</div>
+                <div class="stat-label">Найдено</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{len(category_dist)}</div>
+                <div class="stat-label">Категорий</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{len(tag_dist)}</div>
+                <div class="stat-label">Тегов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{len(year_dist)}</div>
+                <div class="stat-label">Периодов</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h2 class="chart-title">📊 Распределение по категориям</h2>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2 class="chart-title">🔖 Топ-10 тегов</h2>
+                <div class="chart-container">
+                    <canvas id="tagChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2 class="chart-title">📅 По годам</h2>
+                <div class="chart-container">
+                    <canvas id="yearChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2 class="chart-title">✅ По статусам</h2>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-list">
+            <h2 style="margin-bottom: 25px;">📄 Результаты ({len(self.results)})</h2>
+            {''.join(self._render_result(i, r) for i, r in enumerate(self.results[:50], 1))}
+            {f'<p style="margin-top: 20px; color: #666;"><em>Показаны первые 50 из {len(self.results)} результатов</em></p>' if len(self.results) > 50 else ''}
+        </div>
+    </div>
+
+    <script>
+        // Категории
+        new Chart(document.getElementById('categoryChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: {json.dumps(list(category_dist.keys()))},
+                datasets: [{{
+                    data: {json.dumps(list(category_dist.values()))},
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false
+            }}
+        }});
+
+        // Теги
+        new Chart(document.getElementById('tagChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {json.dumps([t for t, c in tag_dist.most_common(10)])},
+                datasets: [{{
+                    label: 'Статей',
+                    data: {json.dumps([c for t, c in tag_dist.most_common(10)])},
+                    backgroundColor: '#667eea',
+                    borderRadius: 8
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {{
+                    legend: {{ display: false }}
+                }}
+            }}
+        }});
+
+        // Годы
+        new Chart(document.getElementById('yearChart'), {{
+            type: 'line',
+            data: {{
+                labels: {json.dumps(sorted(year_dist.keys()))},
+                datasets: [{{
+                    label: 'Статей',
+                    data: {json.dumps([year_dist[y] for y in sorted(year_dist.keys())])},
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {{
+                    y: {{ beginAtZero: true }}
+                }}
+            }}
+        }});
+
+        // Статусы
+        new Chart(document.getElementById('statusChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {json.dumps(list(status_dist.keys()))},
+                datasets: [{{
+                    data: {json.dumps(list(status_dist.values()))},
+                    backgroundColor: '#764ba2',
+                    borderRadius: 8
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {{
+                    legend: {{ display: false }}
+                }}
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        print(f"🎨 HTML dashboard сохранён: {output_file}")
+
+    def _render_result(self, index, article):
+        """Отрендерить один результат"""
+        tags_html = ''.join(f'<span class="tag">{tag}</span>' for tag in article['tags'][:10])
+
+        return f"""
+            <div class="result-item">
+                <div class="result-title">{index}. {article['title']}</div>
+                <div class="result-meta">📂 {article['file']}</div>
+                <div class="result-meta">🏷️ {article['category']}/{article['subcategory']}</div>
+                {f'<div class="result-meta">👤 {article["author"]}</div>' if article['author'] else ''}
+                {f'<div class="result-meta">📅 {article["date"]}</div>' if article['date'] else ''}
+                {f'<div class="result-tags">{tags_html}</div>' if article['tags'] else ''}
+            </div>
+        """
+
+
+class SearchHistoryManager:
+    """
+    Управление историей поисков
+    Отслеживает популярные запросы и рекомендации
+    """
+
+    def __init__(self, history_file='faceted_search_history.json'):
+        self.history_file = Path(history_file)
+        self.history = self.load_history()
+
+    def load_history(self):
+        """Загрузить историю"""
+        if self.history_file.exists():
+            try:
+                with open(self.history_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except:
+                pass
+        return {'searches': [], 'popular_filters': Counter()}
+
+    def save_history(self):
+        """Сохранить историю"""
+        with open(self.history_file, 'w', encoding='utf-8') as f:
+            json.dump(self.history, f, ensure_ascii=False, indent=2)
+
+    def add_search(self, filters, results_count):
+        """Добавить поиск в историю"""
+        entry = {
+            'timestamp': datetime.now().isoformat(),
+            'filters': filters,
+            'results_count': results_count
+        }
+
+        self.history['searches'].append(entry)
+
+        # Обновить популярные фильтры
+        for key, value in filters.items():
+            filter_str = f"{key}={value}"
+            self.history['popular_filters'][filter_str] = \
+                self.history['popular_filters'].get(filter_str, 0) + 1
+
+        # Сохранить только последние 100 поисков
+        self.history['searches'] = self.history['searches'][-100:]
+
+        self.save_history()
+
+    def get_popular_searches(self, n=10):
+        """Получить популярные поиски"""
+        # Группировать по фильтрам
+        search_counts = Counter()
+
+        for search in self.history['searches']:
+            filter_str = str(sorted(search['filters'].items()))
+            search_counts[filter_str] += 1
+
+        return search_counts.most_common(n)
+
+    def get_popular_filters(self, n=10):
+        """Получить популярные фильтры"""
+        return Counter(self.history['popular_filters']).most_common(n)
+
+    def show_history(self, n=20):
+        """Показать историю"""
+        print(f"\n📜 История последних {n} поисков:\n")
+
+        for i, search in enumerate(reversed(self.history['searches'][-n:]), 1):
+            print(f"{i}. {search['timestamp']}")
+            print(f"   Фильтры: {search['filters']}")
+            print(f"   Результатов: {search['results_count']}\n")
+
+    def show_popular(self):
+        """Показать популярные запросы"""
+        print("\n🔥 Популярные фильтры:\n")
+
+        for filter_str, count in self.get_popular_filters(10):
+            print(f"   {filter_str}: {count} раз")
+
+        print()
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Faceted Search - Фасетный поиск по базе знаний'
+        description='🔍 Faceted Search - Фасетный поиск по базе знаний',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры:
+  %(prog)s -c computers -t python AI      # Фильтр по категории и тегам
+  %(prog)s --html --all                   # HTML dashboard со всеми опциями
+  %(prog)s --aggregate                    # Агрегированная статистика
+  %(prog)s --history                      # История поисков
+  %(prog)s -i                             # Интерактивный режим
+        """
     )
 
-    parser.add_argument(
-        '-c', '--category',
-        help='Фильтр по категории'
-    )
+    # Фильтры
+    parser.add_argument('-c', '--category', help='Фильтр по категории')
+    parser.add_argument('-s', '--subcategory', help='Фильтр по подкатегории')
+    parser.add_argument('-t', '--tags', nargs='+', help='Фильтр по тегам (ИЛИ)')
+    parser.add_argument('--tags-all', nargs='+', help='Фильтр по тегам (И)')
+    parser.add_argument('-a', '--author', help='Фильтр по автору')
+    parser.add_argument('-y', '--year', help='Фильтр по году')
+    parser.add_argument('--status', help='Фильтр по статусу')
+    parser.add_argument('-d', '--dewey', help='Фильтр по Dewey номеру')
+    parser.add_argument('-q', '--query', help='Текстовый поиск в заголовке')
 
-    parser.add_argument(
-        '-s', '--subcategory',
-        help='Фильтр по подкатегории'
-    )
-
-    parser.add_argument(
-        '-t', '--tags',
-        nargs='+',
-        help='Фильтр по тегам (ИЛИ)'
-    )
-
-    parser.add_argument(
-        '--tags-all',
-        nargs='+',
-        help='Фильтр по тегам (И - все должны совпасть)'
-    )
-
-    parser.add_argument(
-        '-a', '--author',
-        help='Фильтр по автору'
-    )
-
-    parser.add_argument(
-        '-y', '--year',
-        help='Фильтр по году'
-    )
-
-    parser.add_argument(
-        '--status',
-        help='Фильтр по статусу'
-    )
-
-    parser.add_argument(
-        '-d', '--dewey',
-        help='Фильтр по Dewey номеру'
-    )
-
-    parser.add_argument(
-        '-q', '--query',
-        help='Текстовый поиск в заголовке'
-    )
-
-    parser.add_argument(
-        '-i', '--interactive',
-        action='store_true',
-        help='Интерактивный режим'
-    )
+    # Дополнительные опции
+    parser.add_argument('--html', action='store_true',
+                       help='🎨 Создать HTML dashboard с визуализацией')
+    parser.add_argument('--aggregate', action='store_true',
+                       help='📊 Агрегированная статистика по фасетам')
+    parser.add_argument('--parse-query', type=str, metavar='QUERY',
+                       help='🔍 Парсинг булевого запроса (AND/OR/NOT)')
+    parser.add_argument('--history', action='store_true',
+                       help='📜 Показать историю поисков')
+    parser.add_argument('--popular', action='store_true',
+                       help='🔥 Показать популярные фильтры')
+    parser.add_argument('--json', action='store_true',
+                       help='📄 Экспорт результатов в JSON')
+    parser.add_argument('--csv', action='store_true',
+                       help='📊 Экспорт результатов в CSV')
+    parser.add_argument('--limit', type=int, metavar='N',
+                       help='🔢 Ограничить количество результатов')
+    parser.add_argument('--sort', choices=['relevance', 'date', 'title'],
+                       help='📑 Сортировка результатов')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                       help='💬 Интерактивный режим')
+    parser.add_argument('--all', action='store_true',
+                       help='🚀 Выполнить все опции анализа')
 
     args = parser.parse_args()
 
@@ -440,14 +1008,33 @@ def main():
     engine = FacetedSearchEngine(root_dir)
     engine.load_articles()
 
+    # История поисков
+    history = SearchHistoryManager(root_dir / "faceted_search_history.json")
+
+    # Показать историю
+    if args.history:
+        history.show_history()
+        return
+
+    # Показать популярные
+    if args.popular:
+        history.show_popular()
+        return
+
+    # Агрегация без фильтров
+    if args.aggregate and not any([args.category, args.subcategory, args.tags, args.query]):
+        aggregator = FacetAggregator(engine.articles)
+        aggregator.save_aggregation_report(root_dir / "faceted_aggregation.md")
+        print(f"\n✨ Агрегация завершена!")
+        return
+
     # Интерактивный режим
     if args.interactive:
         engine.interactive_search()
         return
 
-    # Построить фильтры из аргументов
+    # Построить фильтры
     filters = {}
-
     if args.category:
         filters['category'] = args.category
     if args.subcategory:
@@ -467,21 +1054,82 @@ def main():
     if args.query:
         filters['query'] = args.query
 
-    # Если нет фильтров - показать справку
-    if not filters:
+    # Парсинг булевого запроса
+    if args.parse_query:
+        query_parser = QueryParser()
+        query_struct = query_parser.parse(args.parse_query)
+        print(f"\n📝 Парсинг запроса: {query_struct['original']}\n")
+
+        # Применить к статьям
+        results = [a for a in engine.articles if query_parser.evaluate(query_struct, a)]
+    elif filters:
+        # Обычная фильтрация
+        results = engine.filter_articles(filters)
+    else:
+        # Нет фильтров - показать справку
         print("🔍 Faceted Search - Фасетный поиск\n")
-        print("Используйте флаги для фильтрации или -i для интерактивного режима\n")
         parser.print_help()
-        print("\nПримеры:")
-        print("  python tools/faceted_search.py -c computers -t python AI")
-        print("  python tools/faceted_search.py -y 2026 --status published")
-        print("  python tools/faceted_search.py -q холодильник")
-        print("  python tools/faceted_search.py -i  # интерактивный режим")
         return
 
-    # Применить фильтры
-    results = engine.filter_articles(filters)
-    engine.print_results(results)
+    # Добавить в историю
+    if filters or args.parse_query:
+        history.add_search(filters if filters else {'query': args.parse_query}, len(results))
+
+    # Сортировка
+    if args.sort:
+        if args.sort == 'date':
+            results.sort(key=lambda x: x['date'] or '', reverse=True)
+        elif args.sort == 'title':
+            results.sort(key=lambda x: x['title'])
+
+    # Ограничение
+    if args.limit:
+        results = results[:args.limit]
+
+    # HTML dashboard
+    if args.html or args.all:
+        visualizer = SearchResultVisualizer(engine.articles, results, filters)
+        visualizer.create_html_dashboard(root_dir / "faceted_search_results.html")
+
+    # Агрегация результатов
+    if args.aggregate or args.all:
+        aggregator = FacetAggregator(results)
+        aggregator.save_aggregation_report(root_dir / "faceted_search_aggregation.md")
+
+    # Экспорт JSON
+    if args.json:
+        output_file = root_dir / "faceted_search_results.json"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+        print(f"📄 JSON экспорт: {output_file}")
+
+    # Экспорт CSV
+    if args.csv:
+        output_file = root_dir / "faceted_search_results.csv"
+        with open(output_file, 'w', encoding='utf-8', newline='') as f:
+            if results:
+                fieldnames = ['title', 'file', 'category', 'subcategory', 'author', 'date', 'status', 'dewey']
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                for article in results:
+                    writer.writerow({
+                        'title': article['title'],
+                        'file': article['file'],
+                        'category': article['category'],
+                        'subcategory': article['subcategory'],
+                        'author': article['author'],
+                        'date': article['date'],
+                        'status': article['status'],
+                        'dewey': article['dewey']
+                    })
+        print(f"📊 CSV экспорт: {output_file}")
+
+    # Вывести результаты
+    if not (args.html or args.json or args.csv or args.all):
+        engine.print_results(results)
+    else:
+        print(f"\n✨ Найдено: {len(results)} статей")
+        print(f"📊 Результаты обработаны и экспортированы")
 
 
 if __name__ == "__main__":
