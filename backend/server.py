@@ -147,8 +147,8 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth + User Management",
-    version="5.2.2"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth + Job Ownership",
+    version="5.2.3"
 )
 
 # Logging middleware (first!)
@@ -243,7 +243,7 @@ async def startup_event():
             logger.info("registry_cached", ttl_seconds=3600)
 
     # Initialize Prometheus metrics
-    init_metrics(app_version="5.2.2", environment=os.getenv("ENVIRONMENT", "production"))
+    init_metrics(app_version="5.2.3", environment=os.getenv("ENVIRONMENT", "production"))
     logger.info("prometheus_initialized")
 
     # Log startup summary
@@ -302,7 +302,7 @@ async def root():
     """Корневой endpoint"""
     return {
         "name": "Data20 Knowledge Base API",
-        "version": "5.2.2",
+        "version": "5.2.3",
         "status": "running",
         "total_tools": len(registry.tools),
         "docs": "/docs",
@@ -1045,15 +1045,32 @@ async def run_tool(
 async def get_all_jobs(
     limit: int = 100,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    """Получить все задачи (из памяти + БД)"""
+    """
+    Get all jobs (from memory + database)
+
+    Authorization:
+    - Admin: sees all jobs
+    - User: sees only their own jobs
+    - Anonymous: sees only anonymous jobs
+    """
 
     all_jobs = []
+
+    # Determine user filter
+    is_admin = current_user and current_user.role == UserRole.ADMIN
+    user_filter = str(current_user.id) if current_user else None
 
     # 1. Получить задачи из памяти (текущие)
     memory_jobs = runner.get_all_jobs()
     for j in memory_jobs:
+        # Skip if job doesn't belong to current user (unless admin)
+        if not is_admin and hasattr(j, 'user_id'):
+            if j.user_id != user_filter:
+                continue
+
         all_jobs.append({
             "job_id": j.job_id,
             "tool_name": j.tool_name,
@@ -1067,7 +1084,18 @@ async def get_all_jobs(
 
     # 2. Получить задачи из БД (исторические)
     try:
-        db_jobs = db.query(DBJob)\
+        # Build query with ownership filter
+        query = db.query(DBJob)
+
+        if not is_admin:
+            # Non-admin users see only their own jobs
+            if current_user:
+                query = query.filter(DBJob.user_id == str(current_user.id))
+            else:
+                # Anonymous users see only anonymous jobs
+                query = query.filter(DBJob.user_id == None)
+
+        db_jobs = query\
             .order_by(DBJob.created_at.desc())\
             .limit(limit)\
             .offset(offset)\
@@ -1089,7 +1117,7 @@ async def get_all_jobs(
                     "source": "database"
                 })
     except Exception as e:
-        print(f"⚠️  Failed to fetch jobs from database: {e}")
+        logger.warning("failed_to_fetch_db_jobs", error=str(e))
 
     # Сортировать по дате создания (новые первые)
     all_jobs.sort(key=lambda x: x.get("started_at") or "", reverse=True)
@@ -1104,13 +1132,38 @@ async def get_all_jobs(
 
 
 @app.get("/api/jobs/{job_id}")
-async def get_job_status(job_id: str, db: Session = Depends(get_db)):
-    """Получить статус задачи (из памяти или БД)"""
+async def get_job_status(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Get job status (from memory or database)
+
+    Authorization:
+    - Admin: can access any job
+    - User: can only access their own jobs
+    - Anonymous: can only access anonymous jobs
+    """
+
+    # Determine if user is admin
+    is_admin = current_user and current_user.role == UserRole.ADMIN
 
     # Сначала проверить в памяти (запущенные задачи)
     job = runner.get_job(job_id)
 
     if job:
+        # Check ownership (unless admin)
+        if not is_admin:
+            job_user_id = getattr(job, 'user_id', None)
+            current_user_id = str(current_user.id) if current_user else None
+
+            if job_user_id != current_user_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Job {job_id} not found"
+                )
+
         # Задача в памяти (выполняется или недавно завершена)
         return JobStatusResponse(
             job_id=job.job_id,
@@ -1130,6 +1183,18 @@ async def get_job_status(job_id: str, db: Session = Depends(get_db)):
         db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
 
         if db_job:
+            # Check ownership (unless admin)
+            if not is_admin:
+                db_user_id = db_job.user_id
+                current_user_id = str(current_user.id) if current_user else None
+
+                if db_user_id != current_user_id:
+                    # Return 404 instead of 403 to not leak job existence
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Job {job_id} not found"
+                    )
+
             # Загрузить result
             db_result = db.query(DBJobResult).filter(DBJobResult.job_id == job_id).first()
 
@@ -1145,16 +1210,48 @@ async def get_job_status(job_id: str, db: Session = Depends(get_db)):
                 duration=db_job.duration,
                 output_files=db_result.output_files if db_result else []
             )
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"⚠️  Database query failed: {e}")
+        logger.warning("database_query_failed", error=str(e))
 
     raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
 
 @app.get("/api/jobs/{job_id}/logs")
-async def get_job_logs(job_id: str, db: Session = Depends(get_db)):
-    """Получить логи задачи"""
+async def get_job_logs(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Get job logs
+
+    Authorization:
+    - Admin: can access any job's logs
+    - User: can only access their own job logs
+    - Anonymous: can only access anonymous job logs
+    """
     try:
+        # First check if job exists and user has access
+        is_admin = current_user and current_user.role == UserRole.ADMIN
+
+        # Check job ownership
+        db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
+
+        if not db_job:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        # Check ownership (unless admin)
+        if not is_admin:
+            db_user_id = db_job.user_id
+            current_user_id = str(current_user.id) if current_user else None
+
+            if db_user_id != current_user_id:
+                # Return 404 instead of 403 to not leak job existence
+                raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        # Fetch logs
         logs = db.query(DBJobLog)\
             .filter(DBJobLog.job_id == job_id)\
             .order_by(DBJobLog.timestamp.asc())\
@@ -1172,14 +1269,46 @@ async def get_job_logs(job_id: str, db: Session = Depends(get_db)):
                 for log in logs
             ]
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"⚠️  Failed to fetch logs: {e}")
+        logger.warning("failed_to_fetch_logs", job_id=job_id, error=str(e))
         return {"job_id": job_id, "total": 0, "logs": []}
 
 
 @app.delete("/api/jobs/{job_id}")
-async def cancel_job(job_id: str):
-    """Отменить задачу"""
+async def cancel_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Cancel/delete job
+
+    Authorization:
+    - Admin: can cancel any job
+    - User: can only cancel their own jobs
+    - Anonymous: can only cancel anonymous jobs
+    """
+    # Determine if user is admin
+    is_admin = current_user and current_user.role == UserRole.ADMIN
+
+    # Check job ownership
+    try:
+        db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
+
+        if db_job and not is_admin:
+            db_user_id = db_job.user_id
+            current_user_id = str(current_user.id) if current_user else None
+
+            if db_user_id != current_user_id:
+                raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.warning("ownership_check_failed", error=str(e))
+
+    # Cancel job
     success = await runner.cancel_job(job_id)
 
     if not success:
