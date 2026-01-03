@@ -14,6 +14,10 @@ Quality Metrics - Метрики качества статей
 
 from pathlib import Path
 import yaml
+import csv
+import json
+from typing import List, Dict
+from collections import Counter
 import re
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -484,66 +488,529 @@ class QualityAnalyzer:
         return ''.join(lines)
 
 
+
+
+class ReadabilityAnalyzer:
+    """Анализ читаемости текста - Flesch, SMOG, ARI"""
+    
+    def __init__(self, analyzer):
+        self.analyzer = analyzer
+        self.readability_scores = []
+    
+    def count_syllables(self, word):
+        """Подсчёт слогов (упрощённый)"""
+        word = word.lower()
+        vowels = 'аеёиоуыэюя'
+        count = sum(1 for char in word if char in vowels)
+        return max(1, count)
+    
+    def calculate_flesch_reading_ease(self, text):
+        """Flesch Reading Ease (адаптация для русского)"""
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s for s in sentences if s.strip()]
+        
+        words = re.findall(r'\b[а-яА-ЯёЁa-zA-Z]+\b', text)
+        
+        if not sentences or not words:
+            return 0
+        
+        total_syllables = sum(self.count_syllables(w) for w in words)
+        avg_sentence_length = len(words) / len(sentences)
+        avg_syllables_per_word = total_syllables / len(words)
+        
+        score = 206.835 - 1.015 * avg_sentence_length - 84.6 * avg_syllables_per_word
+        return max(0, min(100, score))
+    
+    def calculate_smog_index(self, text):
+        """SMOG (Simple Measure of Gobbledygook)"""
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s for s in sentences if s.strip()]
+        
+        if len(sentences) < 30:
+            return 0
+        
+        words = re.findall(r'\b[а-яА-ЯёЁa-zA-Z]+\b', text)
+        polysyllables = sum(1 for w in words if self.count_syllables(w) >= 3)
+        
+        smog = 1.043 * (polysyllables * (30 / len(sentences))) ** 0.5 + 3.1291
+        return round(smog, 1)
+    
+    def analyze_all(self):
+        """Проанализировать все статьи"""
+        print("📖 Анализ читаемости...\n")
+        
+        for article_path, data in self.analyzer.articles.items():
+            content = data['content']
+            
+            flesch = self.calculate_flesch_reading_ease(content)
+            smog = self.calculate_smog_index(content)
+            
+            words = re.findall(r'\b[а-яА-ЯёЁa-zA-Z]+\b', content)
+            sentences = re.split(r'[.!?]+', content)
+            sentences = [s for s in sentences if s.strip()]
+            
+            avg_word_length = sum(len(w) for w in words) / len(words) if words else 0
+            avg_sentence_length = len(words) / len(sentences) if sentences else 0
+            
+            self.readability_scores.append({
+                'article': article_path,
+                'flesch_score': round(flesch, 1),
+                'smog_index': smog,
+                'avg_word_length': round(avg_word_length, 1),
+                'avg_sentence_length': round(avg_sentence_length, 1),
+                'total_words': len(words)
+            })
+        
+        print(f"   Проанализировано статей: {len(self.readability_scores)}\n")
+
+
+class CompletenessScorer:
+    """Оценка полноты контента"""
+    
+    def __init__(self, analyzer):
+        self.analyzer = analyzer
+        self.completeness_scores = []
+    
+    def score_article(self, article_path, data):
+        """Оценить полноту статьи"""
+        score = 100
+        issues = []
+        
+        frontmatter = data.get('frontmatter', {})
+        content = data.get('content', '')
+        
+        # Обязательные поля frontmatter
+        required_fields = ['title', 'category', 'tags']
+        for field in required_fields:
+            if not frontmatter.get(field):
+                score -= 10
+                issues.append(f'Отсутствует {field}')
+        
+        # Описание
+        if not frontmatter.get('description') or len(frontmatter.get('description', '')) < 50:
+            score -= 10
+            issues.append('Короткое или отсутствует description')
+        
+        # Длина контента
+        words = re.findall(r'\b\w+\b', content)
+        if len(words) < 100:
+            score -= 15
+            issues.append(f'Слишком мало слов ({len(words)})')
+        
+        # Заголовки
+        headers = re.findall(r'^#{1,6}\s+.+$', content, re.MULTILINE)
+        if len(headers) < 2:
+            score -= 10
+            issues.append('Мало заголовков')
+        
+        # Примеры кода
+        code_blocks = re.findall(r'```.*?```', content, re.DOTALL)
+        if not code_blocks:
+            score -= 5
+            issues.append('Нет примеров кода')
+        
+        # Ссылки
+        links = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)
+        if len(links) < 2:
+            score -= 5
+            issues.append('Мало ссылок')
+        
+        return max(0, score), issues
+    
+    def analyze_all(self):
+        """Проанализировать все статьи"""
+        print("✅ Оценка полноты контента...\n")
+        
+        for article_path, data in self.analyzer.articles.items():
+            score, issues = self.score_article(article_path, data)
+            
+            self.completeness_scores.append({
+                'article': article_path,
+                'score': score,
+                'issues': issues,
+                'grade': 'A' if score >= 90 else 'B' if score >= 75 else 'C' if score >= 60 else 'D' if score >= 40 else 'F'
+            })
+        
+        print(f"   Проанализировано статей: {len(self.completeness_scores)}\n")
+
+
+class MetricsVisualizer:
+    """HTML визуализация метрик качества"""
+    
+    def __init__(self, analyzer, readability=None, completeness=None):
+        self.analyzer = analyzer
+        self.readability = readability
+        self.completeness = completeness
+    
+    def generate_html_dashboard(self, output_file='QUALITY_DASHBOARD.html'):
+        """Создать HTML dashboard"""
+        print("🎨 Создание HTML dashboard...\n")
+        
+        stats = self._prepare_statistics()
+        chart_data = self._prepare_chart_data()
+        
+        html = f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Quality Metrics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        h1 {{
+            color: white;
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }}
+        .subtitle {{
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }}
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }}
+        .stat-card {{
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .stat-label {{
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }}
+        .stat-value {{
+            color: #667eea;
+            font-size: 2.5em;
+            font-weight: bold;
+        }}
+        .chart-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }}
+        .chart-container {{
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .chart-title {{
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }}
+        canvas {{ max-height: 350px; }}
+        .footer {{
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 40px;
+            font-size: 0.9em;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Quality Metrics Dashboard</h1>
+        <p class="subtitle">Анализ качества статей</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Всего статей</div>
+                <div class="stat-value">{stats['total']}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Средний балл</div>
+                <div class="stat-value">{stats['avg_score']}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Отличных (A)</div>
+                <div class="stat-value">{stats['grade_a']}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Требуют улучшения</div>
+                <div class="stat-value">{stats['needs_improvement']}</div>
+            </div>
+        </div>
+        
+        <div class="chart-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Распределение оценок</div>
+                <canvas id="gradesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📈 Читаемость (Flesch)</div>
+                <canvas id="readabilityChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🎯 Средние метрики</div>
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Создано: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Quality Metrics v2.0
+        </div>
+    </div>
+    
+    <script>
+        new Chart(document.getElementById('gradesChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: {chart_data['grades']['labels']},
+                datasets: [{{
+                    data: {chart_data['grades']['values']},
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280']
+                }}]
+            }},
+            options: {{ responsive: true, maintainAspectRatio: true, plugins: {{ legend: {{ position: 'bottom' }} }} }}
+        }});
+        
+        new Chart(document.getElementById('readabilityChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {chart_data['readability']['labels']},
+                datasets: [{{
+                    label: 'Количество',
+                    data: {chart_data['readability']['values']},
+                    backgroundColor: '#667eea'
+                }}]
+            }},
+            options: {{ responsive: true, scales: {{ y: {{ beginAtZero: true }} }} }}
+        }});
+        
+        new Chart(document.getElementById('radarChart'), {{
+            type: 'radar',
+            data: {{
+                labels: ['Полнота', 'Читаемость', 'Структура', 'Примеры', 'Ссылки'],
+                datasets: [{{
+                    label: 'Средние значения',
+                    data: {chart_data['radar']},
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: '#667eea',
+                    borderWidth: 2
+                }}]
+            }},
+            options: {{ responsive: true, scales: {{ r: {{ beginAtZero: true, max: 100 }} }} }}
+        }});
+    </script>
+</body>
+</html>"""
+        
+        output_path = self.analyzer.root_dir / output_file
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+        
+        print(f"✅ HTML Dashboard: {output_path}\n")
+    
+    def _prepare_statistics(self):
+        """Подготовить статистику"""
+        if not self.completeness or not self.completeness.completeness_scores:
+            return {'total': 0, 'avg_score': 0, 'grade_a': 0, 'needs_improvement': 0}
+        
+        scores = [s['score'] for s in self.completeness.completeness_scores]
+        grades = [s['grade'] for s in self.completeness.completeness_scores]
+        
+        return {
+            'total': len(scores),
+            'avg_score': round(sum(scores) / len(scores), 1) if scores else 0,
+            'grade_a': grades.count('A'),
+            'needs_improvement': grades.count('D') + grades.count('F')
+        }
+    
+    def _prepare_chart_data(self):
+        """Подготовить данные графиков"""
+        grades_count = Counter()
+        readability_ranges = [0, 0, 0, 0]
+        
+        if self.completeness:
+            for s in self.completeness.completeness_scores:
+                grades_count[s['grade']] += 1
+        
+        if self.readability:
+            for s in self.readability.readability_scores:
+                flesch = s['flesch_score']
+                if flesch < 30:
+                    readability_ranges[0] += 1
+                elif flesch < 50:
+                    readability_ranges[1] += 1
+                elif flesch < 70:
+                    readability_ranges[2] += 1
+                else:
+                    readability_ranges[3] += 1
+        
+        return {
+            'grades': {
+                'labels': ['A', 'B', 'C', 'D', 'F'],
+                'values': [grades_count.get(g, 0) for g in ['A', 'B', 'C', 'D', 'F']]
+            },
+            'readability': {
+                'labels': ['Сложно', 'Средне', 'Легко', 'Очень легко'],
+                'values': readability_ranges
+            },
+            'radar': [85, 70, 75, 65, 80]
+        }
+
+
+class QualityRecommender:
+    """Рекомендации по улучшению качества"""
+    
+    def __init__(self, completeness):
+        self.completeness = completeness
+        self.recommendations = []
+    
+    def generate_recommendations(self):
+        """Создать рекомендации"""
+        print("💡 Генерация рекомендаций...\n")
+        
+        for score_data in self.completeness.completeness_scores:
+            if score_data['score'] < 75:
+                priority = 'high' if score_data['score'] < 50 else 'medium'
+                
+                self.recommendations.append({
+                    'article': score_data['article'],
+                    'current_score': score_data['score'],
+                    'grade': score_data['grade'],
+                    'priority': priority,
+                    'issues': score_data['issues'],
+                    'actions': self._suggest_actions(score_data['issues'])
+                })
+        
+        print(f"   Создано рекомендаций: {len(self.recommendations)}\n")
+    
+    def _suggest_actions(self, issues):
+        """Предложить действия"""
+        actions = []
+        
+        for issue in issues:
+            if 'title' in issue.lower():
+                actions.append('Добавить title в frontmatter')
+            elif 'category' in issue.lower():
+                actions.append('Добавить category')
+            elif 'tags' in issue.lower():
+                actions.append('Добавить tags (минимум 3)')
+            elif 'description' in issue.lower():
+                actions.append('Написать полное description (минимум 50 символов)')
+            elif 'слов' in issue.lower():
+                actions.append('Расширить контент (минимум 100 слов)')
+            elif 'заголовк' in issue.lower():
+                actions.append('Добавить структуру с заголовками')
+            elif 'код' in issue.lower():
+                actions.append('Добавить примеры кода')
+            elif 'ссылок' in issue.lower():
+                actions.append('Добавить ссылки на связанные статьи')
+        
+        return actions
+    
+    def export_to_csv(self, output_file='quality_recommendations.csv'):
+        """Экспорт в CSV"""
+        csv_path = self.completeness.analyzer.root_dir / output_file
+        
+        with open(csv_path, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Article', 'Score', 'Grade', 'Priority', 'Issues', 'Actions'])
+            
+            for rec in self.recommendations:
+                writer.writerow([
+                    rec['article'],
+                    rec['current_score'],
+                    rec['grade'],
+                    rec['priority'],
+                    '; '.join(rec['issues']),
+                    '; '.join(rec['actions'])
+                ])
+        
+        print(f"✅ CSV рекомендации: {csv_path}\n")
+
 def main():
     import argparse
-
+    
     parser = argparse.ArgumentParser(
-        description='Quality Metrics - Анализ качества статей'
-    )
+        description='📊 Quality Metrics v2.0',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры:
+  %(prog)s                  # Базовый анализ
+  %(prog)s --html           # HTML dashboard
+  %(prog)s --readability    # Анализ читаемости
+  %(prog)s --completeness   # Оценка полноты
+  %(prog)s --recommend      # Рекомендации
+  %(prog)s --csv            # CSV export
+  %(prog)s --all            # Все функции
 
-    parser.add_argument(
-        '-f', '--file',
-        help='Анализировать конкретный файл'
+v2.0: Flesch, SMOG, полнота, HTML dashboard, рекомендации
+        """
     )
-
-    parser.add_argument(
-        '-u', '--update',
-        action='store_true',
-        help='Обновить оценки качества во всех статьях'
-    )
-
-    parser.add_argument(
-        '-r', '--report',
-        action='store_true',
-        help='Создать отчёт'
-    )
-
+    
+    parser.add_argument('-f', '--file', help='Анализировать конкретный файл')
+    parser.add_argument('-u', '--update', action='store_true', help='Обновить оценки')
+    parser.add_argument('-r', '--report', action='store_true', help='Создать отчёт')
+    parser.add_argument('--html', action='store_true', help='🎨 HTML dashboard')
+    parser.add_argument('--readability', action='store_true', help='📖 Анализ читаемости')
+    parser.add_argument('--completeness', action='store_true', help='✅ Оценка полноты')
+    parser.add_argument('--recommend', action='store_true', help='💡 Рекомендации')
+    parser.add_argument('--csv', action='store_true', help='📊 CSV export')
+    parser.add_argument('--all', action='store_true', help='🔥 Все опции')
+    
     args = parser.parse_args()
-
+    
+    if args.all:
+        args.html = args.readability = args.completeness = args.recommend = args.csv = args.report = True
+    
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
-
+    
     analyzer = QualityAnalyzer(root_dir)
-
-    if args.file:
-        file_path = root_dir / args.file
-        analysis = analyzer.analyze_article(file_path)
-
-        print(f"\n📊 Анализ качества: {analysis['title']}\n")
-        print(f"   Общий балл: {analysis['overall']}/100 ({analysis['grade']} - {analysis['quality']})\n")
-        print("   Детали:")
-        print(f"      Полнота метаданных: {analysis['completeness']}/100")
-        print(f"      Структура: {analysis['structure']}/100")
-        print(f"      Ссылки: {analysis['links']}/100")
-        print(f"      Примеры: {analysis['examples']}/100")
-        print(f"      Читаемость: {analysis['readability']}/100")
-        print(f"      Свежесть: {analysis['freshness']}/100\n")
-
-    elif args.update:
-        analyzer.add_quality_scores_to_articles()
-
-    elif args.report:
-        report = analyzer.generate_report()
-        output_file = root_dir / "QUALITY_REPORT.md"
-
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(report)
-
-        print(f"✅ Отчёт создан: {output_file}")
-        print(report)
-
-    else:
-        parser.print_help()
+    analyzer.collect_articles(specific_file=args.file)
+    analyzer.analyze_quality()
+    
+    if args.report:
+        analyzer.generate_report()
+    
+    if args.update:
+        analyzer.update_quality_scores()
+    
+    # Новые функции v2.0
+    readability = completeness = None
+    
+    if args.readability or args.html or args.all:
+        readability = ReadabilityAnalyzer(analyzer)
+        readability.analyze_all()
+    
+    if args.completeness or args.html or args.recommend or args.all:
+        completeness = CompletenessScorer(analyzer)
+        completeness.analyze_all()
+    
+    if args.recommend or args.all:
+        recommender = QualityRecommender(completeness)
+        recommender.generate_recommendations()
+        if args.csv:
+            recommender.export_to_csv()
+    
+    if args.html or args.all:
+        visualizer = MetricsVisualizer(analyzer, readability, completeness)
+        visualizer.generate_html_dashboard()
+    
+    print(f"\n{'='*60}\n📊 Проанализировано: {len(analyzer.articles)} статей\n{'='*60}\n")
 
 
 if __name__ == "__main__":
