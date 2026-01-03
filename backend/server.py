@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 5.3.2: Prometheus Metrics Integration
+Phase 5.2.1: JWT Authentication Integration
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -21,7 +21,8 @@ import time
 # Structured logging
 from logger import (
     configure_logging, get_logger, LoggingMiddleware,
-    log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure
+    log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure,
+    log_auth_attempt
 )
 
 # Prometheus metrics
@@ -33,10 +34,17 @@ from metrics import (
     record_cache_access, track_tool_execution
 )
 
+# Authentication
+from auth import (
+    get_password_hash, authenticate_user, create_tokens_for_user,
+    get_current_user, get_current_active_user, get_current_user_optional,
+    refresh_access_token, require_admin, require_user
+)
+
 from tool_registry import ToolRegistry, ToolCategory
 from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 from database import get_db, check_database_connection, init_database, engine
-from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus
+from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus, User, UserRole
 from redis_client import get_redis, close_redis
 
 # Celery imports
@@ -51,6 +59,48 @@ except ImportError:
 # Pydantic Models
 # ========================
 
+# Authentication Models
+class UserRegister(BaseModel):
+    """User registration request"""
+    username: str
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    """User login request"""
+    username: str  # Can be username or email
+    password: str
+
+
+class Token(BaseModel):
+    """JWT token response"""
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+
+
+class RefreshTokenRequest(BaseModel):
+    """Refresh token request"""
+    refresh_token: str
+
+
+class UserResponse(BaseModel):
+    """User info response"""
+    id: str
+    username: str
+    email: str
+    full_name: Optional[str]
+    role: str
+    is_active: bool
+    created_at: str
+
+    class Config:
+        orm_mode = True
+
+
+# Tool Execution Models
 class ToolRunRequest(BaseModel):
     """Запрос на запуск инструмента"""
     tool_name: str
@@ -97,8 +147,8 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery",
-    version="5.3.2"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth",
+    version="5.2.1"
 )
 
 # Logging middleware (first!)
@@ -193,7 +243,7 @@ async def startup_event():
             logger.info("registry_cached", ttl_seconds=3600)
 
     # Initialize Prometheus metrics
-    init_metrics(app_version="5.3.2", environment=os.getenv("ENVIRONMENT", "production"))
+    init_metrics(app_version="5.2.1", environment=os.getenv("ENVIRONMENT", "production"))
     logger.info("prometheus_initialized")
 
     # Log startup summary
@@ -252,12 +302,18 @@ async def root():
     """Корневой endpoint"""
     return {
         "name": "Data20 Knowledge Base API",
-        "version": "5.3.2",
+        "version": "5.2.1",
         "status": "running",
         "total_tools": len(registry.tools),
         "docs": "/docs",
         "registry": "/api/tools",
-        "metrics": "/metrics"
+        "metrics": "/metrics",
+        "auth": {
+            "register": "/auth/register",
+            "login": "/auth/login",
+            "refresh": "/auth/refresh",
+            "me": "/auth/me"
+        }
     }
 
 
@@ -283,6 +339,182 @@ async def metrics():
         media_type=get_metrics_content_type()
     )
 
+
+# ========================
+# Authentication Endpoints
+# ========================
+
+@app.post("/auth/register", response_model=UserResponse)
+async def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
+    """
+    Register a new user
+
+    Creates a new user account with the provided credentials.
+    Default role is USER. First user becomes ADMIN.
+    """
+    logger.info("user_registration_attempt", username=user_data.username, email=user_data.email)
+
+    # Check if username already exists
+    existing_user = db.query(User).filter(User.username == user_data.username).first()
+    if existing_user:
+        logger.warning("registration_failed", reason="username_exists", username=user_data.username)
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    # Check if email already exists
+    existing_email = db.query(User).filter(User.email == user_data.email).first()
+    if existing_email:
+        logger.warning("registration_failed", reason="email_exists", email=user_data.email)
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Validate password strength
+    if len(user_data.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    # Check if this is the first user (make them admin)
+    user_count = db.query(User).count()
+    role = UserRole.ADMIN if user_count == 0 else UserRole.USER
+
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    new_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name,
+        role=role,
+        is_active=True
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    logger.info(
+        "user_registered",
+        user_id=str(new_user.id),
+        username=new_user.username,
+        role=role.value,
+        is_first_user=user_count == 0
+    )
+
+    return UserResponse(
+        id=str(new_user.id),
+        username=new_user.username,
+        email=new_user.email,
+        full_name=new_user.full_name,
+        role=new_user.role.value,
+        is_active=new_user.is_active,
+        created_at=new_user.created_at.isoformat()
+    )
+
+
+@app.post("/auth/login", response_model=Token)
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    """
+    Login with username/email and password
+
+    Returns access token (30 min) and refresh token (7 days)
+    """
+    logger.info("login_attempt", username=credentials.username)
+
+    # Authenticate user
+    user = authenticate_user(db, credentials.username, credentials.password)
+
+    if not user:
+        logger.warning("login_failed", username=credentials.username, reason="invalid_credentials")
+        log_auth_attempt(credentials.username, success=False, reason="invalid_credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Create tokens
+    tokens = create_tokens_for_user(user)
+
+    logger.info("login_success", user_id=str(user.id), username=user.username, role=user.role.value)
+    log_auth_attempt(credentials.username, success=True, user_id=str(user.id))
+
+    return Token(**tokens)
+
+
+@app.post("/auth/refresh", response_model=Token)
+async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
+    """
+    Refresh access token using refresh token
+
+    Returns a new access token without requiring re-authentication
+    """
+    try:
+        new_token = refresh_access_token(request.refresh_token, db)
+        logger.info("token_refreshed")
+        return Token(access_token=new_token, token_type="bearer")
+    except HTTPException:
+        logger.warning("token_refresh_failed", reason="invalid_token")
+        raise
+
+
+@app.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+    """
+    Get current authenticated user info
+
+    Requires valid access token
+    """
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at.isoformat()
+    )
+
+
+@app.put("/auth/me", response_model=UserResponse)
+async def update_current_user(
+    full_name: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update current user profile
+
+    Currently only supports updating full_name
+    """
+    if full_name is not None:
+        current_user.full_name = full_name
+        db.commit()
+        db.refresh(current_user)
+        logger.info("user_profile_updated", user_id=str(current_user.id), field="full_name")
+
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at.isoformat()
+    )
+
+
+@app.post("/auth/logout")
+async def logout(current_user: User = Depends(get_current_active_user)):
+    """
+    Logout current user
+
+    Note: JWT tokens are stateless, so this is a placeholder for future
+    token blacklisting implementation. Client should discard tokens.
+    """
+    logger.info("user_logout", user_id=str(current_user.id), username=current_user.username)
+    return {"message": "Logged out successfully. Please discard your tokens."}
+
+
+# ========================
+# Tool Registry Endpoints
+# ========================
 
 @app.get("/api/tools")
 async def get_all_tools():
@@ -410,7 +642,8 @@ async def run_tool(
     request: ToolRunRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    use_celery: bool = True
+    use_celery: bool = True,
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """
     Запустить инструмент через Celery или fallback
@@ -418,6 +651,7 @@ async def run_tool(
     Args:
         use_celery: Use Celery if available (default: True)
 
+    Authentication is optional. If authenticated, job is associated with user.
     Возвращает job_id для отслеживания прогресса
     """
 
@@ -431,13 +665,24 @@ async def run_tool(
     import uuid
     job_id = str(uuid.uuid4())
 
-    logger.info("creating_job", job_id=job_id, tool_name=request.tool_name, parameters=request.parameters)
+    # Log with user info if authenticated
+    log_data = {
+        "job_id": job_id,
+        "tool_name": request.tool_name,
+        "parameters": request.parameters
+    }
+    if current_user:
+        log_data["user_id"] = str(current_user.id)
+        log_data["username"] = current_user.username
+
+    logger.info("creating_job", **log_data)
 
     db_job = DBJob(
         id=job_id,
         tool_name=request.tool_name,
         parameters=request.parameters,
-        status=DBJobStatus.PENDING
+        status=DBJobStatus.PENDING,
+        user_id=str(current_user.id) if current_user else None
     )
 
     try:
