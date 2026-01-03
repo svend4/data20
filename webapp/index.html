@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data20 Knowledge Base - Вход</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="logo">
+                <h1>📊 Data20</h1>
+                <p>Knowledge Base System</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('login')">Вход</button>
+                <button class="tab" onclick="showTab('register')">Регистрация</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-tab" class="tab-content active">
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-username">Логин или Email</label>
+                        <input type="text" id="login-username" name="username" required
+                               placeholder="Введите логин или email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Пароль</label>
+                        <input type="password" id="login-password" name="password" required
+                               placeholder="Введите пароль">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Войти</button>
+
+                    <div id="login-error" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-tab" class="tab-content">
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="register-username">Логин</label>
+                        <input type="text" id="register-username" name="username" required
+                               placeholder="Выберите логин" minlength="3">
+                        <small>Минимум 3 символа</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" name="email" required
+                               placeholder="ваш@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">Пароль</label>
+                        <input type="password" id="register-password" name="password" required
+                               placeholder="Минимум 8 символов" minlength="8">
+                        <small>Минимум 8 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-fullname">Полное имя (необязательно)</label>
+                        <input type="text" id="register-fullname" name="full_name"
+                               placeholder="Иван Иванов">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+
+                    <div id="register-error" class="error-message" style="display: none;"></div>
+                    <div id="register-success" class="success-message" style="display: none;"></div>
+                </form>
+            </div>
+
+            <div class="footer">
+                <p>Первый пользователь автоматически становится администратором</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
