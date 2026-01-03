@@ -1,0 +1,116 @@
+{
+  "total_unique_links": 10,
+  "total_uses": 10,
+  "links": {
+    "https://roscontrol.com": {
+      "domain": "roscontrol.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году",
+          "context": "Росконтроль - Тесты холодильников"
+        }
+      ]
+    },
+    "https://www.eldorado.ru": {
+      "domain": "www.eldorado.ru",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году",
+          "context": "Обзоры Эльдорадо"
+        }
+      ]
+    },
+    "https://www.dns-shop.ru": {
+      "domain": "www.dns-shop.ru",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году",
+          "context": "DNS - Гид покупателя"
+        }
+      ]
+    },
+    "https://refactoring.guru/design-patterns/python": {
+      "domain": "refactoring.guru",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python",
+          "context": "Python Design Patterns - RefactoringGuru"
+        }
+      ]
+    },
+    "https://github.com/faif/python-patterns": {
+      "domain": "github.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python",
+          "context": "Design Patterns in Python - GitHub"
+        }
+      ]
+    },
+    "https://www.oreilly.com/library/view/fluent-python-2nd/9781492056348/": {
+      "domain": "www.oreilly.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python",
+          "context": "Fluent Python by Luciano Ramalho"
+        }
+      ]
+    },
+    "https://docs.anthropic.com": {
+      "domain": "docs.anthropic.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года",
+          "context": "Anthropic - Claude Documentation"
+        }
+      ]
+    },
+    "https://platform.openai.com/docs": {
+      "domain": "platform.openai.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года",
+          "context": "OpenAI - GPT Models"
+        }
+      ]
+    },
+    "https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard": {
+      "domain": "huggingface.co",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года",
+          "context": "Hugging Face - Open LLM Leaderboard"
+        }
+      ]
+    },
+    "https://paperswithcode.com/area/natural-language-processing": {
+      "domain": "paperswithcode.com",
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года",
+          "context": "Papers with Code - NLP"
+        }
+      ]
+    }
+  }
+}

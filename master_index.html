@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главный указатель</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .search-box input {
+            width: 80%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+        }
+        .nav-letters {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .nav-letters a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .letter-section {
+            margin: 30px 0;
+        }
+        .letter-section h2 {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        .term {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #667eea;
+        }
+        .term-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .importance-high { color: #e53935; }
+        .importance-medium { color: #ff9800; }
+        .see-also {
+            margin-top: 5px;
+            font-style: italic;
+            color: #666;
+        }
+        .locations {
+            margin-top: 5px;
+        }
+        .locations a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .locations a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📇 Главный указатель</h1>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск по терминам..." onkeyup="filterTerms()">
+        </div>
+
+        <div class="nav-letters">
+            <a href="#letter--">-</a>
+            <a href="#letter-1">1</a>
+            <a href="#letter-2">2</a>
+            <a href="#letter-3">3</a>
+            <a href="#letter-4">4</a>
+            <a href="#letter-5">5</a>
+            <a href="#letter-6">6</a>
+            <a href="#letter-7">7</a>
+            <a href="#letter-8">8</a>
+            <a href="#letter-9">9</a>
+            <a href="#letter-A">A</a>
+            <a href="#letter-B">B</a>
+            <a href="#letter-C">C</a>
+            <a href="#letter-E">E</a>
+            <a href="#letter-G">G</a>
+            <a href="#letter-H">H</a>
+            <a href="#letter-I">I</a>
+            <a href="#letter-L">L</a>
+            <a href="#letter-M">M</a>
+            <a href="#letter-N">N</a>
+            <a href="#letter-P">P</a>
+            <a href="#letter-Q">Q</a>
+            <a href="#letter-S">S</a>
+            <a href="#letter-T">T</a>
+            <a href="#letter-W">W</a>
+            <a href="#letter-А">А</a>
+            <a href="#letter-Б">Б</a>
+            <a href="#letter-В">В</a>
+            <a href="#letter-Д">Д</a>
+            <a href="#letter-З">З</a>
+            <a href="#letter-И">И</a>
+            <a href="#letter-К">К</a>
+            <a href="#letter-Л">Л</a>
+            <a href="#letter-М">М</a>
+            <a href="#letter-Н">Н</a>
+            <a href="#letter-О">О</a>
+            <a href="#letter-П">П</a>
+            <a href="#letter-Р">Р</a>
+            <a href="#letter-С">С</a>
+            <a href="#letter-Т">Т</a>
+            <a href="#letter-У">У</a>
+            <a href="#letter-Х">Х</a>
+            <a href="#letter-Ч">Ч</a>
+            <a href="#letter-Э">Э</a>
+            <a href="#letter-📑">📑</a>
+        </div>
+
+        <div id="indexContent">
+            <div class="letter-section" id="letter--">
+                <h2>-</h2>
+                <div class="term" data-term="--------|----------|----------|----------|------|-------------|">
+                    <div class="term-name ">--------|----------|----------|----------|------|-------------|</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-1">
+                <h2>1</h2>
+                <div class="term" data-term="1. singleton одиночка">
+                    <div class="term-name ">1. Singleton Одиночка</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="1. не учли размеры">
+                    <div class="term-name ">1. Не учли размеры</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="1. однокамерные холодильники">
+                    <div class="term-name ">1. Однокамерные холодильники</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="1. размеры и объем">
+                    <div class="term-name ">1. Размеры и объем</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="1. увеличение эффективности">
+                    <div class="term-name ">1. Увеличение эффективности</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="10. context manager контекстный менеджер">
+                    <div class="term-name ">10. Context Manager Контекстный менеджер</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="11. descriptor дескриптор">
+                    <div class="term-name ">11. Descriptor Дескриптор</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-2">
+                <h2>2</h2>
+                <div class="term" data-term="2. factory method фабричный метод">
+                    <div class="term-name ">2. Factory Method Фабричный метод</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="2. выбрали слишком большой объем">
+                    <div class="term-name ">2. Выбрали слишком большой объем</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="2. двухкамерные холодильники">
+                    <div class="term-name ">2. Двухкамерные холодильники</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="2. специализация">
+                    <div class="term-name ">2. Специализация</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="2. энергоэффективность">
+                    <div class="term-name ">2. Энергоэффективность</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-3">
+                <h2>3</h2>
+                <div class="term" data-term="3. builder строитель">
+                    <div class="term-name ">3. Builder Строитель</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="3. side-by-side французская дверь">
+                    <div class="term-name ">3. Side-by-Side французская дверь</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="3. агентные возможности">
+                    <div class="term-name ">3. Агентные возможности</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="3. сэкономили на энергоклассе">
+                    <div class="term-name ">3. Сэкономили на энергоклассе</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="3. функциональность">
+                    <div class="term-name ">3. Функциональность</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-4">
+                <h2>4</h2>
+                <div class="term" data-term="4. decorator декоратор">
+                    <div class="term-name ">4. Decorator Декоратор</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="4. french door">
+                    <div class="term-name ">4. French Door</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="4. безопасность и этика">
+                    <div class="term-name ">4. Безопасность и этика</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="4. климат и шум">
+                    <div class="term-name ">4. Климат и шум</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="4. не проверили отзывы">
+                    <div class="term-name ">4. Не проверили отзывы</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-5">
+                <h2>5</h2>
+                <div class="term" data-term="5. adapter адаптер">
+                    <div class="term-name ">5. Adapter Адаптер</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="5. бюджет">
+                    <div class="term-name ">5. Бюджет</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="5. встраиваемые холодильники">
+                    <div class="term-name ">5. Встраиваемые холодильники</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="5. купили модель без инверторного компрессора">
+                    <div class="term-name ">5. Купили модель без инверторного компрессора</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="5. локальное развертывание">
+                    <div class="term-name ">5. Локальное развертывание</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: Локальное развертывание</div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-6">
+                <h2>6</h2>
+                <div class="term" data-term="6. facade фасад">
+                    <div class="term-name ">6. Facade Фасад</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="6. дополнительно">
+                    <div class="term-name ">6. Дополнительно</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-7">
+                <h2>7</h2>
+                <div class="term" data-term="7. observer наблюдатель">
+                    <div class="term-name ">7. Observer Наблюдатель</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-8">
+                <h2>8</h2>
+                <div class="term" data-term="8. strategy стратегия">
+                    <div class="term-name ">8. Strategy Стратегия</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-9">
+                <h2>9</h2>
+                <div class="term" data-term="9. command команда">
+                    <div class="term-name ">9. Command Команда</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-A">
+                <h2>A</h2>
+                <div class="term" data-term="a++">
+                    <div class="term-name ">A++</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: A+++</div>
+                </div>
+                <div class="term" data-term="a+++">
+                    <div class="term-name ">A+++</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: A++</div>
+                </div>
+                <div class="term" data-term="ai">
+                    <div class="term-name ">AI</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="api клиенты">
+                    <div class="term-name ">API клиенты</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-B">
+                <h2>B</h2>
+                <div class="term" data-term="b, c, d">
+                    <div class="term-name ">B, C, D</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="beko">
+                    <div class="term-name ">Beko</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="best-practices">
+                    <div class="term-name ">best-practices</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="bosch">
+                    <div class="term-name ">Bosch</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="bosch kgn39vl17r">
+                    <div class="term-name ">Bosch KGN39VL17R</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-C">
+                <h2>C</h2>
+                <div class="term" data-term="candy">
+                    <div class="term-name ">Candy</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="claude">
+                    <div class="term-name ">Claude</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="claude anthropic">
+                    <div class="term-name ">Claude Anthropic</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="claude haiku">
+                    <div class="term-name ">Claude Haiku</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="claude opus 4.5">
+                    <div class="term-name ">Claude Opus 4.5</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: Claude Sonnet 4.5</div>
+                </div>
+                <div class="term" data-term="claude opus 4.5 | 200k+ | средняя | отлично | $$$ | api |">
+                    <div class="term-name ">Claude Opus 4.5 | 200K+ | Средняя | Отлично | $$$ | API |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: Claude Sonnet 4.5 | 200K+ | Быстрая | Отлично | $$ | API |</div>
+                </div>
+                <div class="term" data-term="claude sonnet 4.5">
+                    <div class="term-name ">Claude Sonnet 4.5</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: Claude Opus 4.5</div>
+                </div>
+                <div class="term" data-term="claude sonnet 4.5 | 200k+ | быстрая | отлично | $$ | api |">
+                    <div class="term-name ">Claude Sonnet 4.5 | 200K+ | Быстрая | Отлично | $$ | API |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: Claude Opus 4.5 | 200K+ | Средняя | Отлично | $$$ | API |</div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-E">
+                <h2>E</h2>
+                <div class="term" data-term="electrolux">
+                    <div class="term-name ">Electrolux</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-G">
+                <h2>G</h2>
+                <div class="term" data-term="gemini google">
+                    <div class="term-name ">Gemini Google</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gemini pro">
+                    <div class="term-name ">Gemini Pro</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gemini ultra">
+                    <div class="term-name ">Gemini Ultra</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gemini ultra | 128k | быстрая | отлично | $$$ | api |">
+                    <div class="term-name ">Gemini Ultra | 128K | Быстрая | Отлично | $$$ | API |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gpt">
+                    <div class="term-name ">GPT</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gpt-4 turbo">
+                    <div class="term-name ">GPT-4 Turbo</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gpt-5">
+                    <div class="term-name ">GPT-5</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gpt-5 | 128k | средняя | отлично | $$$ | api |">
+                    <div class="term-name ">GPT-5 | 128K | Средняя | Отлично | $$$ | API |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="gpt-серия openai">
+                    <div class="term-name ">GPT-серия OpenAI</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-H">
+                <h2>H</h2>
+                <div class="term" data-term="haier">
+                    <div class="term-name ">Haier</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="hisense">
+                    <div class="term-name ">Hisense</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-I">
+                <h2>I</h2>
+                <div class="term" data-term="indesit">
+                    <div class="term-name ">Indesit</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-L">
+                <h2>L</h2>
+                <div class="term" data-term="lg doorcooling+ gc-b247sbdc">
+                    <div class="term-name ">LG DoorCooling+ GC-B247SBDC</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="liebherr">
+                    <div class="term-name ">Liebherr</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="liebherr cbnpes 5758">
+                    <div class="term-name ">Liebherr CBNPes 5758</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="llama 4 70b | 32k | быстрая | хорошо | бесплатно | открытая |">
+                    <div class="term-name ">LLaMA 4 70B | 32K | Быстрая | Хорошо | Бесплатно | Открытая |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="llama 4 meta">
+                    <div class="term-name ">LLaMA 4 Meta</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="llm">
+                    <div class="term-name ">LLM</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-M">
+                <h2>M</h2>
+                <div class="term" data-term="miele">
+                    <div class="term-name ">Miele</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="mistral ai">
+                    <div class="term-name ">Mistral AI</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-N">
+                <h2>N</h2>
+                <div class="term" data-term="n (нормальный):">
+                    <div class="term-name ">N (нормальный):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="no frost без инея">
+                    <div class="term-name ">No Frost Без инея</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-P">
+                <h2>P</h2>
+                <div class="term" data-term="python">
+                    <div class="term-name ">Python</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="python (programming)">
+                    <div class="term-name ">python (programming)</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="python декораторы - нативная поддержка паттерна:">
+                    <div class="term-name ">Python декораторы - нативная поддержка паттерна:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="python-идиоматическая реализация (функции первого класса):">
+                    <div class="term-name ">Python-идиоматическая реализация (функции первого класса):</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="python-специфичные паттерны">
+                    <div class="term-name ">Python-специфичные паттерны</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Q">
+                <h2>Q</h2>
+                <div class="term" data-term="qwen alibaba">
+                    <div class="term-name ">Qwen Alibaba</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-S">
+                <h2>S</h2>
+                <div class="term" data-term="samsung">
+                    <div class="term-name ">Samsung</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="siemens">
+                    <div class="term-name ">Siemens</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="smeg">
+                    <div class="term-name ">Smeg</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="sn (субнормальный):">
+                    <div class="term-name ">SN (субнормальный):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="st (субтропический):">
+                    <div class="term-name ">ST (субтропический):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="sub-zero">
+                    <div class="term-name ">Sub-Zero</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-T">
+                <h2>T</h2>
+                <div class="term" data-term="t (тропический):">
+                    <div class="term-name ">T (тропический):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-W">
+                <h2>W</h2>
+                <div class="term" data-term="wi-fi и управление через приложение">
+                    <div class="term-name ">Wi-Fi и управление через приложение</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-А">
+                <h2>А</h2>
+                <div class="term" data-term="азиатские бренды">
+                    <div class="term-name ">Азиатские бренды</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="анализ данных">
+                    <div class="term-name ">Анализ данных</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="антибактериальное покрытие">
+                    <div class="term-name ">Антибактериальное покрытие</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="архитектура">
+                    <div class="term-name ">архитектура</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="атлант">
+                    <div class="term-name ">Атлант</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="атлант хм 4425-009 nd">
+                    <div class="term-name ">Атлант ХМ 4425-009 ND</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Б">
+                <h2>Б</h2>
+                <div class="term" data-term="будущие направления">
+                    <div class="term-name ">Будущие направления</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="бытовая-техника">
+                    <div class="term-name ">бытовая-техника</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="бюджетный сегмент 20,000-40,000 руб">
+                    <div class="term-name ">Бюджетный сегмент 20,000-40,000 руб</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-В">
+                <h2>В</h2>
+                <div class="term" data-term="влажная зона">
+                    <div class="term-name ">Влажная зона</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="возможности:">
+                    <div class="term-name ">Возможности:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="выбор модели для конкретных задач">
+                    <div class="term-name ">Выбор модели для конкретных задач</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Д">
+                <h2>Д</h2>
+                <div class="term" data-term="два компрессора">
+                    <div class="term-name ">Два компрессора</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="декоратор класса:">
+                    <div class="term-name ">Декоратор класса:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="длинный контекст:">
+                    <div class="term-name ">Длинный контекст:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для анализа больших документов">
+                    <div class="term-name ">Для анализа больших документов</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для бюджетных проектов">
+                    <div class="term-name ">Для бюджетных проектов</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для валидации и контроля доступа к атрибутам:">
+                    <div class="term-name ">Для валидации и контроля доступа к атрибутам:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для кого:">
+                    <div class="term-name ">Для кого:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для локального развертывания">
+                    <div class="term-name ">Для локального развертывания</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="для разработки по">
+                    <div class="term-name ">Для разработки ПО</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="долгосрочная перспектива 2028+">
+                    <div class="term-name ">Долгосрочная перспектива 2028+</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="дополнительные функции">
+                    <div class="term-name ">Дополнительные функции</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-З">
+                <h2>З</h2>
+                <div class="term" data-term="загрузка:">
+                    <div class="term-name ">Загрузка:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="зона свежести fresh zone">
+                    <div class="term-name ">Зона свежести Fresh Zone</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-И">
+                <h2>И</h2>
+                <div class="term" data-term="инверторный компрессор">
+                    <div class="term-name ">Инверторный компрессор</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="инструменты для работы с llm">
+                    <div class="term-name ">Инструменты для работы с LLM</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="использование протокола `__enter__` и `__exit__`:">
+                    <div class="term-name ">Использование протокола `__enter__` и `__exit__`:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="использование:">
+                    <div class="term-name ">Использование:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-К">
+                <h2>К</h2>
+                <div class="term" data-term="как рассчитать необходимый объем:">
+                    <div class="term-name ">Как рассчитать необходимый объем:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="камера внутри холодильника">
+                    <div class="term-name ">Камера внутри холодильника</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="капельная система плачущая стенка">
+                    <div class="term-name ">Капельная система Плачущая стенка</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="классическая реализация:">
+                    <div class="term-name ">Классическая реализация:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="классы энергопотребления (2026):">
+                    <div class="term-name ">Классы энергопотребления (2026):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="климатический класс">
+                    <div class="term-name ">Климатический класс</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="ключевые моменты">
+                    <div class="term-name ">Ключевые моменты</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="ключевые характеристики">
+                    <div class="term-name ">Ключевые характеристики</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="ключевые характеристики современных llm">
+                    <div class="term-name ">Ключевые характеристики современных LLM</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="когда использовать:">
+                    <div class="term-name ">Когда использовать:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="кодирование:">
+                    <div class="term-name ">Кодирование:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="коммерческие модели">
+                    <div class="term-name ">Коммерческие модели</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="компрессор">
+                    <div class="term-name ">Компрессор</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="короткий контекст:">
+                    <div class="term-name ">Короткий контекст:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="краткое описание">
+                    <div class="term-name ">Краткое описание</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="краткосрочная перспектива 2026-2027">
+                    <div class="term-name ">Краткосрочная перспектива 2026-2027</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Л">
+                <h2>Л</h2>
+                <div class="term" data-term="локальное развертывание">
+                    <div class="term-name ">Локальное развертывание</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: 5. Локальное развертывание</div>
+                </div>
+                <div class="term" data-term="лучший бюджетный">
+                    <div class="term-name ">Лучший бюджетный</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="лучший премиум">
+                    <div class="term-name ">Лучший премиум</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="лучший с умными функциями">
+                    <div class="term-name ">Лучший с умными функциями</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="лучший средний класс">
+                    <div class="term-name ">Лучший средний класс</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-М">
+                <h2>М</h2>
+                <div class="term" data-term="математика:">
+                    <div class="term-name ">Математика:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="машинное-обучение">
+                    <div class="term-name ">машинное-обучение</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="минусы:">
+                    <div class="term-name ">Минусы:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="многоязычность:">
+                    <div class="term-name ">Многоязычность:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="модель | контекст | скорость | качество | цена | доступность |">
+                    <div class="term-name ">Модель | Контекст | Скорость | Качество | Цена | Доступность |</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="мультимодальность">
+                    <div class="term-name ">Мультимодальность</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Н">
+                <h2>Н</h2>
+                <div class="term" data-term="назначение:">
+                    <div class="term-name ">Назначение:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="научные тексты:">
+                    <div class="term-name ">Научные тексты:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="недостатки:">
+                    <div class="term-name ">Недостатки:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="нейронные-сети">
+                    <div class="term-name ">нейронные-сети</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="нормы:">
+                    <div class="term-name ">Нормы:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-О">
+                <h2>О</h2>
+                <div class="term" data-term="обслуживание и уход">
+                    <div class="term-name ">Обслуживание и уход</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="объем">
+                    <div class="term-name ">Объем</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="один компрессор">
+                    <div class="term-name ">Один компрессор</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="ооп">
+                    <div class="term-name ">ООП</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="описание:">
+                    <div class="term-name ">Описание:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="определяет диапазон рабочих температур окружающей среды:">
+                    <div class="term-name ">Определяет диапазон рабочих температур окружающей среды:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="основные игроки на рынке llm">
+                    <div class="term-name ">Основные игроки на рынке LLM</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="открытые модели">
+                    <div class="term-name ">Открытые модели</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                    <div class="see-also">См. также: открытые-модели</div>
+                </div>
+                <div class="term" data-term="открытые-модели">
+                    <div class="term-name ">открытые-модели</div>
+                    <div class="see-also">См. <strong>Открытые модели</strong></div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-П">
+                <h2>П</h2>
+                <div class="term" data-term="паттерны-проектирования">
+                    <div class="term-name ">паттерны-проектирования</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="персональные ассистенты">
+                    <div class="term-name ">Персональные ассистенты</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="поведенческие паттерны behavioral patterns">
+                    <div class="term-name ">Поведенческие паттерны Behavioral Patterns</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="покупка">
+                    <div class="term-name ">покупка</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="порождающие паттерны creational patterns">
+                    <div class="term-name ">Порождающие паттерны Creational Patterns</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="правила эксплуатации">
+                    <div class="term-name ">Правила эксплуатации</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="практическое применение">
+                    <div class="term-name ">Практическое применение</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="преимущества:">
+                    <div class="term-name ">Преимущества:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="премиум-сегмент 100,000+ руб">
+                    <div class="term-name ">Премиум-сегмент 100,000+ руб</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: Средний сегмент 40,000-100,000 руб</div>
+                </div>
+                <div class="term" data-term="принцип работы:">
+                    <div class="term-name ">Принцип работы:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="проблема:">
+                    <div class="term-name ">Проблема:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="производители и бренды">
+                    <div class="term-name ">Производители и бренды</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="протоколы:">
+                    <div class="term-name ">Протоколы:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Р">
+                <h2>Р</h2>
+                <div class="term" data-term="работа с текстом">
+                    <div class="term-name ">Работа с текстом</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="раз в 3 месяца:">
+                    <div class="term-name ">Раз в 3 месяца:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="раз в 6 месяцев:">
+                    <div class="term-name ">Раз в 6 месяцев:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="раз в год:">
+                    <div class="term-name ">Раз в год:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="раз в месяц:">
+                    <div class="term-name ">Раз в месяц:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="размер контекста">
+                    <div class="term-name ">Размер контекста</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="разработка и fine-tuning">
+                    <div class="term-name ">Разработка и fine-tuning</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="разработка по">
+                    <div class="term-name ">Разработка ПО</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="расположение:">
+                    <div class="term-name ">Расположение:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="реализация с использованием fluent interface:">
+                    <div class="term-name ">Реализация с использованием fluent interface:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="реализация через метакласс:">
+                    <div class="term-name ">Реализация через метакласс:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="реализация:">
+                    <div class="term-name ">Реализация:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="регулярное обслуживание">
+                    <div class="term-name ">Регулярное обслуживание</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="рекомендации по моделям 2026">
+                    <div class="term-name ">Рекомендации по моделям 2026</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="рекомендация:">
+                    <div class="term-name ">Рекомендация:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="решение:">
+                    <div class="term-name ">Решение:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="руководство">
+                    <div class="term-name ">руководство</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-С">
+                <h2>С</h2>
+                <div class="term" data-term="с верхней морозильной камерой">
+                    <div class="term-name ">С верхней морозильной камерой</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: С нижней морозильной камерой</div>
+                </div>
+                <div class="term" data-term="с использованием contextlib:">
+                    <div class="term-name ">С использованием contextlib:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="с нижней морозильной камерой">
+                    <div class="term-name ">С нижней морозильной камерой</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: С верхней морозильной камерой</div>
+                </div>
+                <div class="term" data-term="система размораживания">
+                    <div class="term-name ">Система размораживания</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="см. также">
+                    <div class="term-name ">См. также</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="современная python-идиома с dataclass:">
+                    <div class="term-name ">Современная Python-идиома с dataclass:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="современная альтернатива - декоратор:">
+                    <div class="term-name ">Современная альтернатива - декоратор:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="современная реализация с использованием dict:">
+                    <div class="term-name ">Современная реализация с использованием dict:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="современный стандарт:">
+                    <div class="term-name ">Современный стандарт:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="специализация">
+                    <div class="term-name ">Специализация</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="сравнительная таблица производительности">
+                    <div class="term-name ">Сравнительная таблица производительности</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="средний контекст:">
+                    <div class="term-name ">Средний контекст:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="средний сегмент 40,000-100,000 руб">
+                    <div class="term-name ">Средний сегмент 40,000-100,000 руб</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: Премиум-сегмент 100,000+ руб</div>
+                </div>
+                <div class="term" data-term="ссылки и источники">
+                    <div class="term-name ">Ссылки и источники</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="стоит ли переплачивать?">
+                    <div class="term-name ">Стоит ли переплачивать?</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="структурные паттерны structural patterns">
+                    <div class="term-name ">Структурные паттерны Structural Patterns</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="суперзаморозка super freeze">
+                    <div class="term-name ">Суперзаморозка Super Freeze</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="сухая зона">
+                    <div class="term-name ">Сухая зона</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Т">
+                <h2>Т</h2>
+                <div class="term" data-term="температура:">
+                    <div class="term-name ">Температура:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="тенденции развития">
+                    <div class="term-name ">Тенденции развития</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="технологии:">
+                    <div class="term-name ">Технологии:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="типичные ошибки при выборе">
+                    <div class="term-name ">Типичные ошибки при выборе</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="типы холодильников">
+                    <div class="term-name ">Типы холодильников</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="типы:">
+                    <div class="term-name ">Типы:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-У">
+                <h2>У</h2>
+                <div class="term" data-term="умные функции smart home">
+                    <div class="term-name ">Умные функции Smart Home</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="умный-дом">
+                    <div class="term-name ">умный-дом</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="универсальный выбор:">
+                    <div class="term-name ">Универсальный выбор:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="уровень шума">
+                    <div class="term-name ">Уровень шума</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Х">
+                <h2>Х</h2>
+                <div class="term" data-term="характеристики:">
+                    <div class="term-name ">Характеристики:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="холодильник">
+                    <div class="term-name ">холодильник</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Ч">
+                <h2>Ч</h2>
+                <div class="term" data-term="чек-лист при выборе">
+                    <div class="term-name ">Чек-лист при выборе</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-Э">
+                <h2>Э</h2>
+                <div class="term" data-term="экономия в год (холодильник 300л):">
+                    <div class="term-name ">Экономия в год (холодильник 300л):</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="экстра длинный:">
+                    <div class="term-name ">Экстра длинный:</div>
+                    <div class="locations">
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                    </div>
+                </div>
+                <div class="term" data-term="энергоэффективность">
+                    <div class="term-name ">Энергоэффективность</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                    <div class="see-also">См. также: энергоэффективность</div>
+                </div>
+                <div class="term" data-term="энергоэффективность">
+                    <div class="term-name ">энергоэффективность</div>
+                    <div class="see-also">См. <strong>Энергоэффективность</strong></div>
+                </div>
+                <div class="term" data-term="эффект:">
+                    <div class="term-name ">Эффект:</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="letter-section" id="letter-📑">
+                <h2>📑</h2>
+                <div class="term" data-term="📑 содержание">
+                    <div class="term-name ">📑 Содержание</div>
+                    <div class="locations">
+                        • <a href="knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md">Руководство по выбору холодильника в 2026 году</a><br>
+                        • <a href="knowledge/computers/articles/ai/llm-overview-2026.md">Обзор больших языковых моделей 2026 года</a><br>
+                        • <a href="knowledge/computers/articles/programming/python-patterns.md">Паттерны проектирования в Python</a><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterTerms() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const terms = document.querySelectorAll('.term');
+
+            terms.forEach(term => {
+                const termName = term.getAttribute('data-term');
+                if (termName.includes(filter)) {
+                    term.style.display = 'block';
+                } else {
+                    term.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

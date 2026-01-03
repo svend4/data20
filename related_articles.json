@@ -1,0 +1,47 @@
+{
+  "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+    "title": "Руководство по выбору холодильника в 2026 году",
+    "recommendations": [
+      {
+        "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года",
+        "score": 0.03501714677875195
+      },
+      {
+        "article": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python",
+        "score": 0.0024582948552091103
+      }
+    ]
+  },
+  "knowledge/computers/articles/programming/python-patterns.md": {
+    "title": "Паттерны проектирования в Python",
+    "recommendations": [
+      {
+        "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "title": "Обзор больших языковых моделей 2026 года",
+        "score": 0.2032876530168756
+      },
+      {
+        "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году",
+        "score": 0.002458294855209111
+      }
+    ]
+  },
+  "knowledge/computers/articles/ai/llm-overview-2026.md": {
+    "title": "Обзор больших языковых моделей 2026 года",
+    "recommendations": [
+      {
+        "article": "knowledge/computers/articles/programming/python-patterns.md",
+        "title": "Паттерны проектирования в Python",
+        "score": 0.2032876530168756
+      },
+      {
+        "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "title": "Руководство по выбору холодильника в 2026 году",
+        "score": 0.035017146778751944
+      }
+    ]
+  }
+}

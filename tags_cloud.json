@@ -1,0 +1,242 @@
+{
+  "total_tags": 18,
+  "total_uses": 18,
+  "tags": {
+    "холодильник": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "бытовая-техника": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "покупка": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "руководство": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "энергоэффективность": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "умный-дом": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+          "title": "Руководство по выбору холодильника в 2026 году"
+        }
+      ]
+    },
+    "Python": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python"
+        }
+      ]
+    },
+    "паттерны-проектирования": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python"
+        }
+      ]
+    },
+    "ООП": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python"
+        }
+      ]
+    },
+    "архитектура": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python"
+        }
+      ]
+    },
+    "best-practices": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/programming/python-patterns.md",
+          "title": "Паттерны проектирования в Python"
+        }
+      ]
+    },
+    "AI": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "LLM": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "машинное-обучение": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "нейронные-сети": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "GPT": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "Claude": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    },
+    "открытые-модели": {
+      "count": 1,
+      "articles": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "title": "Обзор больших языковых моделей 2026 года"
+        }
+      ]
+    }
+  },
+  "top_tags": [
+    {
+      "tag": "холодильник",
+      "count": 1
+    },
+    {
+      "tag": "бытовая-техника",
+      "count": 1
+    },
+    {
+      "tag": "покупка",
+      "count": 1
+    },
+    {
+      "tag": "руководство",
+      "count": 1
+    },
+    {
+      "tag": "энергоэффективность",
+      "count": 1
+    },
+    {
+      "tag": "умный-дом",
+      "count": 1
+    },
+    {
+      "tag": "Python",
+      "count": 1
+    },
+    {
+      "tag": "паттерны-проектирования",
+      "count": 1
+    },
+    {
+      "tag": "ООП",
+      "count": 1
+    },
+    {
+      "tag": "архитектура",
+      "count": 1
+    },
+    {
+      "tag": "best-practices",
+      "count": 1
+    },
+    {
+      "tag": "AI",
+      "count": 1
+    },
+    {
+      "tag": "LLM",
+      "count": 1
+    },
+    {
+      "tag": "машинное-обучение",
+      "count": 1
+    },
+    {
+      "tag": "нейронные-сети",
+      "count": 1
+    },
+    {
+      "tag": "GPT",
+      "count": 1
+    },
+    {
+      "tag": "Claude",
+      "count": 1
+    },
+    {
+      "tag": "открытые-модели",
+      "count": 1
+    }
+  ]
+}

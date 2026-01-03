@@ -1,0 +1,22 @@
+{
+  "events": [
+    {
+      "date": "2026-01-02T00:00:00",
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "category": "household"
+    },
+    {
+      "date": "2026-01-02T00:00:00",
+      "title": "Паттерны проектирования в Python",
+      "path": "knowledge/computers/articles/programming/python-patterns.md",
+      "category": "computers"
+    },
+    {
+      "date": "2026-01-02T00:00:00",
+      "title": "Обзор больших языковых моделей 2026 года",
+      "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+      "category": "computers"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    {
+      "id": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "label": "Руководство по выбору холодильника в 2026 году",
+      "category": "household",
+      "size": 152.86
+    },
+    {
+      "id": "knowledge/computers/articles/programming/python-patterns.md",
+      "label": "Паттерны проектирования в Python",
+      "category": "computers",
+      "size": 154.06
+    },
+    {
+      "id": "knowledge/computers/articles/ai/llm-overview-2026.md",
+      "label": "Обзор больших языковых моделей 2026 года",
+      "category": "computers",
+      "size": 86.97
+    }
+  ],
+  "links": []
+}

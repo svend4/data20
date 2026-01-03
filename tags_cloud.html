@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tags Cloud</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        .cloud {
+            text-align: center;
+            line-height: 3;
+        }
+        .tag {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 5px 15px;
+            text-decoration: none;
+            color: #0066cc;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        .tag:hover {
+            background: #0066cc;
+            color: white;
+            transform: scale(1.1);
+        }
+        .tag.xs { font-size: 12px; opacity: 0.6; }
+        .tag.sm { font-size: 16px; opacity: 0.7; }
+        .tag.md { font-size: 20px; opacity: 0.8; }
+        .tag.lg { font-size: 28px; opacity: 0.9; }
+        .tag.xl { font-size: 36px; opacity: 1.0; font-weight: bold; }
+        .stats {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏷️ Tags Cloud</h1>
+        <div class="cloud">
+            <a href="#холодильник" class="tag xl" title="1 статей">холодильник</a>
+            <a href="#бытовая-техника" class="tag xl" title="1 статей">бытовая-техника</a>
+            <a href="#покупка" class="tag xl" title="1 статей">покупка</a>
+            <a href="#руководство" class="tag xl" title="1 статей">руководство</a>
+            <a href="#энергоэффективность" class="tag xl" title="1 статей">энергоэффективность</a>
+            <a href="#умный-дом" class="tag xl" title="1 статей">умный-дом</a>
+            <a href="#Python" class="tag xl" title="1 статей">Python</a>
+            <a href="#паттерны-проектирования" class="tag xl" title="1 статей">паттерны-проектирования</a>
+            <a href="#ООП" class="tag xl" title="1 статей">ООП</a>
+            <a href="#архитектура" class="tag xl" title="1 статей">архитектура</a>
+            <a href="#best-practices" class="tag xl" title="1 статей">best-practices</a>
+            <a href="#AI" class="tag xl" title="1 статей">AI</a>
+            <a href="#LLM" class="tag xl" title="1 статей">LLM</a>
+            <a href="#машинное-обучение" class="tag xl" title="1 статей">машинное-обучение</a>
+            <a href="#нейронные-сети" class="tag xl" title="1 статей">нейронные-сети</a>
+            <a href="#GPT" class="tag xl" title="1 статей">GPT</a>
+            <a href="#Claude" class="tag xl" title="1 статей">Claude</a>
+            <a href="#открытые-модели" class="tag xl" title="1 статей">открытые-модели</a>
+        </div>
+        <div class="stats">
+            📊 Всего тегов: 18 | 📚 Всего статей: 18
+        </div>
+    </div>
+</body>
+</html>

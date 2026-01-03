@@ -1,0 +1,29 @@
+[
+  {
+    "file": "knowledge/computers/articles/ai/llm-overview-2026.md",
+    "title": "Обзор больших языковых моделей 2026 года",
+    "category": "computers",
+    "subcategory": "artificial-intelligence",
+    "pagerank": 0.09250000000000003,
+    "inlinks_count": 1,
+    "outlinks_count": 0
+  },
+  {
+    "file": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+    "title": "Руководство по выбору холодильника в 2026 году",
+    "category": "household",
+    "subcategory": "appliances",
+    "pagerank": 0.05000000000000001,
+    "inlinks_count": 0,
+    "outlinks_count": 0
+  },
+  {
+    "file": "knowledge/computers/articles/programming/python-patterns.md",
+    "title": "Паттерны проектирования в Python",
+    "category": "computers",
+    "subcategory": "programming",
+    "pagerank": 0.05000000000000001,
+    "inlinks_count": 0,
+    "outlinks_count": 1
+  }
+]

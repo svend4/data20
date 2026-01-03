@@ -1,0 +1,99 @@
+{
+  "articles": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "tags": [
+        "холодильник",
+        "бытовая-техника",
+        "покупка",
+        "руководство",
+        "энергоэффективность",
+        "умный-дом"
+      ],
+      "incoming_links": 0,
+      "edit_count": 5,
+      "days_since_edit": 0,
+      "content_quality": 3.5,
+      "length": 15286,
+      "popularity_score": 8.187639203842082
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "tags": [
+        "Python",
+        "паттерны-проектирования",
+        "ООП",
+        "архитектура",
+        "best-practices"
+      ],
+      "incoming_links": 0,
+      "edit_count": 5,
+      "days_since_edit": 0,
+      "content_quality": 4.0,
+      "length": 15406,
+      "popularity_score": 8.687639203842082
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "tags": [
+        "AI",
+        "LLM",
+        "машинное-обучение",
+        "нейронные-сети",
+        "GPT",
+        "Claude",
+        "открытые-модели"
+      ],
+      "incoming_links": 0,
+      "edit_count": 5,
+      "days_since_edit": 0,
+      "content_quality": 3.5,
+      "length": 8697,
+      "popularity_score": 8.187639203842082
+    }
+  },
+  "rankings": {
+    "top": [
+      {
+        "article": "knowledge/computers/articles/programming/python-patterns.md",
+        "score": 8.687639203842082
+      },
+      {
+        "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "score": 8.187639203842082
+      },
+      {
+        "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "score": 8.187639203842082
+      }
+    ],
+    "trending": [
+      {
+        "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "score": 5.0
+      },
+      {
+        "article": "knowledge/computers/articles/programming/python-patterns.md",
+        "score": 5.0
+      },
+      {
+        "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "score": 5.0
+      }
+    ],
+    "hidden_gems": [
+      {
+        "article": "knowledge/computers/articles/programming/python-patterns.md",
+        "quality": 4.0
+      },
+      {
+        "article": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "quality": 3.5
+      },
+      {
+        "article": "knowledge/computers/articles/ai/llm-overview-2026.md",
+        "quality": 3.5
+      }
+    ]
+  }
+}

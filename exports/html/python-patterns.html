@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Паттерны проектирования в Python</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Паттерны проектирования в Python</h1>
+    <p><h1>Паттерны проектирования в Python</h1></p><p><h2>📑 Содержание</h2></p><p>- <a href="#краткое-описание">Краткое описание</a>
+- <a href="#порождающие-паттерны-creational-patterns">Порождающие паттерны (Creational Patterns)</a>
+  - <a href="#1-singleton-одиночка">1. Singleton (Одиночка)</a>
+  - <a href="#2-factory-method-фабричный-метод">2. Factory Method (Фабричный метод)</a>
+  - <a href="#3-builder-строитель">3. Builder (Строитель)</a>
+- <a href="#структурные-паттерны-structural-patterns">Структурные паттерны (Structural Patterns)</a>
+  - <a href="#4-decorator-декоратор">4. Decorator (Декоратор)</a>
+  - <a href="#5-adapter-адаптер">5. Adapter (Адаптер)</a>
+  - <a href="#6-facade-фасад">6. Facade (Фасад)</a>
+- <a href="#поведенческие-паттерны-behavioral-patterns">Поведенческие паттерны (Behavioral Patterns)</a>
+  - <a href="#7-observer-наблюдатель">7. Observer (Наблюдатель)</a>
+  - <a href="#8-strategy-стратегия">8. Strategy (Стратегия)</a>
+  - <a href="#9-command-команда">9. Command (Команда)</a>
+- <a href="#python-специфичные-паттерны">Python-специфичные паттерны</a>
+  - <a href="#10-context-manager-контекстный-менеджер">10. Context Manager (Контекстный менеджер)</a>
+  - <a href="#11-descriptor-дескриптор">11. Descriptor (Дескриптор)</a>
+- <a href="#ключевые-моменты">Ключевые моменты</a>
+- <a href="#ссылки-и-источники">Ссылки и источники</a>
+- <a href="#см-также">См. также</a>
+<h2>Краткое описание</h2>
+Обзор основных паттернов проектирования и их реализация в Python. Рассматриваются классические паттерны Gang of Four (GoF) и современные Python-специфичные подходы.</p><p><h2>Порождающие паттерны (Creational Patterns)</h2></p><p><h3>1. Singleton (Одиночка)</h3></p><p><strong>Назначение:</strong> Гарантировать, что у класса есть только один экземпляр, и предоставить глобальную точку доступа к нему.</p><p><strong>Реализация через метакласс:</strong>
+```python
+class SingletonMeta(type):
+    _instances = {}</p><p>    def __call__(cls, <em>args, </em>*kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(<em>args, </em>*kwargs)
+        return cls._instances[cls]</p><p>class DatabaseConnection(metaclass=SingletonMeta):
+    def __init__(self):
+        self.connection = None</p><p>    def connect(self):
+        if not self.connection:
+            self.connection = "Connected to DB"
+        return self.connection</p><p><h1>Использование</h1>
+db1 = DatabaseConnection()
+db2 = DatabaseConnection()
+print(db1 is db2)  # True
+```</p><p><strong>Современная альтернатива - декоратор:</strong>
+```python
+from functools import wraps</p><p>def singleton(cls):
+    instances = {}</p><p>    @wraps(cls)
+    def get_instance(<em>args, </em>*kwargs):
+        if cls not in instances:
+            instances[cls] = cls(<em>args, </em>*kwargs)
+        return instances[cls]</p><p>    return get_instance</p><p>@singleton
+class Config:
+    def __init__(self):
+        self.settings = {}
+```</p><p><strong>Когда использовать:</strong>
+- Конфигурация приложения
+- Логгер
+- Пул соединений с БД
+- Кеш</p><p><h3>2. Factory Method (Фабричный метод)</h3></p><p><strong>Назначение:</strong> Определить интерфейс для создания объекта, но оставить подклассам решение о том, какой класс инстанцировать.</p><p><strong>Реализация:</strong>
+```python
+from abc import ABC, abstractmethod</p><p>class Document(ABC):
+    @abstractmethod
+    def open(self):
+        pass</p><p>class PDFDocument(Document):
+    def open(self):
+        return "Opening PDF document"</p><p>class WordDocument(Document):
+    def open(self):
+        return "Opening Word document"</p><p>class DocumentFactory:
+    @staticmethod
+    def create_document(doc_type: str) -> Document:
+        if doc_type == "pdf":
+            return PDFDocument()
+        elif doc_type == "word":
+            return WordDocument()
+        else:
+            raise ValueError(f"Unknown document type: {doc_type}")</p><p><h1>Использование</h1>
+factory = DocumentFactory()
+doc = factory.create_document("pdf")
+print(doc.open())
+```</p><p><strong>Современная реализация с использованием dict:</strong>
+```python
+class DocumentFactory:
+    _creators = {
+        "pdf": PDFDocument,
+        "word": WordDocument,
+    }</p><p>    @classmethod
+    def register(cls, name: str, creator):
+        cls._creators[name] = creator</p><p>    @classmethod
+    def create(cls, name: str) -> Document:
+        creator = cls._creators.get(name)
+        if not creator:
+            raise ValueError(f"Unknown document type: {name}")
+        return creator()
+```</p><p><h3>3. Builder (Строитель)</h3></p><p><strong>Назначение:</strong> Отделить конструирование сложного объекта от его представления.</p><p><strong>Реализация с использованием fluent interface:</strong>
+```python
+class Pizza:
+    def __init__(self):
+        self.size = None
+        self.cheese = False
+        self.pepperoni = False
+        self.mushrooms = False</p><p>    def __str__(self):
+        return f"Pizza(size={self.size}, cheese={self.cheese}, " \
+               f"pepperoni={self.pepperoni}, mushrooms={self.mushrooms})"</p><p>class PizzaBuilder:
+    def __init__(self):
+        self.pizza = Pizza()</p><p>    def set_size(self, size: str):
+        self.pizza.size = size
+        return self</p><p>    def add_cheese(self):
+        self.pizza.cheese = True
+        return self</p><p>    def add_pepperoni(self):
+        self.pizza.pepperoni = True
+        return self</p><p>    def add_mushrooms(self):
+        self.pizza.mushrooms = True
+        return self</p><p>    def build(self) -> Pizza:
+        return self.pizza</p><p><h1>Использование</h1>
+pizza = (PizzaBuilder()
+         .set_size("large")
+         .add_cheese()
+         .add_pepperoni()
+         .build())
+```</p><p><strong>Современная Python-идиома с dataclass:</strong>
+```python
+from dataclasses import dataclass, field
+from typing import List</p><p>@dataclass
+class Pizza:
+    size: str
+    toppings: List[str] = field(default_factory=list)</p><p>    def add_topping(self, topping: str):
+        self.toppings.append(topping)
+        return self</p><p><h1>Использование</h1>
+pizza = Pizza("large").add_topping("cheese").add_topping("pepperoni")
+```</p><p><h2>Структурные паттерны (Structural Patterns)</h2></p><p><h3>4. Decorator (Декоратор)</h3></p><p><strong>Назначение:</strong> Динамически добавлять объекту новые обязанности.</p><p><strong>Python декораторы - нативная поддержка паттерна:</strong>
+```python
+import time
+from functools import wraps</p><p>def timing_decorator(func):
+    @wraps(func)
+    def wrapper(<em>args, </em>*kwargs):
+        start = time.time()
+        result = func(<em>args, </em>*kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.4f} seconds")
+        return result
+    return wrapper</p><p>def cache_decorator(func):
+    cache = {}</p><p>    @wraps(func)
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+    return wrapper</p><p>@timing_decorator
+@cache_decorator
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+```</p><p><strong>Декоратор класса:</strong>
+```python
+def add_logging(cls):
+    original_init = cls.__init__</p><p>    def new_init(self, <em>args, </em>*kwargs):
+        print(f"Creating instance of {cls.__name__}")
+        original_init(self, <em>args, </em>*kwargs)</p><p>    cls.__init__ = new_init
+    return cls</p><p>@add_logging
+class MyClass:
+    def __init__(self, value):
+        self.value = value
+```</p><p><h3>5. Adapter (Адаптер)</h3></p><p><strong>Назначение:</strong> Преобразовать интерфейс класса к другому интерфейсу, ожидаемому клиентами.</p><p><strong>Реализация:</strong>
+```python
+class EuropeanSocket:
+    def provide_220v(self):
+        return 220</p><p>class USASocket:
+    def provide_110v(self):
+        return 110</p><p>class SocketAdapter:
+    def __init__(self, socket):
+        self.socket = socket</p><p>    def provide_220v(self):
+        if hasattr(self.socket, 'provide_220v'):
+            return self.socket.provide_220v()
+        elif hasattr(self.socket, 'provide_110v'):
+            return self.socket.provide_110v() * 2
+        else:
+            raise ValueError("Unknown socket type")</p><p><h1>Использование</h1>
+usa_socket = USASocket()
+adapter = SocketAdapter(usa_socket)
+print(adapter.provide_220v())  # 220
+```</p><p><h3>6. Facade (Фасад)</h3></p><p><strong>Назначение:</strong> Предоставить унифицированный интерфейс к набору интерфейсов подсистемы.</p><p><strong>Реализация:</strong>
+```python
+class CPU:
+    def freeze(self):
+        print("CPU: Freezing")</p><p>    def jump(self, position):
+        print(f"CPU: Jumping to {position}")</p><p>    def execute(self):
+        print("CPU: Executing")</p><p>class Memory:
+    def load(self, position, data):
+        print(f"Memory: Loading {data} to {position}")</p><p>class HardDrive:
+    def read(self, lba, size):
+        return f"Data from sector {lba}"</p><p>class ComputerFacade:
+    def __init__(self):
+        self.cpu = CPU()
+        self.memory = Memory()
+        self.hard_drive = HardDrive()</p><p>    def start(self):
+        self.cpu.freeze()
+        boot_data = self.hard_drive.read(0, 1024)
+        self.memory.load(0, boot_data)
+        self.cpu.jump(0)
+        self.cpu.execute()</p><p><h1>Использование - простой интерфейс</h1>
+computer = ComputerFacade()
+computer.start()
+```</p><p><h2>Поведенческие паттерны (Behavioral Patterns)</h2></p><p><h3>7. Observer (Наблюдатель)</h3></p><p><strong>Назначение:</strong> Определить зависимость один-ко-многим между объектами так, что при изменении состояния одного объекта все зависящие от него оповещаются об этом.</p><p><strong>Реализация:</strong>
+```python
+from abc import ABC, abstractmethod
+from typing import List</p><p>class Observer(ABC):
+    @abstractmethod
+    def update(self, message: str):
+        pass</p><p>class Subject:
+    def __init__(self):
+        self._observers: List[Observer] = []</p><p>    def attach(self, observer: Observer):
+        self._observers.append(observer)</p><p>    def detach(self, observer: Observer):
+        self._observers.remove(observer)</p><p>    def notify(self, message: str):
+        for observer in self._observers:
+            observer.update(message)</p><p>class EmailNotifier(Observer):
+    def update(self, message: str):
+        print(f"Email: {message}")</p><p>class SMSNotifier(Observer):
+    def update(self, message: str):
+        print(f"SMS: {message}")</p><p>class NewsPublisher(Subject):
+    def publish_news(self, news: str):
+        print(f"Publishing: {news}")
+        self.notify(news)</p><p><h1>Использование</h1>
+publisher = NewsPublisher()
+publisher.attach(EmailNotifier())
+publisher.attach(SMSNotifier())
+publisher.publish_news("Breaking news!")
+```</p><p><h3>8. Strategy (Стратегия)</h3></p><p><strong>Назначение:</strong> Определить семейство алгоритмов, инкапсулировать каждый и сделать их взаимозаменяемыми.</p><p><strong>Классическая реализация:</strong>
+```python
+from abc import ABC, abstractmethod</p><p>class SortStrategy(ABC):
+    @abstractmethod
+    def sort(self, data: list) -> list:
+        pass</p><p>class QuickSort(SortStrategy):
+    def sort(self, data: list) -> list:
+        print("Using QuickSort")
+        return sorted(data)  # упрощенно</p><p>class MergeSort(SortStrategy):
+    def sort(self, data: list) -> list:
+        print("Using MergeSort")
+        return sorted(data)  # упрощенно</p><p>class Sorter:
+    def __init__(self, strategy: SortStrategy):
+        self._strategy = strategy</p><p>    def set_strategy(self, strategy: SortStrategy):
+        self._strategy = strategy</p><p>    def sort(self, data: list) -> list:
+        return self._strategy.sort(data)</p><p><h1>Использование</h1>
+sorter = Sorter(QuickSort())
+result = sorter.sort([3, 1, 2])
+```</p><p><strong>Python-идиоматическая реализация (функции первого класса):</strong>
+```python
+def quick_sort(data: list) -> list:
+    print("Using QuickSort")
+    return sorted(data)</p><p>def merge_sort(data: list) -> list:
+    print("Using MergeSort")
+    return sorted(data)</p><p>class Sorter:
+    def __init__(self, strategy=quick_sort):
+        self.strategy = strategy</p><p>    def sort(self, data: list) -> list:
+        return self.strategy(data)</p><p><h1>Использование</h1>
+sorter = Sorter(quick_sort)
+result = sorter.sort([3, 1, 2])
+```</p><p><h3>9. Command (Команда)</h3></p><p><strong>Назначение:</strong> Инкапсулировать запрос как объект, позволяя параметризовать клиентов с различными запросами, ставить запросы в очередь, логировать их и поддерживать отмену операций.</p><p><strong>Реализация:</strong>
+```python
+from abc import ABC, abstractmethod
+from typing import List</p><p>class Command(ABC):
+    @abstractmethod
+    def execute(self):
+        pass</p><p>    @abstractmethod
+    def undo(self):
+        pass</p><p>class Light:
+    def on(self):
+        print("Light is ON")</p><p>    def off(self):
+        print("Light is OFF")</p><p>class LightOnCommand(Command):
+    def __init__(self, light: Light):
+        self.light = light</p><p>    def execute(self):
+        self.light.on()</p><p>    def undo(self):
+        self.light.off()</p><p>class LightOffCommand(Command):
+    def __init__(self, light: Light):
+        self.light = light</p><p>    def execute(self):
+        self.light.off()</p><p>    def undo(self):
+        self.light.on()</p><p>class RemoteControl:
+    def __init__(self):
+        self.history: List[Command] = []</p><p>    def execute_command(self, command: Command):
+        command.execute()
+        self.history.append(command)</p><p>    def undo_last(self):
+        if self.history:
+            command = self.history.pop()
+            command.undo()</p><p><h1>Использование</h1>
+light = Light()
+remote = RemoteControl()</p><p>remote.execute_command(LightOnCommand(light))
+remote.execute_command(LightOffCommand(light))
+remote.undo_last()  # Light is ON
+```</p><p><h2>Python-специфичные паттерны</h2></p><p><h3>10. Context Manager (Контекстный менеджер)</h3></p><p><strong>Использование протокола `__enter__` и `__exit__`:</strong>
+```python
+class DatabaseConnection:
+    def __init__(self, connection_string):
+        self.connection_string = connection_string
+        self.connection = None</p><p>    def __enter__(self):
+        print(f"Connecting to {self.connection_string}")
+        self.connection = "Connected"
+        return self</p><p>    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Closing connection")
+        self.connection = None
+        return False  # не подавлять исключения</p><p><h1>Использование</h1>
+with DatabaseConnection("localhost:5432") as db:
+    print(f"Working with {db.connection}")
+```</p><p><strong>С использованием contextlib:</strong>
+```python
+from contextlib import contextmanager</p><p>@contextmanager
+def database_connection(connection_string):
+    print(f"Connecting to {connection_string}")
+    connection = "Connected"
+    try:
+        yield connection
+    finally:
+        print("Closing connection")</p><p><h1>Использование</h1>
+with database_connection("localhost:5432") as db:
+    print(f"Working with {db}")
+```</p><p><h3>11. Descriptor (Дескриптор)</h3></p><p><strong>Для валидации и контроля доступа к атрибутам:</strong>
+```python
+class PositiveNumber:
+    def __init__(self, name):
+        self.name = name</p><p>    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return instance.__dict__.get(self.name, 0)</p><p>    def __set__(self, instance, value):
+        if value < 0:
+            raise ValueError(f"{self.name} must be positive")
+        instance.__dict__[self.name] = value</p><p>class BankAccount:
+    balance = PositiveNumber("balance")</p><p>    def __init__(self, initial_balance):
+        self.balance = initial_balance</p><p><h1>Использование</h1>
+account = BankAccount(100)
+print(account.balance)  # 100
+<h1>account.balance = -50  # ValueError</h1>
+```</p><p><h2>Ключевые моменты</h2>
+- Python поддерживает паттерны на уровне языка (декораторы, контекстные менеджеры)
+- Не все GoF паттерны нужны в Python - язык уже предоставляет более простые решения
+- Используйте паттерны для решения реальных проблем, а не ради самих паттернов
+- Современный Python предпочитает композицию наследованию
+- Функции первого класса упрощают многие поведенческие паттерны</p><p><h2>Ссылки и источники</h2>
+1. <a href="https://refactoring.guru/design-patterns/python">Python Design Patterns - RefactoringGuru</a>
+2. <a href="https://github.com/faif/python-patterns">Design Patterns in Python - GitHub</a>
+3. <a href="https://www.oreilly.com/library/view/fluent-python-2nd/9781492056348/">Fluent Python by Luciano Ramalho</a></p><p><h2>См. также</h2>
+- [[python-best-practices]] - Лучшие практики Python
+- [[clean-code-python]] - Чистый код на Python
+- [[async-patterns-python]] - Асинхронные паттерны
+- [[testing-patterns]] - Паттерны тестирования
+</p>
+</body>
+</html>

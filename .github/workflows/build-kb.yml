@@ -1,0 +1,138 @@
+name: 🚀 Build Knowledge Base
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - claude/*
+    paths:
+      - 'knowledge/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - '.github/workflows/build-kb.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Ручной запуск
+
+# Разрешения для GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Предотвратить одновременные запуски
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 🏗️ Build Site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Полная история для git log
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 📦 Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          echo "✓ Dependencies installed"
+
+      - name: 🛠️ Generate all outputs (Quick mode)
+        run: |
+          chmod +x scripts/generate_all.sh
+          ./scripts/generate_all.sh --quick
+        timeout-minutes: 15
+        continue-on-error: true  # Продолжить даже при ошибках некоторых tools
+
+      - name: 🌐 Generate static site
+        run: |
+          chmod +x static_site/site_generator.py
+          python3 static_site/site_generator.py
+        timeout-minutes: 5
+
+      - name: 📊 Build summary
+        run: |
+          echo "### 📊 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated files:**" >> $GITHUB_STEP_SUMMARY
+          echo "- HTML: $(find . -maxdepth 1 -name '*.html' | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "- JSON: $(find . -maxdepth 1 -name '*.json' | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "- CSV: $(find . -maxdepth 1 -name '*.csv' | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "- Reports: $(find . -maxdepth 1 -name '*REPORT*.md' | wc -l) files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Site:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Index: ✓ static_site/public/index.html" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: static_site/public
+
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 🌐 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 📝 Deployment summary
+        run: |
+          echo "### 🎉 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Site URL:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Visit your Knowledge Base dashboard now! 🚀" >> $GITHUB_STEP_SUMMARY
+
+  validate:
+    name: ✅ Validate Only (on PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install pyyaml
+
+      - name: ✅ Run validation only
+        run: |
+          chmod +x scripts/generate_all.sh
+          ./scripts/generate_all.sh --validate-only
+        timeout-minutes: 10
+
+      - name: 📊 Validation summary
+        run: |
+          echo "### ✅ Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Validation completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the logs above for details." >> $GITHUB_STEP_SUMMARY

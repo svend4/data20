@@ -1,0 +1,145 @@
+{
+  "timestamp": "2026-01-02T16:05:42.776686",
+  "total_articles": 3,
+  "total_orphans": 2,
+  "orphans": [
+    {
+      "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "metadata": {
+        "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+        "frontmatter": {
+          "title": "Руководство по выбору холодильника в 2026 году",
+          "date": "2026-01-02",
+          "tags": [
+            "холодильник",
+            "бытовая-техника",
+            "покупка",
+            "руководство",
+            "энергоэффективность",
+            "умный-дом"
+          ],
+          "category": "household",
+          "subcategory": "appliances",
+          "status": "published",
+          "source": "Обзоры техники и тесты",
+          "related": [
+            "../energy/energy-efficiency-classes.md",
+            "../electronics/smart-home-zigbee.md"
+          ],
+          "pagerank": 0.05,
+          "pagerank_inlinks": 0,
+          "pagerank_outlinks": 0,
+          "reading_time": "6 мин",
+          "reading_time_minutes": 6,
+          "word_count": 1155,
+          "quality_score": 49,
+          "quality_grade": "F",
+          "quality_metrics": {
+            "completeness": 88,
+            "structure": 35,
+            "links": 30,
+            "examples": 0,
+            "readability": 50,
+            "freshness": 100
+          },
+          "difficulty": "Beginner",
+          "difficulty_score": 20
+        },
+        "content_length": 15286,
+        "modified_date": "2026-01-02T14:39:46",
+        "age_days": 0,
+        "tags": [
+          "холодильник",
+          "бытовая-техника",
+          "покупка",
+          "руководство",
+          "энергоэффективность",
+          "умный-дом"
+        ],
+        "category": "household"
+      },
+      "classification": {
+        "type": "isolated",
+        "severity": "medium",
+        "reason": [
+          "Новая статья, возможно еще не интегрирована",
+          "Ссылается на 2 статей, но на нее никто не ссылается"
+        ]
+      },
+      "candidates": []
+    },
+    {
+      "path": "knowledge/computers/articles/programming/python-patterns.md",
+      "metadata": {
+        "path": "knowledge/computers/articles/programming/python-patterns.md",
+        "frontmatter": {
+          "title": "Паттерны проектирования в Python",
+          "date": "2026-01-02",
+          "tags": [
+            "Python",
+            "паттерны-проектирования",
+            "ООП",
+            "архитектура",
+            "best-practices"
+          ],
+          "category": "computers",
+          "subcategory": "programming",
+          "status": "published",
+          "source": "Коллекция примеров и best practices",
+          "related": [
+            "../software/dev-tools.md",
+            "../ai/llm-overview-2026.md"
+          ],
+          "pagerank": 0.05,
+          "pagerank_inlinks": 0,
+          "pagerank_outlinks": 1,
+          "reading_time": "11 мин",
+          "reading_time_minutes": 11,
+          "word_count": 281,
+          "code_lines": 441,
+          "quality_score": 65,
+          "quality_grade": "C",
+          "quality_metrics": {
+            "completeness": 88,
+            "structure": 35,
+            "links": 30,
+            "examples": 70,
+            "readability": 78,
+            "freshness": 100
+          },
+          "difficulty": "Intermediate",
+          "difficulty_score": 41
+        },
+        "content_length": 15406,
+        "modified_date": "2026-01-02T14:39:46",
+        "age_days": 0,
+        "tags": [
+          "Python",
+          "паттерны-проектирования",
+          "ООП",
+          "архитектура",
+          "best-practices"
+        ],
+        "category": "computers"
+      },
+      "classification": {
+        "type": "isolated",
+        "severity": "medium",
+        "reason": [
+          "Новая статья, возможно еще не интегрирована",
+          "Ссылается на 2 статей, но на нее никто не ссылается"
+        ]
+      },
+      "candidates": [
+        {
+          "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "score": 8,
+          "reasons": [
+            "Та же категория: computers",
+            "Сирота ссылается на эту статью (можно сделать взаимную ссылку)"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+[
+  {
+    "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+    "title": "Руководство по выбору холодильника в 2026 году",
+    "existing_tags": [
+      "холодильник",
+      "бытовая-техника",
+      "покупка",
+      "руководство",
+      "энергоэффективность",
+      "умный-дом"
+    ],
+    "suggestions": [
+      {
+        "tag": "инверторный компрессор",
+        "score": 18,
+        "confidence": 0.9,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "сегмент руб",
+        "score": 18,
+        "confidence": 0.9,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "морозильной камерой",
+        "score": 12,
+        "confidence": 0.6,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "зона свежести",
+        "score": 12,
+        "confidence": 0.6,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "умные функции",
+        "score": 12,
+        "confidence": 0.6,
+        "type": "bigram",
+        "source": "ngram"
+      }
+    ],
+    "similar_articles": []
+  },
+  {
+    "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+    "title": "Обзор больших языковых моделей 2026 года",
+    "existing_tags": [
+      "AI",
+      "LLM",
+      "машинное-обучение",
+      "нейронные-сети",
+      "GPT",
+      "Claude",
+      "открытые-модели"
+    ],
+    "suggestions": [
+      {
+        "tag": "fine tuning",
+        "score": 16,
+        "confidence": 0.8,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "локальное развертывание",
+        "score": 14,
+        "confidence": 0.7,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "открытые модели",
+        "score": 8,
+        "confidence": 0.4,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "тенденции развития",
+        "score": 8,
+        "confidence": 0.4,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "агентные возможности",
+        "score": 8,
+        "confidence": 0.4,
+        "type": "bigram",
+        "source": "ngram"
+      }
+    ],
+    "similar_articles": []
+  },
+  {
+    "path": "knowledge/computers/articles/programming/python-patterns.md",
+    "title": "Паттерны проектирования в Python",
+    "existing_tags": [
+      "Python",
+      "паттерны-проектирования",
+      "ООП",
+      "архитектура",
+      "best-practices"
+    ],
+    "suggestions": [
+      {
+        "tag": "def self",
+        "score": 70,
+        "confidence": 1.0,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "self self",
+        "score": 40,
+        "confidence": 1.0,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "def self self",
+        "score": 39,
+        "confidence": 1.0,
+        "type": "trigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "return self",
+        "score": 26,
+        "confidence": 1.0,
+        "type": "bigram",
+        "source": "ngram"
+      },
+      {
+        "tag": "data list list",
+        "score": 21,
+        "confidence": 0.7,
+        "type": "trigram",
+        "source": "ngram"
+      }
+    ],
+    "similar_articles": []
+  }
+]

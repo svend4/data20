@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-01-02T17:08:57.424346",
+  "statistics": {
+    "total_articles": 3,
+    "see_redirects": 0,
+    "see_also": 2,
+    "bidirectional": 1,
+    "circular_refs": 0,
+    "quality_score": 48.533333333333324
+  },
+  "quality_metrics": {
+    "coverage_pct": 66.66666666666666,
+    "avg_score": 21.333333333333332,
+    "quality_overall": 48.533333333333324
+  },
+  "cross_references": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "see": null,
+      "see_also": [],
+      "compare_with": [],
+      "contrast_with": [],
+      "prerequisite": [],
+      "related_by": []
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "see": null,
+      "see_also": [
+        {
+          "target": "knowledge/computers/articles/programming/python-patterns.md",
+          "score": 21.333333333333332,
+          "strength": "weak"
+        }
+      ],
+      "compare_with": [],
+      "contrast_with": [],
+      "prerequisite": [],
+      "related_by": []
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "see": null,
+      "see_also": [
+        {
+          "target": "knowledge/computers/articles/ai/llm-overview-2026.md",
+          "score": 21.333333333333332,
+          "strength": "weak"
+        }
+      ],
+      "compare_with": [],
+      "contrast_with": [],
+      "prerequisite": [],
+      "related_by": [
+        "knowledge/computers/articles/ai/llm-overview-2026.md"
+      ]
+    }
+  }
+}

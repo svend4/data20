@@ -1,0 +1,137 @@
+{
+  "timestamp": "2026-01-02T18:27:33.709320",
+  "statistics": {
+    "total": 3,
+    "valid": 0,
+    "invalid": 3,
+    "avg_quality": 75.0
+  },
+  "results": [
+    {
+      "path": "knowledge/computers/articles/programming/python-patterns.md",
+      "valid": false,
+      "errors": [
+        "date: Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+        "date: Invalid date format (expected YYYY-MM-DD)",
+        "difficulty: Invalid value (allowed: beginner, intermediate, advanced)"
+      ],
+      "warnings": [
+        "Extra fields: reading_time_minutes, 1, pagerank_outlinks, reading_time, pagerank_inlinks, quality_metrics, 2), quality_grade, code_lines, quality_score, word_count, pagerank, difficulty_score",
+        "Related article not found: ../software/dev-tools.md",
+        "Related article not found: ../ai/llm-overview-2026.md"
+      ],
+      "missing_fields": [],
+      "invalid_fields": {
+        "date": [
+          "Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+          "Invalid date format (expected YYYY-MM-DD)"
+        ],
+        "difficulty": [
+          "Invalid value (allowed: beginner, intermediate, advanced)"
+        ]
+      },
+      "suggestions": [
+        "Add description: '[🏠 Главная](/INDEX....'",
+        "Add author field",
+        "Add 'keywords' field for SEO"
+      ],
+      "quality_score": {
+        "total": 75.0,
+        "breakdown": {
+          "completeness": 25.0,
+          "quality": 30,
+          "consistency": 20
+        },
+        "grade": "C"
+      },
+      "cross_issues": [
+        "Related article not found: ../software/dev-tools.md",
+        "Related article not found: ../ai/llm-overview-2026.md"
+      ]
+    },
+    {
+      "path": "knowledge/computers/articles/ai/llm-overview-2026.md",
+      "valid": false,
+      "errors": [
+        "date: Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+        "date: Invalid date format (expected YYYY-MM-DD)",
+        "difficulty: Invalid value (allowed: beginner, intermediate, advanced)"
+      ],
+      "warnings": [
+        "Extra fields: reading_time_minutes, 1, pagerank_outlinks, reading_time, pagerank_inlinks, quality_metrics, 2), quality_grade, quality_score, word_count, pagerank, difficulty_score",
+        "Related article not found: ai-in-development.md",
+        "Related article not found: ../../programming/python-patterns.md"
+      ],
+      "missing_fields": [],
+      "invalid_fields": {
+        "date": [
+          "Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+          "Invalid date format (expected YYYY-MM-DD)"
+        ],
+        "difficulty": [
+          "Invalid value (allowed: beginner, intermediate, advanced)"
+        ]
+      },
+      "suggestions": [
+        "Add description: '[🏠 Главная](/INDEX....'",
+        "Add author field",
+        "Add 'keywords' field for SEO"
+      ],
+      "quality_score": {
+        "total": 75.0,
+        "breakdown": {
+          "completeness": 25.0,
+          "quality": 30,
+          "consistency": 20
+        },
+        "grade": "C"
+      },
+      "cross_issues": [
+        "Related article not found: ai-in-development.md",
+        "Related article not found: ../../programming/python-patterns.md"
+      ]
+    },
+    {
+      "path": "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md",
+      "valid": false,
+      "errors": [
+        "date: Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+        "date: Invalid date format (expected YYYY-MM-DD)",
+        "difficulty: Invalid value (allowed: beginner, intermediate, advanced)"
+      ],
+      "warnings": [
+        "Extra fields: reading_time_minutes, 1, pagerank_outlinks, reading_time, pagerank_inlinks, quality_metrics, 2), quality_grade, quality_score, word_count, pagerank, difficulty_score",
+        "Related article not found: ../energy/energy-efficiency-classes.md",
+        "Related article not found: ../electronics/smart-home-zigbee.md"
+      ],
+      "missing_fields": [],
+      "invalid_fields": {
+        "date": [
+          "Invalid format (pattern: \\d{4}-\\d{2}-\\d{2})",
+          "Invalid date format (expected YYYY-MM-DD)"
+        ],
+        "difficulty": [
+          "Invalid value (allowed: beginner, intermediate, advanced)"
+        ]
+      },
+      "suggestions": [
+        "Add description: '[🏠 Главная](/INDEX....'",
+        "Add author field",
+        "Add 'keywords' field for SEO"
+      ],
+      "quality_score": {
+        "total": 75.0,
+        "breakdown": {
+          "completeness": 25.0,
+          "quality": 30,
+          "consistency": 20
+        },
+        "grade": "C"
+      },
+      "cross_issues": [
+        "Related article not found: ../energy/energy-efficiency-classes.md",
+        "Related article not found: ../electronics/smart-home-zigbee.md"
+      ]
+    }
+  ]
+}

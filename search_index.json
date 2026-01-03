@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-01-02T17:15:56.488896",
+  "statistics": {
+    "total_documents": 3,
+    "unique_words": 1318,
+    "avg_doc_length": 1302.0
+  },
+  "documents": {
+    "knowledge/household/articles/appliances/refrigerator-buying-guide-2026.md": {
+      "title": "Руководство по выбору холодильника в 2026 году",
+      "tags": [
+        "холодильник",
+        "бытовая-техника",
+        "покупка",
+        "руководство",
+        "энергоэффективность",
+        "умный-дом"
+      ],
+      "word_count": 1545,
+      "title_words": 4,
+      "header_words": 141
+    },
+    "knowledge/computers/articles/ai/llm-overview-2026.md": {
+      "title": "Обзор больших языковых моделей 2026 года",
+      "tags": [
+        "AI",
+        "LLM",
+        "машинное-обучение",
+        "нейронные-сети",
+        "GPT",
+        "Claude",
+        "открытые-модели"
+      ],
+      "word_count": 889,
+      "title_words": 5,
+      "header_words": 94
+    },
+    "knowledge/computers/articles/programming/python-patterns.md": {
+      "title": "Паттерны проектирования в Python",
+      "tags": [
+        "Python",
+        "паттерны-проектирования",
+        "ООП",
+        "архитектура",
+        "best-practices"
+      ],
+      "word_count": 1472,
+      "title_words": 3,
+      "header_words": 71
+    }
+  },
+  "analytics": {}
+}
