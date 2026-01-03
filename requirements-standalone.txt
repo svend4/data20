@@ -1,0 +1,35 @@
+# Standalone Requirements (Offline Mode)
+# Minimal dependencies for running without external services
+
+# Core framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic[email]==2.5.0
+
+# Database (SQLite built-in to Python, no extra deps needed)
+sqlalchemy==2.0.23
+alembic==1.12.1
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Logging
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# Metrics (optional in standalone)
+prometheus-client==0.19.0
+
+# Utilities
+python-dateutil==2.8.2
+aiofiles==23.2.1
+
+# HTTP client
+httpx==0.25.2
+
+# Note: No PostgreSQL, Redis, or Celery dependencies
+# SQLite is built into Python (no psycopg2-binary)
+# No Redis (no redis-py)
+# No Celery (no celery)
