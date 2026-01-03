@@ -95,7 +95,7 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # Nullable до Phase 5.2 (Auth)
 
     # Tool info
     tool_name = Column(String(100), nullable=False, index=True)

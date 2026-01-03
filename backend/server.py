@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 4: Full Backend Integration with WebSocket Support
+Phase 5.1.7: Database Integration with PostgreSQL
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from pathlib import Path
+from sqlalchemy.orm import Session
 import asyncio
 import json
 from datetime import datetime
 
 from tool_registry import ToolRegistry, ToolCategory
-from tool_runner import ToolRunner, JobStatus
+from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
+from database import get_db, check_database_connection, init_database, engine
+from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus
 
 # ========================
 # Pydantic Models
@@ -56,8 +59,8 @@ class JobStatusResponse(BaseModel):
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools",
-    version="4.0.0"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL persistence",
+    version="5.1.7"
 )
 
 # CORS для фронтенда
@@ -82,6 +85,22 @@ active_connections: List[WebSocket] = []
 
 
 # ========================
+# Helper Functions
+# ========================
+
+def _convert_runner_status(runner_status: RunnerJobStatus) -> DBJobStatus:
+    """Convert tool_runner.JobStatus to models.JobStatus"""
+    mapping = {
+        RunnerJobStatus.PENDING: DBJobStatus.PENDING,
+        RunnerJobStatus.RUNNING: DBJobStatus.RUNNING,
+        RunnerJobStatus.COMPLETED: DBJobStatus.COMPLETED,
+        RunnerJobStatus.FAILED: DBJobStatus.FAILED,
+        RunnerJobStatus.CANCELLED: DBJobStatus.CANCELLED
+    }
+    return mapping.get(runner_status, DBJobStatus.FAILED)
+
+
+# ========================
 # Lifecycle Events
 # ========================
 
@@ -90,6 +109,19 @@ async def startup_event():
     """Инициализация при запуске"""
     print("🚀 Starting Data20 Backend API Server...")
     print("=" * 60)
+
+    # Проверить подключение к БД
+    db_connected = check_database_connection()
+    if db_connected:
+        print("✅ Database connected")
+        # Создать таблицы если их нет
+        try:
+            init_database()
+            print("✅ Database schema initialized")
+        except Exception as e:
+            print(f"⚠️  Database initialization warning: {e}")
+    else:
+        print("⚠️  Database not available (running without persistence)")
 
     # Сканировать инструменты
     count = registry.scan_tools()
@@ -105,6 +137,7 @@ async def startup_event():
     print("🎯 Server ready!")
     print("📚 API Docs: http://localhost:8001/docs")
     print("🔧 Total Tools: {}".format(count))
+    print("💾 Database: {}".format("Connected" if db_connected else "Disabled"))
     print("=" * 60)
 
 
@@ -117,6 +150,13 @@ async def shutdown_event():
     running = runner.get_running_jobs()
     for job in running:
         await runner.cancel_job(job.job_id)
+
+    # Закрыть подключения к БД
+    try:
+        engine.dispose()
+        print("✅ Database connections closed")
+    except:
+        pass
 
     print("✅ Cleanup complete")
 
@@ -240,7 +280,11 @@ async def search_tools(q: str):
 
 
 @app.post("/api/run")
-async def run_tool(request: ToolRunRequest, background_tasks: BackgroundTasks):
+async def run_tool(
+    request: ToolRunRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     """
     Запустить инструмент
 
@@ -252,15 +296,67 @@ async def run_tool(request: ToolRunRequest, background_tasks: BackgroundTasks):
     if not tool:
         raise HTTPException(status_code=404, detail=f"Tool {request.tool_name} not found")
 
-    # Запустить в фоне
-    async def run_in_background():
-        await runner.run_tool(request.tool_name, request.parameters)
-
-    background_tasks.add_task(run_in_background)
-
-    # Создать временный job для получения ID
+    # Создать job в БД
     import uuid
     job_id = str(uuid.uuid4())
+
+    db_job = DBJob(
+        id=job_id,
+        tool_name=request.tool_name,
+        parameters=request.parameters,
+        status=DBJobStatus.PENDING
+    )
+
+    try:
+        db.add(db_job)
+        db.commit()
+        db.refresh(db_job)
+    except Exception as e:
+        print(f"⚠️  Failed to save job to database: {e}")
+        # Продолжить без БД
+
+    # Запустить в фоне
+    async def run_in_background():
+        result = await runner.run_tool(request.tool_name, request.parameters)
+
+        # Сохранить результат в БД (с новой сессией)
+        from database import get_db_context
+        try:
+            with get_db_context() as bg_db:
+                # Обновить job
+                db_job_update = bg_db.query(DBJob).filter(DBJob.id == job_id).first()
+                if db_job_update:
+                    db_job_update.status = _convert_runner_status(result.status)
+                    db_job_update.started_at = result.started_at
+                    db_job_update.completed_at = result.completed_at
+                    db_job_update.duration = result.duration
+
+                    # Создать result
+                    db_result = DBJobResult(
+                        job_id=job_id,
+                        stdout=result.output,
+                        stderr=result.error,
+                        return_code=result.return_code,
+                        output_files=result.output_files,
+                        total_size=sum(
+                            (output_dir / f).stat().st_size
+                            for f in result.output_files
+                            if (output_dir / f).exists()
+                        )
+                    )
+                    bg_db.add(db_result)
+
+                    # Создать log entry
+                    db_log = DBJobLog(
+                        job_id=job_id,
+                        level="INFO" if result.status == RunnerJobStatus.COMPLETED else "ERROR",
+                        message=result.output if result.status == RunnerJobStatus.COMPLETED else result.error
+                    )
+                    bg_db.add(db_log)
+        except Exception as e:
+            print(f"⚠️  Failed to save job result to database: {e}")
+
+    background_tasks.add_task(run_in_background)
 
     return ToolRunResponse(
         job_id=job_id,
@@ -271,50 +367,139 @@ async def run_tool(request: ToolRunRequest, background_tasks: BackgroundTasks):
 
 
 @app.get("/api/jobs")
-async def get_all_jobs():
-    """Получить все задачи"""
-    jobs = runner.get_all_jobs()
+async def get_all_jobs(
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    """Получить все задачи (из памяти + БД)"""
+
+    all_jobs = []
+
+    # 1. Получить задачи из памяти (текущие)
+    memory_jobs = runner.get_all_jobs()
+    for j in memory_jobs:
+        all_jobs.append({
+            "job_id": j.job_id,
+            "tool_name": j.tool_name,
+            "status": j.status.value,
+            "progress": j.progress,
+            "started_at": j.started_at.isoformat() if j.started_at else None,
+            "completed_at": j.completed_at.isoformat() if j.completed_at else None,
+            "duration": j.duration,
+            "source": "memory"
+        })
+
+    # 2. Получить задачи из БД (исторические)
+    try:
+        db_jobs = db.query(DBJob)\
+            .order_by(DBJob.created_at.desc())\
+            .limit(limit)\
+            .offset(offset)\
+            .all()
+
+        # Исключить те, которые уже в памяти
+        memory_job_ids = {j.job_id for j in memory_jobs}
+
+        for j in db_jobs:
+            if str(j.id) not in memory_job_ids:
+                all_jobs.append({
+                    "job_id": str(j.id),
+                    "tool_name": j.tool_name,
+                    "status": j.status.value,
+                    "progress": 100 if j.status == DBJobStatus.COMPLETED else 0,
+                    "started_at": j.started_at.isoformat() if j.started_at else None,
+                    "completed_at": j.completed_at.isoformat() if j.completed_at else None,
+                    "duration": j.duration,
+                    "source": "database"
+                })
+    except Exception as e:
+        print(f"⚠️  Failed to fetch jobs from database: {e}")
+
+    # Сортировать по дате создания (новые первые)
+    all_jobs.sort(key=lambda x: x.get("started_at") or "", reverse=True)
 
     return {
-        "total": len(jobs),
-        "running": len([j for j in jobs if j.status == JobStatus.RUNNING]),
-        "completed": len([j for j in jobs if j.status == JobStatus.COMPLETED]),
-        "failed": len([j for j in jobs if j.status == JobStatus.FAILED]),
-        "jobs": [
-            {
-                "job_id": j.job_id,
-                "tool_name": j.tool_name,
-                "status": j.status.value,
-                "progress": j.progress,
-                "started_at": j.started_at.isoformat() if j.started_at else None,
-                "completed_at": j.completed_at.isoformat() if j.completed_at else None,
-                "duration": j.duration
-            }
-            for j in jobs
-        ]
+        "total": len(all_jobs),
+        "running": len([j for j in all_jobs if j["status"] == "running"]),
+        "completed": len([j for j in all_jobs if j["status"] == "completed"]),
+        "failed": len([j for j in all_jobs if j["status"] == "failed"]),
+        "jobs": all_jobs
     }
 
 
 @app.get("/api/jobs/{job_id}")
-async def get_job_status(job_id: str):
-    """Получить статус задачи"""
+async def get_job_status(job_id: str, db: Session = Depends(get_db)):
+    """Получить статус задачи (из памяти или БД)"""
+
+    # Сначала проверить в памяти (запущенные задачи)
     job = runner.get_job(job_id)
 
-    if not job:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    if job:
+        # Задача в памяти (выполняется или недавно завершена)
+        return JobStatusResponse(
+            job_id=job.job_id,
+            tool_name=job.tool_name,
+            status=job.status.value,
+            progress=job.progress,
+            output=job.output if job.status == RunnerJobStatus.COMPLETED else None,
+            error=job.error if job.status == RunnerJobStatus.FAILED else None,
+            started_at=job.started_at.isoformat() if job.started_at else None,
+            completed_at=job.completed_at.isoformat() if job.completed_at else None,
+            duration=job.duration,
+            output_files=job.output_files
+        )
 
-    return JobStatusResponse(
-        job_id=job.job_id,
-        tool_name=job.tool_name,
-        status=job.status.value,
-        progress=job.progress,
-        output=job.output if job.status == JobStatus.COMPLETED else None,
-        error=job.error if job.status == JobStatus.FAILED else None,
-        started_at=job.started_at.isoformat() if job.started_at else None,
-        completed_at=job.completed_at.isoformat() if job.completed_at else None,
-        duration=job.duration,
-        output_files=job.output_files
-    )
+    # Проверить в БД (завершённые задачи)
+    try:
+        db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
+
+        if db_job:
+            # Загрузить result
+            db_result = db.query(DBJobResult).filter(DBJobResult.job_id == job_id).first()
+
+            return JobStatusResponse(
+                job_id=str(db_job.id),
+                tool_name=db_job.tool_name,
+                status=db_job.status.value,
+                progress=100 if db_job.status == DBJobStatus.COMPLETED else 0,
+                output=db_result.stdout if db_result else None,
+                error=db_result.stderr if db_result else None,
+                started_at=db_job.started_at.isoformat() if db_job.started_at else None,
+                completed_at=db_job.completed_at.isoformat() if db_job.completed_at else None,
+                duration=db_job.duration,
+                output_files=db_result.output_files if db_result else []
+            )
+    except Exception as e:
+        print(f"⚠️  Database query failed: {e}")
+
+    raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+
+@app.get("/api/jobs/{job_id}/logs")
+async def get_job_logs(job_id: str, db: Session = Depends(get_db)):
+    """Получить логи задачи"""
+    try:
+        logs = db.query(DBJobLog)\
+            .filter(DBJobLog.job_id == job_id)\
+            .order_by(DBJobLog.timestamp.asc())\
+            .all()
+
+        return {
+            "job_id": job_id,
+            "total": len(logs),
+            "logs": [
+                {
+                    "timestamp": log.timestamp.isoformat(),
+                    "level": log.level,
+                    "message": log.message
+                }
+                for log in logs
+            ]
+        }
+    except Exception as e:
+        print(f"⚠️  Failed to fetch logs: {e}")
+        return {"job_id": job_id, "total": 0, "logs": []}
 
 
 @app.delete("/api/jobs/{job_id}")
@@ -329,9 +514,44 @@ async def cancel_job(job_id: str):
 
 
 @app.get("/api/stats")
-async def get_system_stats():
-    """Получить статистику системы"""
+async def get_system_stats(db: Session = Depends(get_db)):
+    """Получить статистику системы + БД"""
     stats = runner.get_system_stats()
+
+    # Добавить статистику из БД
+    try:
+        total_jobs_db = db.query(DBJob).count()
+        completed_jobs_db = db.query(DBJob).filter(DBJob.status == DBJobStatus.COMPLETED).count()
+        failed_jobs_db = db.query(DBJob).filter(DBJob.status == DBJobStatus.FAILED).count()
+
+        # Топ 5 инструментов
+        from sqlalchemy import func
+        top_tools = db.query(
+            DBJob.tool_name,
+            func.count(DBJob.id).label('count')
+        ).group_by(DBJob.tool_name)\
+         .order_by(func.count(DBJob.id).desc())\
+         .limit(5)\
+         .all()
+
+        stats["database"] = {
+            "connected": True,
+            "total_jobs": total_jobs_db,
+            "completed_jobs": completed_jobs_db,
+            "failed_jobs": failed_jobs_db,
+            "success_rate": (completed_jobs_db / total_jobs_db * 100) if total_jobs_db > 0 else 0,
+            "top_tools": [
+                {"name": name, "count": count}
+                for name, count in top_tools
+            ]
+        }
+    except Exception as e:
+        print(f"⚠️  Failed to fetch database stats: {e}")
+        stats["database"] = {
+            "connected": False,
+            "error": str(e)
+        }
+
     return stats
 
 
