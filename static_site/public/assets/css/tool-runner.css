@@ -1,0 +1,553 @@
+/**
+ * Tool Runner UI Styles
+ * Phase 4.7: Styling for interactive tool execution interface
+ */
+
+/* ========================
+   Modal Containers
+   ======================== */
+
+.tool-runner-modal,
+.tool-params-modal,
+.tool-info-modal {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ========================
+   Tool Runner Container
+   ======================== */
+
+.tool-runner-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    width: 90vw;
+    max-width: 1400px;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tool-runner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.tool-runner-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+/* ========================
+   Layout
+   ======================== */
+
+.tool-runner-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.tool-runner-sidebar {
+    width: 280px;
+    background: var(--bg-secondary);
+    border-right: 2px solid var(--border-color);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.tool-runner-sidebar h3 {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 15px 0;
+    font-weight: 600;
+}
+
+.tool-runner-main {
+    flex: 1;
+    padding: 20px 30px;
+    overflow-y: auto;
+}
+
+/* ========================
+   Category List
+   ======================== */
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 30px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.category-item:hover {
+    background: var(--hover-bg);
+}
+
+.category-item.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.category-icon {
+    font-size: 1.2em;
+}
+
+.category-name {
+    flex: 1;
+    text-transform: capitalize;
+}
+
+.category-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.category-item.active .category-count {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================
+   Search Bar
+   ======================== */
+
+.search-bar {
+    margin-bottom: 25px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ========================
+   Tools Grid
+   ======================== */
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.tool-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.tool-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.tool-icon {
+    font-size: 2em;
+}
+
+.tool-name {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+.tool-description {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    min-height: 3em;
+}
+
+.tool-meta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tool-meta span {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.tool-category {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.tool-time {
+    background: #3498db;
+    color: white;
+}
+
+.tool-complexity {
+    color: white;
+    text-transform: capitalize;
+}
+
+.complexity-low {
+    background: #27ae60;
+}
+
+.complexity-medium {
+    background: #f39c12;
+}
+
+.complexity-high {
+    background: #e74c3c;
+}
+
+.tool-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ========================
+   Running Jobs Section
+   ======================== */
+
+.running-jobs-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+#running-jobs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+#running-jobs-list:empty::after {
+    content: 'No running jobs';
+    color: var(--text-tertiary);
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+.job-progress-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.job-header strong {
+    font-size: 0.9em;
+    color: var(--text-primary);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width 0.3s ease-out;
+    border-radius: 4px;
+}
+
+.job-status {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+}
+
+/* ========================
+   Parameter Form Modal
+   ======================== */
+
+.params-container,
+.info-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+}
+
+.params-container h2,
+.info-container h2 {
+    margin: 0 0 25px 0;
+    color: var(--text-primary);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group .required {
+    color: #e74c3c;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-tertiary);
+    font-size: 0.85em;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+/* ========================
+   Info Modal
+   ======================== */
+
+.info-section {
+    margin: 25px 0;
+}
+
+.info-section h3 {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.info-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.info-section table td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-section table td:first-child {
+    font-weight: 500;
+    color: var(--text-secondary);
+    width: 40%;
+}
+
+.info-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.info-section li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-section li:last-child {
+    border-bottom: none;
+}
+
+/* ========================
+   No Results
+   ======================== */
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-tertiary);
+    font-size: 1.1em;
+}
+
+/* ========================
+   Animations
+   ======================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* ========================
+   Responsive
+   ======================== */
+
+@media (max-width: 1024px) {
+    .tool-runner-container {
+        width: 95vw;
+        height: 90vh;
+    }
+
+    .tool-runner-sidebar {
+        width: 240px;
+    }
+
+    .tools-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .tool-runner-body {
+        flex-direction: column;
+    }
+
+    .tool-runner-sidebar {
+        width: 100%;
+        max-height: 200px;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .tools-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .params-container,
+    .info-container {
+        padding: 20px;
+        max-width: 90vw;
+    }
+}

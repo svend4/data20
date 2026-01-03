@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Knowledge Base - Advanced Search">
+    <meta name="theme-color" content="#667eea">
+    <title>Advanced Search - Knowledge Base</title>
+
+    <!-- PWA Meta -->
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/enhanced.css">
+    <link rel="stylesheet" href="../assets/css/multipage.css">
+    <link rel="stylesheet" href="../assets/css/tool-runner.css">
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+</head>
+<body data-page="search">
+    <nav class="main-nav">
+  <div class="nav-brand">
+    <h1>📚 Knowledge Base</h1>
+  </div>
+  <ul class="nav-links">
+    <li><a href="../index.html">🏠 Dashboard</a></li>
+    <li><a href="../pages/explorer.html">🔍 Data Explorer</a></li>
+    <li><a href="../pages/visualizations.html">📊 Visualizations</a></li>
+    <li><a href="../pages/reports.html">📄 Reports</a></li>
+    <li><a href="../pages/graph.html">🕸️ Graph</a></li>
+    <li><a href="../pages/search.html" class="active">🔎 Search</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button onclick="toggleTheme()" class="btn-icon" title="Toggle theme">🌓</button>
+    <button onclick="installPWA()" id="install-btn" class="btn-icon" title="Install App" style="display:none">📲</button>
+  </div>
+</nav>
+
+
+    <main class="page-content">
+        {CONTENT}
+    </main>
+
+    <footer class="page-footer">
+        <p>🚀 Knowledge Base v4.0 - Multi-Page PWA + Backend API</p>
+        <p>Phase 1 + Phase 2 + Phase 3 + Phase 4 | Full Integration</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/enhanced.js"></script>
+    <script src="../assets/js/data-explorer.js"></script>
+    <script src="../assets/js/dashboard.js"></script>
+    <script src="../assets/js/graph-viewer.js"></script>
+    <script src="../assets/js/pwa.js"></script>
+    <script src="../assets/js/api-client.js"></script>
+    <script src="../assets/js/tool-runner.js"></script>
+</body>
+</html>
