@@ -137,6 +137,7 @@ class MultiPageGenerator:
     <!-- Styles -->
     <link rel="stylesheet" href="../assets/css/enhanced.css">
     <link rel="stylesheet" href="../assets/css/multipage.css">
+    <link rel="stylesheet" href="../assets/css/tool-runner.css">
 
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -150,8 +151,8 @@ class MultiPageGenerator:
     </main>
 
     <footer class="page-footer">
-        <p>🚀 Knowledge Base v3.0 - Multi-Page PWA</p>
-        <p>Phase 1 + Phase 2 + Phase 3 | Production Ready</p>
+        <p>🚀 Knowledge Base v4.0 - Multi-Page PWA + Backend API</p>
+        <p>Phase 1 + Phase 2 + Phase 3 + Phase 4 | Full Integration</p>
     </footer>
 
     <!-- Scripts -->
@@ -160,6 +161,8 @@ class MultiPageGenerator:
     <script src="../assets/js/dashboard.js"></script>
     <script src="../assets/js/graph-viewer.js"></script>
     <script src="../assets/js/pwa.js"></script>
+    <script src="../assets/js/api-client.js"></script>
+    <script src="../assets/js/tool-runner.js"></script>
 </body>
 </html>
 """
@@ -254,6 +257,7 @@ class MultiPageGenerator:
     <!-- Styles -->
     <link rel="stylesheet" href="assets/css/enhanced.css">
     <link rel="stylesheet" href="assets/css/multipage.css">
+    <link rel="stylesheet" href="assets/css/tool-runner.css">
 
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -267,8 +271,8 @@ class MultiPageGenerator:
     </main>
 
     <footer class="page-footer">
-        <p>🚀 Knowledge Base v3.0 - Multi-Page PWA</p>
-        <p>Phase 1 + Phase 2 + Phase 3 | Production Ready</p>
+        <p>🚀 Knowledge Base v4.0 - Multi-Page PWA + Backend API</p>
+        <p>Phase 1 + Phase 2 + Phase 3 + Phase 4 | Full Integration</p>
     </footer>
 
     <!-- Scripts -->
@@ -277,6 +281,8 @@ class MultiPageGenerator:
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/graph-viewer.js"></script>
     <script src="assets/js/pwa.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/tool-runner.js"></script>
 </body>
 </html>
 """
