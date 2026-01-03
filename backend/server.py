@@ -147,8 +147,8 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth",
-    version="5.2.1"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth + User Management",
+    version="5.2.2"
 )
 
 # Logging middleware (first!)
@@ -243,7 +243,7 @@ async def startup_event():
             logger.info("registry_cached", ttl_seconds=3600)
 
     # Initialize Prometheus metrics
-    init_metrics(app_version="5.2.1", environment=os.getenv("ENVIRONMENT", "production"))
+    init_metrics(app_version="5.2.2", environment=os.getenv("ENVIRONMENT", "production"))
     logger.info("prometheus_initialized")
 
     # Log startup summary
@@ -302,7 +302,7 @@ async def root():
     """Корневой endpoint"""
     return {
         "name": "Data20 Knowledge Base API",
-        "version": "5.2.1",
+        "version": "5.2.2",
         "status": "running",
         "total_tools": len(registry.tools),
         "docs": "/docs",
@@ -313,6 +313,13 @@ async def root():
             "login": "/auth/login",
             "refresh": "/auth/refresh",
             "me": "/auth/me"
+        },
+        "admin": {
+            "users": "/admin/users",
+            "user_detail": "/admin/users/{user_id}",
+            "update_role": "/admin/users/{user_id}/role",
+            "update_status": "/admin/users/{user_id}/status",
+            "delete_user": "/admin/users/{user_id}"
         }
     }
 
@@ -510,6 +517,236 @@ async def logout(current_user: User = Depends(get_current_active_user)):
     """
     logger.info("user_logout", user_id=str(current_user.id), username=current_user.username)
     return {"message": "Logged out successfully. Please discard your tokens."}
+
+
+# ========================
+# Admin: User Management Endpoints
+# ========================
+
+@app.get("/admin/users", response_model=List[UserResponse])
+async def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    List all users (admin only)
+
+    Supports pagination with skip/limit parameters
+    """
+    logger.info("admin_list_users", admin_id=str(current_user.id), skip=skip, limit=limit)
+
+    users = db.query(User).offset(skip).limit(limit).all()
+
+    return [
+        UserResponse(
+            id=str(user.id),
+            username=user.username,
+            email=user.email,
+            full_name=user.full_name,
+            role=user.role.value,
+            is_active=user.is_active,
+            created_at=user.created_at.isoformat()
+        )
+        for user in users
+    ]
+
+
+@app.get("/admin/users/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: str,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Get user details by ID (admin only)
+    """
+    logger.info("admin_get_user", admin_id=str(current_user.id), target_user_id=user_id)
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+class UpdateUserRoleRequest(BaseModel):
+    """Request to update user role"""
+    role: str  # "admin", "user", or "guest"
+
+
+@app.put("/admin/users/{user_id}/role", response_model=UserResponse)
+async def update_user_role(
+    user_id: str,
+    request: UpdateUserRoleRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Update user role (admin only)
+
+    Roles: admin, user, guest
+    Cannot demote yourself
+    """
+    logger.info(
+        "admin_update_user_role",
+        admin_id=str(current_user.id),
+        target_user_id=user_id,
+        new_role=request.role
+    )
+
+    # Prevent self-demotion
+    if str(current_user.id) == user_id and request.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot demote yourself from admin")
+
+    # Validate role
+    try:
+        new_role = UserRole(request.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid role: {request.role}. Must be: admin, user, or guest")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update role
+    old_role = user.role.value
+    user.role = new_role
+    db.commit()
+    db.refresh(user)
+
+    logger.info(
+        "user_role_updated",
+        target_user_id=user_id,
+        username=user.username,
+        old_role=old_role,
+        new_role=new_role.value,
+        updated_by=str(current_user.id)
+    )
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+class UpdateUserStatusRequest(BaseModel):
+    """Request to update user active status"""
+    is_active: bool
+
+
+@app.put("/admin/users/{user_id}/status", response_model=UserResponse)
+async def update_user_status(
+    user_id: str,
+    request: UpdateUserStatusRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Activate or deactivate user account (admin only)
+
+    Cannot deactivate yourself
+    """
+    logger.info(
+        "admin_update_user_status",
+        admin_id=str(current_user.id),
+        target_user_id=user_id,
+        new_status=request.is_active
+    )
+
+    # Prevent self-deactivation
+    if str(current_user.id) == user_id and not request.is_active:
+        raise HTTPException(status_code=400, detail="Cannot deactivate yourself")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update status
+    old_status = user.is_active
+    user.is_active = request.is_active
+    db.commit()
+    db.refresh(user)
+
+    logger.info(
+        "user_status_updated",
+        target_user_id=user_id,
+        username=user.username,
+        old_status=old_status,
+        new_status=request.is_active,
+        updated_by=str(current_user.id)
+    )
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+@app.delete("/admin/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete user account (admin only)
+
+    Cannot delete yourself
+    All user's jobs are preserved but orphaned
+    """
+    logger.info("admin_delete_user", admin_id=str(current_user.id), target_user_id=user_id)
+
+    # Prevent self-deletion
+    if str(current_user.id) == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    username = user.username
+    role = user.role.value
+
+    # Delete user
+    db.delete(user)
+    db.commit()
+
+    logger.info(
+        "user_deleted",
+        target_user_id=user_id,
+        username=username,
+        role=role,
+        deleted_by=str(current_user.id)
+    )
+
+    return {
+        "message": f"User {username} deleted successfully",
+        "user_id": user_id,
+        "username": username
+    }
 
 
 # ========================
