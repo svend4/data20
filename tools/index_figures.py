@@ -23,6 +23,10 @@ import json
 from collections import defaultdict, Counter
 import yaml
 import os
+import csv
+import base64
+from datetime import datetime
+from typing import List, Dict, Set
 
 
 class AdvancedFiguresIndexer:
@@ -512,23 +516,908 @@ class AdvancedFiguresIndexer:
         print(f"✅ JSON: {output_file}")
 
 
+class FigureExtractor:
+    """
+    Извлечение метаданных изображений
+    Поиск orphaned images, embedded base64
+    """
+
+    def __init__(self, indexer):
+        self.indexer = indexer
+        self.orphaned_images = []
+        self.embedded_images = []
+        self.referenced_paths = set()
+
+    def find_orphaned_images(self):
+        """Найти изображения, не упомянутые в статьях"""
+        print("🔍 Поиск orphaned images...\n")
+
+        # Собрать все упомянутые пути
+        for img in self.indexer.images:
+            if img['metadata']['type'] == 'local':
+                self.referenced_paths.add(img['path'])
+
+        # Сканировать директории с изображениями
+        image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.bmp'}
+        images_dir = self.indexer.root_dir / 'knowledge'
+
+        for img_file in images_dir.rglob('*'):
+            if img_file.suffix.lower() in image_extensions:
+                relative_path = str(img_file.relative_to(self.indexer.root_dir))
+
+                if relative_path not in self.referenced_paths:
+                    stat = img_file.stat()
+                    self.orphaned_images.append({
+                        'path': relative_path,
+                        'name': img_file.name,
+                        'size_kb': round(stat.st_size / 1024, 2),
+                        'format': img_file.suffix.lstrip('.').upper(),
+                        'modified': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d')
+                    })
+
+        print(f"   Найдено orphaned: {len(self.orphaned_images)}\n")
+
+    def extract_embedded_images(self):
+        """Найти embedded base64 изображения"""
+        print("🔍 Поиск embedded (base64) изображений...\n")
+
+        pattern = r'!\[([^\]]*)\]\(data:image/([^;]+);base64,([A-Za-z0-9+/=]+)\)'
+
+        for md_file in self.indexer.knowledge_dir.rglob("*.md"):
+            if md_file.name == "INDEX.md":
+                continue
+
+            try:
+                with open(md_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                for match in re.finditer(pattern, content):
+                    alt_text = match.group(1)
+                    format_type = match.group(2)
+                    base64_data = match.group(3)
+
+                    size_bytes = len(base64.b64decode(base64_data))
+
+                    self.embedded_images.append({
+                        'article': str(md_file.relative_to(self.indexer.root_dir)),
+                        'alt': alt_text,
+                        'format': format_type.upper(),
+                        'size_kb': round(size_bytes / 1024, 2)
+                    })
+            except:
+                pass
+
+        print(f"   Найдено embedded: {len(self.embedded_images)}\n")
+
+    def generate_extraction_report(self):
+        """Создать отчёт извлечения"""
+        lines = []
+        lines.append("# 🔍 Отчёт: Извлечение метаданных изображений\n\n")
+
+        # Orphaned images
+        if self.orphaned_images:
+            lines.append(f"## 🗑️ Orphaned Images ({len(self.orphaned_images)})\n\n")
+            lines.append("> Изображения в репозитории, не упомянутые в статьях\n\n")
+
+            total_size = sum(img['size_kb'] for img in self.orphaned_images)
+            lines.append(f"**Общий размер**: {total_size:.2f} KB\n\n")
+
+            for img in sorted(self.orphaned_images, key=lambda x: -x['size_kb'])[:20]:
+                lines.append(f"- `{img['path']}` — {img['format']}, {img['size_kb']} KB\n")
+
+            if len(self.orphaned_images) > 20:
+                lines.append(f"\n_...и ещё {len(self.orphaned_images) - 20}_\n")
+            lines.append("\n")
+
+        # Embedded images
+        if self.embedded_images:
+            lines.append(f"## 📦 Embedded Images ({len(self.embedded_images)})\n\n")
+            lines.append("> Base64-encoded изображения в markdown\n\n")
+
+            for img in self.embedded_images:
+                lines.append(f"- **{img['article']}**: {img['format']}, {img['size_kb']} KB\n")
+                lines.append(f"  - Alt: `{img['alt']}`\n")
+
+            lines.append("\n")
+
+        return ''.join(lines)
+
+
+class CaptionAnalyzer:
+    """
+    Анализ качества подписей к изображениям
+    Извлечение keywords, дубликаты
+    """
+
+    def __init__(self, indexer):
+        self.indexer = indexer
+        self.caption_quality = []
+        self.duplicate_captions = []
+        self.keywords_freq = Counter()
+
+    def analyze_caption_quality(self):
+        """Анализировать качество подписей"""
+        print("📝 Анализ качества подписей...\n")
+
+        caption_counts = Counter()
+
+        for img in self.indexer.images:
+            caption = img.get('caption')
+
+            if not caption:
+                score = 0
+                issues = ['missing']
+            else:
+                score = 100
+                issues = []
+
+                # Слишком короткая
+                if len(caption) < 10:
+                    issues.append('too_short')
+                    score -= 40
+
+                # Слишком длинная
+                if len(caption) > 200:
+                    issues.append('too_long')
+                    score -= 20
+
+                # Только одно слово
+                words = caption.split()
+                if len(words) < 3:
+                    issues.append('too_few_words')
+                    score -= 30
+
+                # Дубликаты
+                caption_counts[caption] += 1
+
+                # Извлечь ключевые слова
+                keywords = [w.lower() for w in words if len(w) > 4]
+                self.keywords_freq.update(keywords)
+
+            self.caption_quality.append({
+                'image': img['number'],
+                'article': img['article'],
+                'caption': caption or 'Нет подписи',
+                'score': max(0, score),
+                'issues': issues
+            })
+
+        # Найти дубликаты
+        for caption, count in caption_counts.items():
+            if count > 1:
+                images = [
+                    img['number'] for img in self.indexer.images
+                    if img.get('caption') == caption
+                ]
+                self.duplicate_captions.append({
+                    'caption': caption,
+                    'count': count,
+                    'images': images
+                })
+
+        print(f"   Проанализировано подписей: {len(self.caption_quality)}\n")
+
+    def get_top_keywords(self, n=20):
+        """Получить топ N ключевых слов"""
+        return self.keywords_freq.most_common(n)
+
+    def generate_captions_report(self):
+        """Создать отчёт анализа подписей"""
+        lines = []
+        lines.append("# 📝 Отчёт: Анализ подписей к изображениям\n\n")
+
+        # Статистика
+        avg_score = sum(c['score'] for c in self.caption_quality) / len(self.caption_quality) if self.caption_quality else 0
+        missing_count = len([c for c in self.caption_quality if 'missing' in c['issues']])
+
+        lines.append("## Статистика\n\n")
+        lines.append(f"- **Всего изображений**: {len(self.caption_quality)}\n")
+        lines.append(f"- **Без подписи**: {missing_count}\n")
+        lines.append(f"- **Средняя оценка качества**: {avg_score:.1f}/100\n")
+        lines.append(f"- **Дубликатов подписей**: {len(self.duplicate_captions)}\n\n")
+
+        # Топ keywords
+        top_keywords = self.get_top_keywords(20)
+        if top_keywords:
+            lines.append("## Топ ключевых слов в подписях\n\n")
+            for word, count in top_keywords:
+                lines.append(f"- **{word}**: {count}\n")
+            lines.append("\n")
+
+        # Низкое качество
+        low_quality = sorted([c for c in self.caption_quality if c['score'] < 50], key=lambda x: x['score'])
+        if low_quality:
+            lines.append(f"## Подписи низкого качества (топ-15)\n\n")
+            for cap in low_quality[:15]:
+                lines.append(f"### Figure {cap['image']} — Оценка: {cap['score']}/100\n\n")
+                lines.append(f"- **Статья**: {cap['article']}\n")
+                lines.append(f"- **Подпись**: {cap['caption']}\n")
+                lines.append(f"- **Проблемы**: {', '.join(cap['issues'])}\n\n")
+
+        # Дубликаты
+        if self.duplicate_captions:
+            lines.append("## Дубликаты подписей\n\n")
+            for dup in self.duplicate_captions:
+                lines.append(f"### \"{dup['caption']}\" ({dup['count']} раз)\n\n")
+                lines.append(f"Изображения: {', '.join(dup['images'])}\n\n")
+
+        return ''.join(lines)
+
+
+class FigureVisualizer:
+    """
+    HTML визуализация галереи изображений
+    Dashboard с Chart.js
+    """
+
+    def __init__(self, indexer, extractor=None, caption_analyzer=None):
+        self.indexer = indexer
+        self.extractor = extractor
+        self.caption_analyzer = caption_analyzer
+
+    def generate_html_gallery(self, output_file='FIGURES_GALLERY.html'):
+        """Создать HTML галерею"""
+        print("🎨 Создание HTML галереи...\n")
+
+        stats = self._prepare_statistics()
+        chart_data = self._prepare_chart_data()
+
+        html = f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ Figures Gallery</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }}
+
+        .container {{
+            max-width: 1400px;
+            margin: 0 auto;
+        }}
+
+        h1 {{
+            color: white;
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }}
+
+        .subtitle {{
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }}
+
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }}
+
+        .stat-card {{
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+
+        .stat-label {{
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }}
+
+        .stat-value {{
+            color: #667eea;
+            font-size: 2.5em;
+            font-weight: bold;
+        }}
+
+        .chart-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }}
+
+        .chart-container {{
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+
+        .chart-title {{
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }}
+
+        canvas {{
+            max-height: 350px;
+        }}
+
+        .gallery-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }}
+
+        .gallery-item {{
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }}
+
+        .gallery-item:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }}
+
+        .gallery-item img {{
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }}
+
+        .gallery-caption {{
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.4;
+        }}
+
+        .footer {{
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 40px;
+            font-size: 0.9em;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Figures Gallery</h1>
+        <p class="subtitle">Интерактивная галерея изображений и визуализаций</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Всего изображений</div>
+                <div class="stat-value">{stats['total_images']}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Таблицы</div>
+                <div class="stat-value">{stats['total_tables']}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Примеры кода</div>
+                <div class="stat-value">{stats['total_code']}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Битые ссылки</div>
+                <div class="stat-value">{stats['broken_links']}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Orphaned</div>
+                <div class="stat-value">{stats['orphaned']}</div>
+            </div>
+        </div>
+
+        <div class="chart-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Форматы изображений</div>
+                <canvas id="formatsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📈 Размеры файлов</div>
+                <canvas id="sizesChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">💻 Языки программирования</div>
+                <canvas id="languagesChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📝 Качество Alt-текста</div>
+                <canvas id="altQualityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="footer">
+            Создано: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Figures Gallery v2.0
+        </div>
+    </div>
+
+    <script>
+        // Форматы изображений
+        new Chart(document.getElementById('formatsChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: {chart_data['formats']['labels']},
+                datasets: [{{
+                    data: {chart_data['formats']['values']},
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#a8edea']
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{ position: 'bottom' }}
+                }}
+            }}
+        }});
+
+        // Размеры файлов
+        new Chart(document.getElementById('sizesChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {chart_data['sizes']['labels']},
+                datasets: [{{
+                    label: 'Количество файлов',
+                    data: {chart_data['sizes']['values']},
+                    backgroundColor: '#667eea'
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{ display: false }}
+                }},
+                scales: {{
+                    y: {{ beginAtZero: true }}
+                }}
+            }}
+        }});
+
+        // Языки программирования
+        new Chart(document.getElementById('languagesChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {chart_data['languages']['labels']},
+                datasets: [{{
+                    label: 'Примеров кода',
+                    data: {chart_data['languages']['values']},
+                    backgroundColor: '#764ba2'
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{ display: false }}
+                }},
+                scales: {{
+                    y: {{ beginAtZero: true }}
+                }}
+            }}
+        }});
+
+        // Качество alt-текста
+        new Chart(document.getElementById('altQualityChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {chart_data['alt_quality']['labels']},
+                datasets: [{{
+                    label: 'Количество',
+                    data: {chart_data['alt_quality']['values']},
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981']
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{ display: false }}
+                }},
+                scales: {{
+                    y: {{ beginAtZero: true }}
+                }}
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+
+        output_path = self.indexer.root_dir / output_file
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        print(f"✅ HTML Gallery: {output_path}\n")
+
+    def _prepare_statistics(self):
+        """Подготовить статистику"""
+        stats = {
+            'total_images': len(self.indexer.images),
+            'total_tables': len(self.indexer.tables),
+            'total_code': len(self.indexer.code_blocks),
+            'broken_links': len(self.indexer.broken_images),
+            'orphaned': 0
+        }
+
+        if self.extractor and self.extractor.orphaned_images:
+            stats['orphaned'] = len(self.extractor.orphaned_images)
+
+        return stats
+
+    def _prepare_chart_data(self):
+        """Подготовить данные для графиков"""
+        chart_data = {
+            'formats': self._get_formats_distribution(),
+            'sizes': self._get_sizes_distribution(),
+            'languages': self._get_languages_distribution(),
+            'alt_quality': self._get_alt_quality_distribution()
+        }
+
+        return chart_data
+
+    def _get_formats_distribution(self):
+        """Распределение форматов"""
+        formats = Counter()
+
+        for img in self.indexer.images:
+            if img['metadata']['type'] == 'local' and img['metadata']['exists']:
+                fmt = img['metadata'].get('format', 'UNKNOWN')
+                formats[fmt] += 1
+
+        labels = list(formats.keys())
+        values = list(formats.values())
+
+        return {'labels': labels, 'values': values}
+
+    def _get_sizes_distribution(self):
+        """Распределение размеров"""
+        bins = [0, 50, 100, 500, 1000, float('inf')]
+        labels = ['0-50 KB', '50-100 KB', '100-500 KB', '500KB-1MB', '>1MB']
+        counts = [0] * (len(bins) - 1)
+
+        for img in self.indexer.images:
+            if img['metadata']['type'] == 'local' and img['metadata']['exists']:
+                size_kb = img['metadata'].get('size_kb', 0)
+
+                for i in range(len(bins) - 1):
+                    if bins[i] <= size_kb < bins[i + 1]:
+                        counts[i] += 1
+                        break
+
+        return {'labels': labels, 'values': counts}
+
+    def _get_languages_distribution(self):
+        """Распределение языков программирования"""
+        languages = Counter(c['language'] for c in self.indexer.code_blocks)
+
+        labels = list(languages.keys())[:10]
+        values = list(languages.values())[:10]
+
+        return {'labels': labels, 'values': values}
+
+    def _get_alt_quality_distribution(self):
+        """Распределение качества alt-текста"""
+        categories = {'Плохое (0-50)': 0, 'Среднее (50-80)': 0, 'Хорошее (80-100)': 0}
+
+        for img in self.indexer.images:
+            score = img['alt_quality']['score']
+
+            if score < 50:
+                categories['Плохое (0-50)'] += 1
+            elif score < 80:
+                categories['Среднее (50-80)'] += 1
+            else:
+                categories['Хорошее (80-100)'] += 1
+
+        labels = list(categories.keys())
+        values = list(categories.values())
+
+        return {'labels': labels, 'values': values}
+
+
+class FigureValidator:
+    """
+    Валидация изображений
+    Проверка ссылок, размеров, подписей
+    """
+
+    def __init__(self, indexer):
+        self.indexer = indexer
+        self.validation_results = []
+
+    def validate_all(self):
+        """Выполнить все проверки"""
+        print("✅ Валидация изображений...\n")
+
+        for img in self.indexer.images:
+            issues = []
+            warnings = []
+
+            # Проверка существования
+            if img['metadata']['type'] == 'local' and not img['metadata']['exists']:
+                issues.append('Файл не найден')
+
+            # Проверка alt текста
+            if img['alt_quality']['score'] < 50:
+                warnings.append(f"Низкое качество alt-текста ({img['alt_quality']['score']}/100)")
+
+            # Проверка размера
+            if img['metadata']['type'] == 'local' and img['metadata']['exists']:
+                size_kb = img['metadata'].get('size_kb', 0)
+
+                if size_kb > 1000:
+                    warnings.append(f'Файл слишком большой ({size_kb:.1f} KB)')
+                elif size_kb < 5:
+                    warnings.append(f'Файл слишком маленький ({size_kb:.1f} KB)')
+
+            # Проверка подписи
+            if not img.get('caption'):
+                warnings.append('Отсутствует подпись')
+
+            # Проверка references
+            if img['references'] == 0:
+                warnings.append('Нет ссылок на рисунок в тексте')
+
+            self.validation_results.append({
+                'image': img['number'],
+                'article': img['article'],
+                'path': img['path'],
+                'issues': issues,
+                'warnings': warnings,
+                'status': 'error' if issues else ('warning' if warnings else 'ok')
+            })
+
+        errors_count = len([r for r in self.validation_results if r['status'] == 'error'])
+        warnings_count = len([r for r in self.validation_results if r['status'] == 'warning'])
+
+        print(f"   Ошибки: {errors_count}")
+        print(f"   Предупреждения: {warnings_count}\n")
+
+    def generate_validation_report(self):
+        """Создать отчёт валидации"""
+        lines = []
+        lines.append("# ✅ Отчёт: Валидация изображений\n\n")
+
+        errors = [r for r in self.validation_results if r['status'] == 'error']
+        warnings = [r for r in self.validation_results if r['status'] == 'warning']
+        ok = [r for r in self.validation_results if r['status'] == 'ok']
+
+        lines.append("## Статистика\n\n")
+        lines.append(f"- **Ошибки**: {len(errors)}\n")
+        lines.append(f"- **Предупреждения**: {len(warnings)}\n")
+        lines.append(f"- **OK**: {len(ok)}\n")
+        lines.append(f"- **Всего**: {len(self.validation_results)}\n\n")
+
+        # Ошибки
+        if errors:
+            lines.append("## ❌ Ошибки\n\n")
+
+            for result in errors:
+                lines.append(f"### Figure {result['image']}\n\n")
+                lines.append(f"- **Статья**: {result['article']}\n")
+                lines.append(f"- **Путь**: `{result['path']}`\n")
+                lines.append("- **Проблемы**:\n")
+
+                for issue in result['issues']:
+                    lines.append(f"  - {issue}\n")
+
+                lines.append("\n")
+
+        # Предупреждения
+        if warnings:
+            lines.append("## ⚠️ Предупреждения (топ-20)\n\n")
+
+            for result in warnings[:20]:
+                lines.append(f"### Figure {result['image']}\n\n")
+                lines.append(f"- **Статья**: {result['article']}\n")
+                lines.append("- **Предупреждения**:\n")
+
+                for warning in result['warnings']:
+                    lines.append(f"  - {warning}\n")
+
+                lines.append("\n")
+
+        return ''.join(lines)
+
+    def export_to_csv(self, output_file='figures_validation.csv'):
+        """Экспорт результатов валидации в CSV"""
+        csv_path = self.indexer.root_dir / output_file
+
+        with open(csv_path, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Figure', 'Article', 'Path', 'Status', 'Issues', 'Warnings'])
+
+            for result in self.validation_results:
+                writer.writerow([
+                    result['image'],
+                    result['article'],
+                    result['path'],
+                    result['status'],
+                    '; '.join(result['issues']),
+                    '; '.join(result['warnings'])
+                ])
+
+        print(f"✅ CSV валидация: {csv_path}\n")
+
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Advanced Index of Figures')
-    parser.add_argument('--json', action='store_true', help='Экспорт в JSON')
+    parser = argparse.ArgumentParser(
+        description='🖼️ Advanced Index of Figures v2.0',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры использования:
+  %(prog)s                        # Базовая индексация
+  %(prog)s --html                 # HTML галерея с Chart.js
+  %(prog)s --extract              # Поиск orphaned/embedded изображений
+  %(prog)s --analyze-captions     # Анализ качества подписей
+  %(prog)s --validate             # Валидация изображений
+  %(prog)s --csv                  # Экспорт валидации в CSV
+  %(prog)s --all                  # Все функции сразу
+  %(prog)s --json --html --csv    # Множественный экспорт
+
+Новые возможности v2.0:
+  - 🔍 Поиск orphaned и embedded изображений
+  - 📝 Анализ качества подписей с ключевыми словами
+  - 🎨 HTML галерея с интерактивными графиками
+  - ✅ Валидация ссылок, размеров, подписей
+  - 📊 4 визуализации: форматы, размеры, языки, качество
+  - 📈 CSV экспорт для внешнего анализа
+        """
+    )
+
+    # Основные опции
+    parser.add_argument('--json', action='store_true',
+                       help='📄 Экспорт в JSON')
+
+    # Новые опции v2.0
+    parser.add_argument('--html', action='store_true',
+                       help='🎨 Создать HTML галерею с Chart.js графиками')
+    parser.add_argument('--extract', action='store_true',
+                       help='🔍 Найти orphaned и embedded изображения')
+    parser.add_argument('--analyze-captions', action='store_true',
+                       help='📝 Анализировать качество подписей')
+    parser.add_argument('--validate', action='store_true',
+                       help='✅ Валидация изображений (ссылки, размеры, подписи)')
+    parser.add_argument('--csv', action='store_true',
+                       help='📊 Экспортировать валидацию в CSV')
+
+    # Фильтры
+    parser.add_argument('--filter-format', type=str,
+                       help='🔎 Фильтровать по формату (PNG, JPG, SVG, и т.д.)')
+    parser.add_argument('--min-size', type=int, default=0,
+                       help='📏 Минимальный размер файла в KB (default: 0)')
+
+    # Отчёты
+    parser.add_argument('--export-extraction', action='store_true',
+                       help='📁 Экспортировать отчёт извлечения')
+    parser.add_argument('--export-captions', action='store_true',
+                       help='📝 Экспортировать отчёт анализа подписей')
+    parser.add_argument('--export-validation', action='store_true',
+                       help='✅ Экспортировать отчёт валидации')
+
+    # Все функции
+    parser.add_argument('--all', action='store_true',
+                       help='🔥 Выполнить все опции (полный анализ)')
 
     args = parser.parse_args()
+
+    # --all включает все опции
+    if args.all:
+        args.html = True
+        args.extract = True
+        args.analyze_captions = True
+        args.validate = True
+        args.csv = True
+        args.json = True
+        args.export_extraction = True
+        args.export_captions = True
+        args.export_validation = True
 
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
 
+    # Основная индексация
     indexer = AdvancedFiguresIndexer(root_dir)
     indexer.index_all()
     indexer.generate_report()
 
-    if args.json:
+    # ========== НОВЫЕ ФУНКЦИИ V2.0 ==========
+
+    # 1. Извлечение метаданных
+    extractor = None
+    if args.extract or args.html or args.all:
+        extractor = FigureExtractor(indexer)
+        extractor.find_orphaned_images()
+        extractor.extract_embedded_images()
+
+        if args.export_extraction or args.all:
+            report = extractor.generate_extraction_report()
+            extraction_file = root_dir / 'FIGURES_EXTRACTION.md'
+            with open(extraction_file, 'w', encoding='utf-8') as f:
+                f.write(report)
+            print(f"✅ Отчёт извлечения: {extraction_file}\n")
+
+    # 2. Анализ подписей
+    caption_analyzer = None
+    if args.analyze_captions or args.html or args.all:
+        caption_analyzer = CaptionAnalyzer(indexer)
+        caption_analyzer.analyze_caption_quality()
+
+        if args.export_captions or args.all:
+            report = caption_analyzer.generate_captions_report()
+            captions_file = root_dir / 'CAPTIONS_ANALYSIS.md'
+            with open(captions_file, 'w', encoding='utf-8') as f:
+                f.write(report)
+            print(f"✅ Отчёт анализа подписей: {captions_file}\n")
+
+    # 3. Валидация
+    if args.validate or args.all:
+        validator = FigureValidator(indexer)
+        validator.validate_all()
+
+        if args.export_validation or args.all:
+            report = validator.generate_validation_report()
+            validation_file = root_dir / 'FIGURES_VALIDATION.md'
+            with open(validation_file, 'w', encoding='utf-8') as f:
+                f.write(report)
+            print(f"✅ Отчёт валидации: {validation_file}\n")
+
+        # CSV export
+        if args.csv or args.all:
+            validator.export_to_csv()
+
+    # 4. HTML галерея
+    if args.html or args.all:
+        visualizer = FigureVisualizer(indexer, extractor, caption_analyzer)
+        visualizer.generate_html_gallery()
+
+    # JSON export
+    if args.json or args.all:
         indexer.export_json()
+
+    # Итоговая статистика
+    print("\n" + "="*60)
+    print("📊 ИТОГОВАЯ СТАТИСТИКА")
+    print("="*60)
+    print(f"Изображений: {len(indexer.images)}")
+    print(f"Таблиц: {len(indexer.tables)}")
+    print(f"Примеров кода: {len(indexer.code_blocks)}")
+    print(f"Битых ссылок: {len(indexer.broken_images)}")
+    print(f"Проблем с alt: {len(indexer.alt_text_issues)}")
+
+    if extractor:
+        print(f"Orphaned изображений: {len(extractor.orphaned_images)}")
+        print(f"Embedded изображений: {len(extractor.embedded_images)}")
+
+    print("="*60 + "\n")
 
 
 if __name__ == "__main__":
