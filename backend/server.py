@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 5.1.7: Database Integration with PostgreSQL
+Phase 5.1.9: Celery Integration for Distributed Task Execution
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
@@ -21,6 +21,14 @@ from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 from database import get_db, check_database_connection, init_database, engine
 from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus
 from redis_client import get_redis, close_redis
+
+# Celery imports
+try:
+    from celery_tasks import run_tool_task, get_active_tasks, get_worker_stats, revoke_task
+    CELERY_AVAILABLE = True
+except ImportError:
+    CELERY_AVAILABLE = False
+    print("⚠️  Celery not available - using fallback execution")
 
 # ========================
 # Pydantic Models
@@ -60,8 +68,8 @@ class JobStatusResponse(BaseModel):
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools with PostgreSQL persistence",
-    version="5.1.7"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery",
+    version="5.1.9"
 )
 
 # CORS для фронтенда
@@ -156,6 +164,7 @@ async def startup_event():
     print("🔧 Total Tools: {}".format(count))
     print("💾 Database: {}".format("Connected" if db_connected else "Disabled"))
     print("🔥 Redis: {}".format("Connected" if redis_connected else "Disabled"))
+    print("⚡ Celery: {}".format("Available" if CELERY_AVAILABLE else "Disabled (using local execution)"))
     print("=" * 60)
 
 
@@ -323,12 +332,16 @@ async def search_tools(q: str):
 async def run_tool(
     request: ToolRunRequest,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    use_celery: bool = True
 ):
     """
-    Запустить инструмент
+    Запустить инструмент через Celery или fallback
 
-    Возвращает job_id для отслеживания прогресса через WebSocket
+    Args:
+        use_celery: Use Celery if available (default: True)
+
+    Возвращает job_id для отслеживания прогресса
     """
 
     # Проверить существование инструмента
@@ -355,7 +368,43 @@ async def run_tool(
         print(f"⚠️  Failed to save job to database: {e}")
         # Продолжить без БД
 
-    # Запустить в фоне
+    # Выбрать метод выполнения: Celery или fallback
+    if CELERY_AVAILABLE and use_celery:
+        # ========================================
+        # Celery Execution (Distributed)
+        # ========================================
+        try:
+            # Запустить задачу через Celery
+            task = run_tool_task.delay(
+                job_id=job_id,
+                tool_name=request.tool_name,
+                parameters=request.parameters
+            )
+
+            # Сохранить Celery task ID
+            try:
+                db_job_update = db.query(DBJob).filter(DBJob.id == job_id).first()
+                if db_job_update:
+                    db_job_update.celery_task_id = task.id
+                    db_job_update.status = DBJobStatus.QUEUED
+                    db.commit()
+            except:
+                pass
+
+            return ToolRunResponse(
+                job_id=job_id,
+                tool_name=request.tool_name,
+                status="queued",
+                message=f"Tool {request.tool_name} queued for execution (Celery task: {task.id})"
+            )
+
+        except Exception as e:
+            print(f"⚠️  Celery execution failed, falling back to local: {e}")
+            # Fallback to local execution
+
+    # ========================================
+    # Fallback Execution (Local BackgroundTasks)
+    # ========================================
     async def run_in_background():
         result = await runner.run_tool(request.tool_name, request.parameters)
 
@@ -418,7 +467,7 @@ async def run_tool(
         job_id=job_id,
         tool_name=request.tool_name,
         status="pending",
-        message=f"Tool {request.tool_name} started"
+        message=f"Tool {request.tool_name} started (local execution)"
     )
 
 
@@ -620,6 +669,59 @@ async def cleanup_old_jobs(max_age_hours: int = 24):
     """Удалить старые завершённые задачи"""
     deleted = runner.clear_old_jobs(max_age_hours)
     return {"message": f"Deleted {deleted} old jobs"}
+
+
+# ========================
+# Celery Management Endpoints
+# ========================
+
+@app.get("/api/celery/workers")
+async def get_celery_workers():
+    """Получить информацию о Celery workers"""
+    if not CELERY_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Celery not available")
+
+    try:
+        stats = get_worker_stats()
+        return {
+            "available": True,
+            "workers": stats
+        }
+    except Exception as e:
+        return {
+            "available": False,
+            "error": str(e)
+        }
+
+
+@app.get("/api/celery/tasks")
+async def get_celery_tasks():
+    """Получить список активных Celery задач"""
+    if not CELERY_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Celery not available")
+
+    try:
+        tasks = get_active_tasks()
+        return {
+            "total": len(tasks),
+            "tasks": tasks
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get tasks: {e}")
+
+
+@app.delete("/api/celery/tasks/{task_id}")
+async def cancel_celery_task(task_id: str, terminate: bool = False):
+    """Отменить Celery задачу"""
+    if not CELERY_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Celery not available")
+
+    success = revoke_task(task_id, terminate=terminate)
+
+    if not success:
+        raise HTTPException(status_code=400, detail=f"Failed to revoke task {task_id}")
+
+    return {"message": f"Task {task_id} revoked"}
 
 
 # ========================
