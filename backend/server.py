@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 5.1.9: Celery Integration for Distributed Task Execution
+Phase 5.3.1: Structured Logging Integration
 """
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
@@ -15,6 +15,13 @@ from sqlalchemy.orm import Session
 import asyncio
 import json
 from datetime import datetime
+import os
+
+# Structured logging
+from logger import (
+    configure_logging, get_logger, LoggingMiddleware,
+    log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure
+)
 
 from tool_registry import ToolRegistry, ToolCategory
 from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
@@ -63,14 +70,29 @@ class JobStatusResponse(BaseModel):
 
 
 # ========================
+# Logging Configuration
+# ========================
+
+# Configure structured logging
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+LOG_FORMAT = os.getenv("LOG_FORMAT", "console")  # "console" or "json"
+LOG_DIR = os.getenv("LOG_DIR", None)
+
+configure_logging(level=LOG_LEVEL, format=LOG_FORMAT, log_dir=LOG_DIR)
+logger = get_logger(__name__)
+
+# ========================
 # FastAPI App
 # ========================
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
     description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery",
-    version="5.1.9"
+    version="5.3.1"
 )
+
+# Logging middleware (first!)
+app.add_middleware(LoggingMiddleware)
 
 # CORS для фронтенда
 app.add_middleware(
@@ -116,83 +138,95 @@ def _convert_runner_status(runner_status: RunnerJobStatus) -> DBJobStatus:
 @app.on_event("startup")
 async def startup_event():
     """Инициализация при запуске"""
-    print("🚀 Starting Data20 Backend API Server...")
-    print("=" * 60)
+    logger.info("🚀 Starting Data20 Backend API Server...")
 
     # Проверить подключение к БД
     db_connected = check_database_connection()
     if db_connected:
-        print("✅ Database connected")
+        logger.info("database_connected")
         # Создать таблицы если их нет
         try:
             init_database()
-            print("✅ Database schema initialized")
+            logger.info("database_initialized")
         except Exception as e:
-            print(f"⚠️  Database initialization warning: {e}")
+            logger.warning("database_init_warning", error=str(e))
     else:
-        print("⚠️  Database not available (running without persistence)")
+        logger.warning("database_unavailable", message="Running without persistence")
 
     # Проверить подключение к Redis
     redis = get_redis()
     redis_connected = redis.is_available()
     if redis_connected:
-        print("✅ Redis connected")
         redis_info = redis.get_info()
-        print(f"   Version: {redis_info.get('version')}, Clients: {redis_info.get('connected_clients')}")
+        logger.info(
+            "redis_connected",
+            version=redis_info.get('version'),
+            clients=redis_info.get('connected_clients')
+        )
     else:
-        print("⚠️  Redis not available (running without cache)")
+        logger.warning("redis_unavailable", message="Running without cache")
 
     # Сканировать инструменты
     count = registry.scan_tools()
-    print(f"✅ Loaded {count} tools")
+    logger.info("tools_loaded", count=count)
 
     # Экспортировать реестр
     registry_file = output_dir / "tool_registry.json"
     registry_data = registry.to_json()
     with open(registry_file, 'w', encoding='utf-8') as f:
         json.dump(registry_data, f, indent=2, ensure_ascii=False)
-    print(f"✅ Registry exported to {registry_file}")
+    logger.info("registry_exported", file=str(registry_file))
 
     # Кэшировать реестр в Redis
     if redis_connected:
         if redis.cache_tool_registry(registry_data, ttl=3600):
-            print("✅ Registry cached in Redis (TTL: 1h)")
+            logger.info("registry_cached", ttl_seconds=3600)
 
-    print("=" * 60)
-    print("🎯 Server ready!")
-    print("📚 API Docs: http://localhost:8001/docs")
-    print("🔧 Total Tools: {}".format(count))
-    print("💾 Database: {}".format("Connected" if db_connected else "Disabled"))
-    print("🔥 Redis: {}".format("Connected" if redis_connected else "Disabled"))
-    print("⚡ Celery: {}".format("Available" if CELERY_AVAILABLE else "Disabled (using local execution)"))
-    print("=" * 60)
+    # Log startup summary
+    log_startup(
+        service="data20_backend",
+        version="5.3.1",
+        config={
+            "database": "Connected" if db_connected else "Disabled",
+            "redis": "Connected" if redis_connected else "Disabled",
+            "celery": "Available" if CELERY_AVAILABLE else "Disabled",
+            "tools_count": count,
+            "log_level": LOG_LEVEL,
+            "log_format": LOG_FORMAT
+        }
+    )
+
+    logger.info("🎯 Server ready!", api_docs="http://localhost:8001/docs")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup при остановке"""
-    print("\n👋 Shutting down server...")
+    logger.info("👋 Shutting down server...")
 
     # Отменить все запущенные задачи
     running = runner.get_running_jobs()
-    for job in running:
-        await runner.cancel_job(job.job_id)
+    if running:
+        logger.info("cancelling_jobs", count=len(running))
+        for job in running:
+            await runner.cancel_job(job.job_id)
 
     # Закрыть подключения к БД
     try:
         engine.dispose()
-        print("✅ Database connections closed")
-    except:
-        pass
+        logger.info("database_closed")
+    except Exception as e:
+        logger.warning("database_close_failed", error=str(e))
 
     # Закрыть Redis
     try:
         close_redis()
-        print("✅ Redis connection closed")
-    except:
-        pass
+        logger.info("redis_closed")
+    except Exception as e:
+        logger.warning("redis_close_failed", error=str(e))
 
-    print("✅ Cleanup complete")
+    log_shutdown(service="data20_backend")
+    logger.info("✅ Cleanup complete")
 
 
 # ========================
@@ -347,11 +381,14 @@ async def run_tool(
     # Проверить существование инструмента
     tool = registry.get_tool(request.tool_name)
     if not tool:
+        logger.warning("tool_not_found", tool_name=request.tool_name)
         raise HTTPException(status_code=404, detail=f"Tool {request.tool_name} not found")
 
     # Создать job в БД
     import uuid
     job_id = str(uuid.uuid4())
+
+    logger.info("creating_job", job_id=job_id, tool_name=request.tool_name, parameters=request.parameters)
 
     db_job = DBJob(
         id=job_id,
@@ -364,8 +401,9 @@ async def run_tool(
         db.add(db_job)
         db.commit()
         db.refresh(db_job)
+        logger.debug("job_saved_to_db", job_id=job_id)
     except Exception as e:
-        print(f"⚠️  Failed to save job to database: {e}")
+        logger.warning("job_save_failed", job_id=job_id, error=str(e))
         # Продолжить без БД
 
     # Выбрать метод выполнения: Celery или fallback
