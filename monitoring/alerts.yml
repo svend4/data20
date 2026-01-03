@@ -1,0 +1,163 @@
+# Prometheus Alert Rules for Data20 Knowledge Base
+# Phase 5.3.2: Alert Definitions
+
+groups:
+  - name: data20_backend_alerts
+    interval: 30s
+    rules:
+      # HTTP Error Rate
+      - alert: HighHTTPErrorRate
+        expr: |
+          (
+            sum(rate(http_errors_total[5m])) by (endpoint)
+            /
+            sum(rate(http_requests_total[5m])) by (endpoint)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate on {{ $labels.endpoint }}"
+          description: "HTTP error rate is {{ $value | humanizePercentage }} on {{ $labels.endpoint }} (threshold: 5%)"
+
+      # Slow Request Duration
+      - alert: SlowRequests
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint)
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow HTTP requests on {{ $labels.endpoint }}"
+          description: "95th percentile request duration is {{ $value }}s on {{ $labels.endpoint }} (threshold: 5s)"
+
+      # Tool Execution Failures
+      - alert: HighToolFailureRate
+        expr: |
+          (
+            sum(rate(tool_executions_total{status="failed"}[10m])) by (tool_name)
+            /
+            sum(rate(tool_executions_total[10m])) by (tool_name)
+          ) > 0.2
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High failure rate for tool {{ $labels.tool_name }}"
+          description: "Tool {{ $labels.tool_name }} failure rate is {{ $value | humanizePercentage }} (threshold: 20%)"
+
+      # Slow Tool Execution
+      - alert: SlowToolExecution
+        expr: |
+          histogram_quantile(0.90,
+            sum(rate(tool_execution_duration_seconds_bucket[10m])) by (le, tool_name)
+          ) > 300
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow tool execution for {{ $labels.tool_name }}"
+          description: "90th percentile execution time for {{ $labels.tool_name }} is {{ $value }}s (threshold: 300s)"
+
+      # Database Slow Queries
+      - alert: SlowDatabaseQueries
+        expr: rate(db_slow_queries_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of slow database queries"
+          description: "Slow query rate is {{ $value }} queries/sec (threshold: 1/sec)"
+
+      # High Database Connection Usage
+      - alert: HighDatabaseConnectionUsage
+        expr: |
+          (db_connections_active / (db_connections_active + db_connections_idle)) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection pool usage"
+          description: "Database connection usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      # Celery Task Failures
+      - alert: HighCeleryTaskFailureRate
+        expr: |
+          (
+            sum(rate(celery_tasks_total{status="failure"}[10m])) by (task_name)
+            /
+            sum(rate(celery_tasks_total[10m])) by (task_name)
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Celery task failure rate for {{ $labels.task_name }}"
+          description: "Task {{ $labels.task_name }} failure rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+
+      # Celery Queue Backlog
+      - alert: CeleryQueueBacklog
+        expr: celery_queue_length > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Large Celery queue backlog"
+          description: "Queue {{ $labels.queue }} has {{ $value }} pending tasks (threshold: 100)"
+
+      # High System CPU Usage
+      - alert: HighCPUUsage
+        expr: system_cpu_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: system_memory_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}% (threshold: 85%)"
+
+      # High Disk Usage
+      - alert: HighDiskUsage
+        expr: system_disk_percent > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage is {{ $value }}% (threshold: 90%)"
+
+      # Low Cache Hit Rate
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(cache_hits_total[10m])) by (cache_type)
+            /
+            (sum(rate(cache_hits_total[10m])) by (cache_type) + sum(rate(cache_misses_total[10m])) by (cache_type))
+          ) < 0.5
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low cache hit rate for {{ $labels.cache_type }}"
+          description: "Cache hit rate for {{ $labels.cache_type }} is {{ $value | humanizePercentage }} (threshold: 50%)"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up{job="data20_backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Data20 backend service is down"
+          description: "Backend service has been down for more than 1 minute"

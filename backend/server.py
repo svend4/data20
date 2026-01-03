@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 5.3.1: Structured Logging Integration
+Phase 5.3.2: Prometheus Metrics Integration
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -16,11 +16,21 @@ import asyncio
 import json
 from datetime import datetime
 import os
+import time
 
 # Structured logging
 from logger import (
     configure_logging, get_logger, LoggingMiddleware,
     log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure
+)
+
+# Prometheus metrics
+from metrics import (
+    init_metrics, get_metrics, get_metrics_content_type,
+    update_system_metrics, update_db_pool_metrics, update_redis_metrics,
+    http_requests_total, http_request_duration_seconds, http_errors_total,
+    tool_executions_total, tool_execution_duration_seconds,
+    record_cache_access, track_tool_execution
 )
 
 from tool_registry import ToolRegistry, ToolCategory
@@ -88,7 +98,7 @@ logger = get_logger(__name__)
 app = FastAPI(
     title="Data20 Knowledge Base API",
     description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery",
-    version="5.3.1"
+    version="5.3.2"
 )
 
 # Logging middleware (first!)
@@ -182,10 +192,14 @@ async def startup_event():
         if redis.cache_tool_registry(registry_data, ttl=3600):
             logger.info("registry_cached", ttl_seconds=3600)
 
+    # Initialize Prometheus metrics
+    init_metrics(app_version="5.3.2", environment=os.getenv("ENVIRONMENT", "production"))
+    logger.info("prometheus_initialized")
+
     # Log startup summary
     log_startup(
         service="data20_backend",
-        version="5.3.1",
+        version="5.3.2",
         config={
             "database": "Connected" if db_connected else "Disabled",
             "redis": "Connected" if redis_connected else "Disabled",
@@ -196,7 +210,7 @@ async def startup_event():
         }
     )
 
-    logger.info("🎯 Server ready!", api_docs="http://localhost:8001/docs")
+    logger.info("🎯 Server ready!", api_docs="http://localhost:8001/docs", metrics="/metrics")
 
 
 @app.on_event("shutdown")
@@ -238,12 +252,36 @@ async def root():
     """Корневой endpoint"""
     return {
         "name": "Data20 Knowledge Base API",
-        "version": "4.0.0",
+        "version": "5.3.2",
         "status": "running",
         "total_tools": len(registry.tools),
         "docs": "/docs",
-        "registry": "/api/tools"
+        "registry": "/api/tools",
+        "metrics": "/metrics"
     }
+
+
+@app.get("/metrics")
+async def metrics():
+    """
+    Prometheus metrics endpoint
+
+    Returns metrics in Prometheus text format for scraping
+    """
+    # Update dynamic metrics
+    update_system_metrics()
+    update_db_pool_metrics(engine)
+
+    redis = get_redis()
+    update_redis_metrics(redis)
+
+    # Get metrics
+    metrics_data = get_metrics()
+
+    return Response(
+        content=metrics_data,
+        media_type=get_metrics_content_type()
+    )
 
 
 @app.get("/api/tools")
@@ -255,7 +293,12 @@ async def get_all_tools():
     if redis.is_available():
         cached = redis.get_cached_tool_registry()
         if cached:
+            # Record cache hit
+            record_cache_access("tool_registry", hit=True)
             return cached
+
+    # Cache miss
+    record_cache_access("tool_registry", hit=False)
 
     # Fallback к registry
     registry_data = registry.to_json()
@@ -446,6 +489,13 @@ async def run_tool(
     async def run_in_background():
         result = await runner.run_tool(request.tool_name, request.parameters)
 
+        # Record tool execution metrics
+        status_str = "completed" if result.status == RunnerJobStatus.COMPLETED else "failed"
+        tool_executions_total.labels(tool_name=request.tool_name, status=status_str).inc()
+
+        if result.duration:
+            tool_execution_duration_seconds.labels(tool_name=request.tool_name).observe(result.duration)
+
         # Сохранить результат в БД (с новой сессией)
         from database import get_db_context
         try:
@@ -481,7 +531,7 @@ async def run_tool(
                     )
                     bg_db.add(db_log)
         except Exception as e:
-            print(f"⚠️  Failed to save job result to database: {e}")
+            logger.warning("job_save_failed", job_id=job_id, error=str(e))
 
         # Опубликовать обновление в Redis pub/sub
         redis = get_redis()
