@@ -20,6 +20,7 @@ from tool_registry import ToolRegistry, ToolCategory
 from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 from database import get_db, check_database_connection, init_database, engine
 from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus
+from redis_client import get_redis, close_redis
 
 # ========================
 # Pydantic Models
@@ -123,21 +124,38 @@ async def startup_event():
     else:
         print("⚠️  Database not available (running without persistence)")
 
+    # Проверить подключение к Redis
+    redis = get_redis()
+    redis_connected = redis.is_available()
+    if redis_connected:
+        print("✅ Redis connected")
+        redis_info = redis.get_info()
+        print(f"   Version: {redis_info.get('version')}, Clients: {redis_info.get('connected_clients')}")
+    else:
+        print("⚠️  Redis not available (running without cache)")
+
     # Сканировать инструменты
     count = registry.scan_tools()
     print(f"✅ Loaded {count} tools")
 
     # Экспортировать реестр
     registry_file = output_dir / "tool_registry.json"
+    registry_data = registry.to_json()
     with open(registry_file, 'w', encoding='utf-8') as f:
-        json.dump(registry.to_json(), f, indent=2, ensure_ascii=False)
+        json.dump(registry_data, f, indent=2, ensure_ascii=False)
     print(f"✅ Registry exported to {registry_file}")
+
+    # Кэшировать реестр в Redis
+    if redis_connected:
+        if redis.cache_tool_registry(registry_data, ttl=3600):
+            print("✅ Registry cached in Redis (TTL: 1h)")
 
     print("=" * 60)
     print("🎯 Server ready!")
     print("📚 API Docs: http://localhost:8001/docs")
     print("🔧 Total Tools: {}".format(count))
     print("💾 Database: {}".format("Connected" if db_connected else "Disabled"))
+    print("🔥 Redis: {}".format("Connected" if redis_connected else "Disabled"))
     print("=" * 60)
 
 
@@ -155,6 +173,13 @@ async def shutdown_event():
     try:
         engine.dispose()
         print("✅ Database connections closed")
+    except:
+        pass
+
+    # Закрыть Redis
+    try:
+        close_redis()
+        print("✅ Redis connection closed")
     except:
         pass
 
@@ -180,8 +205,23 @@ async def root():
 
 @app.get("/api/tools")
 async def get_all_tools():
-    """Получить список всех инструментов"""
-    return registry.to_json()
+    """Получить список всех инструментов (с кэшированием)"""
+
+    # Попытаться получить из Redis cache
+    redis = get_redis()
+    if redis.is_available():
+        cached = redis.get_cached_tool_registry()
+        if cached:
+            return cached
+
+    # Fallback к registry
+    registry_data = registry.to_json()
+
+    # Обновить cache
+    if redis.is_available():
+        redis.cache_tool_registry(registry_data, ttl=3600)
+
+    return registry_data
 
 
 @app.get("/api/tools/{tool_name}")
@@ -356,6 +396,22 @@ async def run_tool(
         except Exception as e:
             print(f"⚠️  Failed to save job result to database: {e}")
 
+        # Опубликовать обновление в Redis pub/sub
+        redis = get_redis()
+        if redis.is_available():
+            redis.publish("job_updates", {
+                "job_id": job_id,
+                "status": result.status.value,
+                "completed_at": result.completed_at.isoformat() if result.completed_at else None
+            })
+
+            # Кэшировать финальный статус
+            redis.cache_job_status(job_id, {
+                "status": result.status.value,
+                "output_files": result.output_files,
+                "duration": result.duration
+            }, ttl=600)  # 10 минут
+
     background_tasks.add_task(run_in_background)
 
     return ToolRunResponse(
@@ -515,7 +571,7 @@ async def cancel_job(job_id: str):
 
 @app.get("/api/stats")
 async def get_system_stats(db: Session = Depends(get_db)):
-    """Получить статистику системы + БД"""
+    """Получить статистику системы + БД + Redis"""
     stats = runner.get_system_stats()
 
     # Добавить статистику из БД
@@ -551,6 +607,10 @@ async def get_system_stats(db: Session = Depends(get_db)):
             "connected": False,
             "error": str(e)
         }
+
+    # Добавить статистику Redis
+    redis = get_redis()
+    stats["redis"] = redis.get_info()
 
     return stats
 
