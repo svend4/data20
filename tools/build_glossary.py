@@ -23,6 +23,9 @@ import re
 import json
 from collections import defaultdict, Counter
 import yaml
+import argparse
+import csv
+import math
 
 
 class AdvancedGlossaryBuilder:
@@ -493,27 +496,434 @@ class AdvancedGlossaryBuilder:
         print(f"✅ HTML tooltips: {output_file}")
 
 
-def main():
-    import argparse
+class TermExtractor:
+    """
+    Извлечение терминов с TF-IDF и n-граммами
+    """
 
-    parser = argparse.ArgumentParser(description='Advanced Glossary Builder')
-    parser.add_argument('--json', action='store_true', help='Экспорт в JSON')
-    parser.add_argument('--tooltips', action='store_true', help='Генерировать HTML tooltips')
+    def __init__(self, glossary_builder):
+        self.builder = glossary_builder
+
+    def calculate_tf_idf(self):
+        """Вычислить TF-IDF для терминов"""
+        # Собрать все тексты
+        all_texts = []
+        term_doc_freq = defaultdict(dict)
+
+        for term, data in self.builder.glossary.items():
+            text = data['definition'].lower()
+            all_texts.append(text)
+
+            # TF для каждого термина в документе
+            words = re.findall(r'\w+', text)
+            word_counts = Counter(words)
+
+            for word, count in word_counts.items():
+                term_doc_freq[word][term] = count / len(words) if words else 0
+
+        # IDF
+        num_docs = len(all_texts)
+        idf = {}
+
+        for word, doc_freqs in term_doc_freq.items():
+            docs_with_word = len(doc_freqs)
+            idf[word] = math.log(num_docs / (1 + docs_with_word))
+
+        # TF-IDF
+        tf_idf_scores = {}
+        for word, doc_freqs in term_doc_freq.items():
+            scores = []
+            for doc_id, tf in doc_freqs.items():
+                scores.append(tf * idf[word])
+            tf_idf_scores[word] = sum(scores) / len(scores) if scores else 0
+
+        # Топ слова
+        return sorted(tf_idf_scores.items(), key=lambda x: -x[1])[:50]
+
+    def extract_ngrams(self, n=2):
+        """Извлечь n-граммы из определений"""
+        ngrams = Counter()
+
+        for term, data in self.builder.glossary.items():
+            text = data['definition'].lower()
+            words = re.findall(r'\w+', text)
+
+            for i in range(len(words) - n + 1):
+                ngram = ' '.join(words[i:i+n])
+                ngrams[ngram] += 1
+
+        return ngrams.most_common(30)
+
+
+class DefinitionLinker:
+    """
+    Связывание терминов с внешними источниками
+    """
+
+    def __init__(self, glossary_builder):
+        self.builder = glossary_builder
+
+    def find_related_terms(self, term):
+        """Найти связанные термины"""
+        related = []
+        term_words = set(re.findall(r'\w+', term.lower()))
+
+        for other_term in self.builder.glossary.keys():
+            if other_term == term:
+                continue
+
+            other_words = set(re.findall(r'\w+', other_term.lower()))
+            common = term_words & other_words
+
+            if len(common) >= 1:
+                related.append((other_term, len(common)))
+
+        return sorted(related, key=lambda x: -x[1])[:5]
+
+    def suggest_wikipedia_links(self):
+        """Предложить ссылки на Wikipedia"""
+        suggestions = {}
+
+        for term in self.builder.glossary.keys():
+            # Простая эвристика
+            wiki_url = f"https://ru.wikipedia.org/wiki/{term.replace(' ', '_')}"
+            suggestions[term] = wiki_url
+
+        return suggestions
+
+
+class GlossaryVisualizer:
+    """
+    HTML визуализация глоссария
+    """
+
+    def __init__(self, glossary_builder):
+        self.builder = glossary_builder
+
+    def create_html_dashboard(self, output_file):
+        """Создать HTML dashboard"""
+        total_terms = len(self.builder.glossary)
+        categories = Counter(data.get('category', 'general') for data in self.builder.glossary.values())
+
+        # Топ термины по использованию
+        top_terms = self.builder.term_usage.most_common(15)
+
+        html = f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 Glossary Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }}
+        .container {{ max-width: 1400px; margin: 0 auto; }}
+        h1 {{ color: white; text-align: center; margin-bottom: 10px; font-size: 2.5em; }}
+        .subtitle {{ color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 30px; }}
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        .stat-card {{
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        .stat-value {{ font-size: 3em; font-weight: bold; color: #667eea; }}
+        .stat-label {{ color: #666; margin-top: 10px; text-transform: uppercase; font-size: 0.85em; }}
+        .chart-card {{
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }}
+        .chart-title {{ font-size: 1.3em; margin-bottom: 20px; color: #333; }}
+        .chart-container {{ position: relative; height: 350px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 Glossary Dashboard</h1>
+        <p class="subtitle">Статистика глоссария</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{total_terms}</div>
+                <div class="stat-label">Терминов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{len(categories)}</div>
+                <div class="stat-label">Категорий</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{sum(self.builder.term_usage.values())}</div>
+                <div class="stat-label">Использований</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2 class="chart-title">📊 Распределение по категориям</h2>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h2 class="chart-title">🔥 Топ-15 терминов по использованию</h2>
+            <div class="chart-container">
+                <canvas id="usageChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        new Chart(document.getElementById('categoryChart'), {{
+            type: 'doughnut',
+            data: {{
+                labels: {json.dumps(list(categories.keys()))},
+                datasets: [{{
+                    data: {json.dumps(list(categories.values()))},
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b']
+                }}]
+            }},
+            options: {{ responsive: true, maintainAspectRatio: false }}
+        }});
+
+        new Chart(document.getElementById('usageChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {json.dumps([t for t, c in top_terms])},
+                datasets: [{{
+                    label: 'Использований',
+                    data: {json.dumps([c for t, c in top_terms])},
+                    backgroundColor: '#667eea',
+                    borderRadius: 8
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {{ legend: {{ display: false }} }}
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        print(f"🎨 HTML dashboard: {output_file}")
+
+
+class GlossaryValidator:
+    """
+    Валидация качества определений
+    """
+
+    def __init__(self, glossary_builder):
+        self.builder = glossary_builder
+
+    def validate_quality(self):
+        """Валидация качества определений"""
+        issues = []
+
+        for term, data in self.builder.glossary.items():
+            definition = data['definition']
+
+            # Проверка 1: Определение слишком короткое
+            if len(definition) < 20:
+                issues.append({
+                    'term': term,
+                    'issue': 'too_short',
+                    'severity': 'warning',
+                    'message': 'Определение слишком короткое (< 20 символов)'
+                })
+
+            # Проверка 2: Определение слишком длинное
+            if len(definition) > 500:
+                issues.append({
+                    'term': term,
+                    'issue': 'too_long',
+                    'severity': 'info',
+                    'message': 'Определение слишком длинное (> 500 символов)'
+                })
+
+            # Проверка 3: Нет точки в конце
+            if not definition.endswith('.'):
+                issues.append({
+                    'term': term,
+                    'issue': 'no_period',
+                    'severity': 'warning',
+                    'message': 'Определение не заканчивается точкой'
+                })
+
+        return issues
+
+    def calculate_quality_score(self, term):
+        """Вычислить оценку качества термина"""
+        data = self.builder.glossary.get(term, {})
+        definition = data.get('definition', '')
+
+        score = 100
+
+        # Штрафы
+        if len(definition) < 20:
+            score -= 30
+        if len(definition) > 500:
+            score -= 10
+        if not definition.endswith('.'):
+            score -= 5
+        if 'category' not in data:
+            score -= 10
+        if 'synonyms' not in data or not data.get('synonyms'):
+            score -= 15
+
+        return max(0, score)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='📖 Advanced Glossary Builder - Продвинутый построитель глоссария',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Примеры:
+  %(prog)s                    # Построить глоссарий
+  %(prog)s --html             # HTML dashboard
+  %(prog)s --validate         # Валидация качества
+  %(prog)s --tfidf            # TF-IDF анализ
+  %(prog)s --all              # Все опции
+        """
+    )
+
+    parser.add_argument('--html', action='store_true',
+                       help='🎨 Создать HTML dashboard с графиками')
+    parser.add_argument('--json', action='store_true',
+                       help='📄 Экспорт в JSON')
+    parser.add_argument('--csv', action='store_true',
+                       help='📊 Экспорт в CSV')
+    parser.add_argument('--tooltips', action='store_true',
+                       help='💬 Генерировать HTML tooltips')
+    parser.add_argument('--validate', action='store_true',
+                       help='✅ Валидация качества определений')
+    parser.add_argument('--tfidf', action='store_true',
+                       help='📈 TF-IDF анализ терминов')
+    parser.add_argument('--ngrams', type=int, metavar='N',
+                       help='🔤 Извлечь n-граммы (2-3)')
+    parser.add_argument('--related', type=str, metavar='TERM',
+                       help='🔗 Найти связанные термины')
+    parser.add_argument('--wiki-links', action='store_true',
+                       help='🌐 Предложить ссылки на Wikipedia')
+    parser.add_argument('--all', action='store_true',
+                       help='🚀 Выполнить все опции')
 
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent
     root_dir = script_dir.parent
 
+    # Построить глоссарий
     builder = AdvancedGlossaryBuilder(root_dir)
     builder.build()
     builder.save_markdown()
 
-    if args.json:
+    # HTML dashboard
+    if args.html or args.all:
+        visualizer = GlossaryVisualizer(builder)
+        visualizer.create_html_dashboard(root_dir / "glossary_dashboard.html")
+
+    # JSON экспорт
+    if args.json or args.all:
         builder.export_json()
 
-    if args.tooltips:
+    # CSV экспорт
+    if args.csv:
+        csv_file = root_dir / "glossary.csv"
+        with open(csv_file, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=['term', 'definition', 'category'])
+            writer.writeheader()
+            for term, data in builder.glossary.items():
+                writer.writerow({
+                    'term': term,
+                    'definition': data['definition'],
+                    'category': data.get('category', 'general')
+                })
+        print(f"📊 CSV: {csv_file}")
+
+    # Tooltips
+    if args.tooltips or args.all:
         builder.generate_tooltips_html()
+
+    # Валидация
+    if args.validate or args.all:
+        validator = GlossaryValidator(builder)
+        issues = validator.validate_quality()
+
+        print(f"\n✅ Валидация: найдено {len(issues)} проблем")
+        for issue in issues[:10]:
+            print(f"   - {issue['term']}: {issue['message']}")
+
+        # Сохранить отчёт
+        report_file = root_dir / "glossary_validation.md"
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(f"# Валидация глоссария\n\n")
+            f.write(f"Найдено проблем: {len(issues)}\n\n")
+            for issue in issues:
+                f.write(f"- **{issue['term']}**: {issue['message']}\n")
+        print(f"📋 Отчёт валидации: {report_file}")
+
+    # TF-IDF
+    if args.tfidf or args.all:
+        extractor = TermExtractor(builder)
+        tfidf = extractor.calculate_tf_idf()
+
+        print(f"\n📈 TF-IDF топ-20 слов:")
+        for word, score in tfidf[:20]:
+            print(f"   - {word}: {score:.4f}")
+
+    # N-граммы
+    if args.ngrams:
+        extractor = TermExtractor(builder)
+        ngrams = extractor.extract_ngrams(n=args.ngrams)
+
+        print(f"\n🔤 Топ-20 {args.ngrams}-грамм:")
+        for ngram, count in ngrams[:20]:
+            print(f"   - {ngram}: {count}")
+
+    # Связанные термины
+    if args.related:
+        linker = DefinitionLinker(builder)
+        related = linker.find_related_terms(args.related)
+
+        print(f"\n🔗 Термины, связанные с '{args.related}':")
+        for term, score in related:
+            print(f"   - {term} (схожесть: {score})")
+
+    # Wikipedia ссылки
+    if args.wiki_links:
+        linker = DefinitionLinker(builder)
+        links = linker.suggest_wikipedia_links()
+
+        wiki_file = root_dir / "glossary_wikipedia_links.md"
+        with open(wiki_file, 'w', encoding='utf-8') as f:
+            f.write("# Wikipedia ссылки для терминов\n\n")
+            for term, url in list(links.items())[:50]:
+                f.write(f"- [{term}]({url})\n")
+        print(f"🌐 Wikipedia ссылки: {wiki_file}")
+
+    print("\n✨ Глоссарий готов!")
 
 
 if __name__ == "__main__":
