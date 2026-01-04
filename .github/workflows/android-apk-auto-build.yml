@@ -226,13 +226,26 @@ jobs:
           
           echo ""
           echo "==================================="
-          echo "🚀 Запуск сборки APK через Flutter"
+          echo "🚀 Запуск гибридной сборки APK"
           echo "==================================="
 
-          # Используем flutter build apk теперь, т.к. все проблемы конфигурации исправлены
-          echo "🔨 Сборка через flutter build apk --release..."
-          flutter build apk --release --verbose
+          # Генерируем Flutter artifacts (GeneratedPluginRegistrant, etc.)
+          echo "📝 Генерация Flutter plugin registrant..."
+          flutter pub get
+
+          # Генерируем Flutter код (без сборки APK)
+          echo "🔧 Генерация Flutter embedder..."
+          cd android
+          ./gradlew flutter:generateFlutterR 2>/dev/null || echo "Skipped flutter:generateFlutterR"
+          ./gradlew flutter:compileFlutterBuildReleaseArm64 2>/dev/null || echo "Skipped flutter compile (normal - will be done in assembleRelease)"
+          cd ..
+
+          # Теперь собираем через Gradle (Flutter artifacts уже сгенерированы)
+          echo "🔨 Сборка APK через ./gradlew assembleRelease..."
+          cd android
+          ./gradlew assembleRelease --stacktrace --info
           BUILD_EXIT_CODE=$?
+          cd ..
 
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo ""
