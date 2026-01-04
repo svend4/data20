@@ -89,8 +89,14 @@ jobs:
           echo "📝 Создание local.properties"
           echo "==================================="
           
-          # Определение пути к Flutter SDK
-          FLUTTER_ROOT=$(which flutter | sed 's/\/bin\/flutter$//')
+          # Определение пути к Flutter SDK (более надежный способ)
+          if [ -n "$FLUTTER_HOME" ]; then
+            FLUTTER_ROOT="$FLUTTER_HOME"
+          elif command -v flutter &> /dev/null; then
+            FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          else
+            FLUTTER_ROOT=""
+          fi
           
           # Проверка что Flutter SDK найден
           if [ -z "$FLUTTER_ROOT" ]; then
@@ -124,8 +130,9 @@ jobs:
           
           # Запуск flutter pub get с verbose выводом и проверкой
           if ! flutter pub get --verbose; then
-            echo "❌ ОШИБКА: Не удалось установить зависимости"
-            exit 1
+            PUB_EXIT_CODE=$?
+            echo "❌ ОШИБКА: Не удалось установить зависимости (exit code: $PUB_EXIT_CODE)"
+            exit $PUB_EXIT_CODE
           fi
           
           # Проверка что pubspec.lock создан
@@ -147,15 +154,11 @@ jobs:
           
           # Запуск flutter doctor для диагностики
           echo "Flutter Doctor:"
-          if ! flutter doctor -v; then
-            echo "Flutter doctor завершен с предупреждениями"
-          fi
+          flutter doctor -v
           
           echo ""
           echo "Flutter Analyze:"
-          if ! flutter analyze --no-fatal-infos; then
-            echo "Flutter analyze завершен с предупреждениями"
-          fi
+          flutter analyze --no-fatal-infos
           
           echo "==================================="
           echo "✅ Проверка завершена (не блокирует сборку)"
