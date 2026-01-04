@@ -30,6 +30,11 @@ android {
 
         // Enable multidex for large app
         multiDexEnabled true
+
+        // Manifest placeholders for Flutter
+        manifestPlaceholders = [
+            applicationName: "io.flutter.app.FlutterApplication"
+        ]
     }
 
     // Signing configuration for release builds
