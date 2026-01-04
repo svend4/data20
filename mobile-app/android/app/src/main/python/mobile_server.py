@@ -114,21 +114,12 @@ async def startup():
     # Initialize database
     init_mobile_database()
 
-    # Initialize tool registry
+    # Initialize tool registry (without scanning yet)
     tools_dir = Path(__file__).parent / "tools"
     if not tools_dir.exists():
         tools_dir = Path(__file__).parent.parent / "tools"
 
-    print(f"🔍 Scanning tools directory: {tools_dir}")
     tool_registry = ToolRegistry(tools_dir=tools_dir)
-
-    # Scan and load tools (may take time for 50-60 tools)
-    if tools_dir.exists():
-        tools_count = tool_registry.scan_tools()
-        print(f"✅ Loaded {tools_count} tools")
-    else:
-        print(f"⚠️ Tools directory not found: {tools_dir}")
-        print(f"✅ Tool registry initialized with 0 tools")
 
     # Initialize tool runner
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
@@ -138,6 +129,7 @@ async def startup():
     )
 
     print("✅ Mobile backend started successfully")
+    print("📦 Tool loading will happen in background on first /tools request")
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -229,6 +221,12 @@ async def get_tools(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get list of available tools"""
+    # Lazy load tools on first request
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on first request...")
+        tools_count = tool_registry.scan_tools()
+        print(f"✅ Loaded {tools_count} tools")
+
     tools = tool_registry.get_all_tools()
 
     if category:
@@ -264,6 +262,11 @@ async def get_tool(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get tool details"""
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on demand...")
+        tool_registry.scan_tools()
+
     tool = tool_registry.get_tool(tool_name)
 
     if not tool:
@@ -303,6 +306,11 @@ async def execute_tool(
     current_user: User = Depends(get_current_active_user)
 ):
     """Execute tool (synchronous on mobile)"""
+
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools for execution...")
+        tool_registry.scan_tools()
 
     # Validate tool exists
     tool = tool_registry.get_tool(request.tool_name)
