@@ -29,6 +29,9 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// Apply Flutter gradle script
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
 // Load keystore properties for signing
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
@@ -196,12 +199,6 @@ dependencies {
 
     // Multidex support
     implementation 'androidx.multidex:multidex:2.0.1'
-
-    // Flutter embedding library - provides io.flutter.* classes
-    // Reference the embedding JAR from Flutter SDK
-    compileOnly files("${flutterRoot}/bin/cache/artifacts/engine/android-arm-release/flutter.jar")
-    debugImplementation files("${flutterRoot}/bin/cache/artifacts/engine/android-arm-release/flutter.jar")
-    releaseImplementation files("${flutterRoot}/bin/cache/artifacts/engine/android-arm-release/flutter.jar")
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
