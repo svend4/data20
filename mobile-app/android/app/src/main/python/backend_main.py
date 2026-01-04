@@ -60,30 +60,35 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
     """
-    Run lightweight HTTP server with real authentication
+    Run ultra-lightweight HTTP server with lazy initialization
 
-    Uses ThreadingHTTPServer instead of uvicorn for Android compatibility
+    CRITICAL: Starts INSTANTLY (< 1 second)
+    Database and imports only loaded on first auth request
     """
     global server
 
     logger.info(f"🚀 Starting HTTP backend on {host}:{port}...")
 
-    # Import dependencies
+    # Import ONLY standard library - NO custom modules!
     from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
     import json
-    from urllib.parse import urlparse, parse_qs
 
-    # Import mobile modules for real functionality
-    from mobile_database import get_db, init_mobile_database, SessionLocal
-    from mobile_models import User, UserRole
-    from mobile_auth import get_password_hash, authenticate_user, create_tokens_for_user
+    # Flag to track if DB is initialized
+    db_initialized = False
 
-    # Initialize database
-    init_mobile_database()
+    def ensure_db_initialized():
+        """Initialize database only when first needed"""
+        nonlocal db_initialized
+        if not db_initialized:
+            logger.info("📦 Initializing database on first auth request...")
+            from mobile_database import init_mobile_database
+            init_mobile_database()
+            db_initialized = True
+            logger.info("✅ Database initialized")
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
-            pass  # Disable default logging
+            pass  # Disable logging
 
         def _send_json(self, data, status=200):
             self.send_response(status)
@@ -107,16 +112,17 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
             self.end_headers()
 
         def do_GET(self):
+            # Health check - NO imports, NO database, INSTANT response
             if '/health' in self.path:
                 self._send_json({"status": "ok", "version": "1.0.0"})
 
             elif '/auth/me' in self.path:
-                # Simplified - return default user for now
+                # Simplified - return mock user
                 self._send_json({
                     "id": "1",
-                    "username": "admin",
-                    "email": "admin@data20.local",
-                    "role": "admin",
+                    "username": "user",
+                    "email": "user@data20.local",
+                    "role": "user",
                     "is_active": True
                 })
 
@@ -130,6 +136,13 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                 self._send_json({"message": "Data20 Mobile Backend", "status": "running"})
 
         def do_POST(self):
+            # Import DB modules ONLY when auth is needed
+            ensure_db_initialized()
+
+            from mobile_database import SessionLocal
+            from mobile_models import User, UserRole
+            from mobile_auth import get_password_hash, authenticate_user, create_tokens_for_user
+
             db = SessionLocal()
             try:
                 body = self._get_body()
@@ -202,7 +215,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
 
     try:
         server = ThreadingHTTPServer((host, port), Handler)
-        logger.info(f"✅ HTTP backend started on {host}:{port}")
+        logger.info(f"✅ HTTP backend started on {host}:{port} (INSTANT START)")
         server.serve_forever()
     except Exception as e:
         logger.error(f"❌ Failed to start HTTP server: {e}")
