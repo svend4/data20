@@ -104,10 +104,12 @@ chaquopy {
         // Python pip packages
         pip {
             // Core backend dependencies
+            // Using pydantic v1 instead of v2 to avoid Rust/maturin build requirements
+            // pydantic v1 is pure Python and includes settings functionality
             install "fastapi==0.104.1"
             install "uvicorn==0.24.0"
-            install "pydantic==2.5.0"
-            install "pydantic-settings==2.1.0"
+            install "pydantic==1.10.13"  // v1: pure Python, no Rust required
+            // pydantic-settings removed: included in pydantic v1
 
             // Database
             install "sqlalchemy==2.0.23"
