@@ -234,9 +234,10 @@ jobs:
           echo "📝 Генерация Flutter plugin registrant..."
           flutter pub get
 
-          echo "🔨 Сборка APK через ./gradlew assembleRelease..."
+          echo "🔨 Сборка Debug APK через ./gradlew assembleDebug..."
+          echo "ℹ️ Debug APK автоматически подписывается и легко устанавливается"
           cd android
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleDebug --stacktrace
           BUILD_EXIT_CODE=$?
           cd ..
 
@@ -274,8 +275,11 @@ jobs:
       - name: 📊 Информация о APK
         id: apk_info
         run: |
-          # Поиск APK в обоих возможных местах (Gradle прямой сборки и Flutter)
-          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          # Поиск APK в обоих возможных местах (Debug и Release)
+          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          fi
           if [ -z "$APK_PATH" ]; then
             APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
           fi
@@ -283,6 +287,7 @@ jobs:
           if [ -z "$APK_PATH" ]; then
             echo "❌ ОШИБКА: APK файл не найден ни в одной из ожидаемых директорий"
             echo "Проверены директории:"
+            echo "  - mobile-app/android/app/build/outputs/apk/debug/"
             echo "  - mobile-app/android/app/build/outputs/apk/release/"
             echo "  - mobile-app/build/app/outputs/flutter-apk/"
             exit 1
