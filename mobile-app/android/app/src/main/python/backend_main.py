@@ -119,8 +119,18 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                         "role": "admin",
                         "is_active": True
                     })
+                elif self.path == '/api/tools':
+                    # Return empty tools list - app will show "no tools"
+                    logger.info("  Returning empty tools list")
+                    self._send_json([])
+                elif self.path.startswith('/api/jobs'):
+                    # Return empty jobs list
+                    logger.info("  Returning empty jobs list")
+                    self._send_json([])
                 else:
-                    self._send_json({"error": "Not found"}, 404)
+                    # Return empty object instead of 404 - prevents Flutter from thinking backend crashed
+                    logger.info(f"  Unknown endpoint, returning empty object")
+                    self._send_json({})
 
             def do_POST(self):
                 """Handle POST requests - SIMPLEST POSSIBLE"""
@@ -137,9 +147,17 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                     self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
                     self.end_headers()
 
-                    response = '{"access_token":"test_token_12345","refresh_token":"test_refresh_67890","token_type":"bearer"}'
-                    self.wfile.write(response.encode('utf-8'))
+                    # Different responses for different endpoints
+                    if self.path in ['/auth/login', '/auth/register']:
+                        response = '{"access_token":"test_token_12345","refresh_token":"test_refresh_67890","token_type":"bearer"}'
+                    elif self.path == '/api/run':
+                        # Return fake job response
+                        response = '{"job_id":"test-job-123","tool_name":"test","status":"completed","result":{}}'
+                    else:
+                        # Return empty success
+                        response = '{"success":true}'
 
+                    self.wfile.write(response.encode('utf-8'))
                     logger.info(f"POST {self.path} - SUCCESS")
 
                 except Exception as e:
