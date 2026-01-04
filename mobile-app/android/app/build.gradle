@@ -116,13 +116,15 @@ chaquopy {
             install "alembic==1.12.1"
 
             // Authentication
-            // Note: Installing base packages without extras to avoid Chaquopy compatibility issues
-            // Cryptography dependencies will be installed separately if needed
-            install "python-jose==3.3.0"
-            install "passlib==1.7.4"
+            // IMPORTANT: Removed packages with native/Rust dependencies that fail on Android:
+            // - python-jose (depends on cryptography which requires Rust)
+            // - cryptography (requires Rust/cargo to build)
+            // - passlib (depends on bcrypt which has C extensions)
+            // - bcrypt (has C extensions)
+            //
+            // For JWT authentication, the code should use PyJWT (pure Python):
+            install "PyJWT==2.8.0"  // Pure Python JWT library
             install "python-multipart==0.0.6"
-            install "cryptography==41.0.7"  // Explicit cryptography for jose
-            install "bcrypt==4.1.2"  // Explicit bcrypt for passlib
 
             // Logging and monitoring
             install "structlog==23.2.0"
