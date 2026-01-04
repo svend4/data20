@@ -85,22 +85,89 @@ jobs:
 
       - name: 📝 Создание local.properties для Android
         run: |
-          FLUTTER_ROOT=$(which flutter | sed 's/\/bin\/flutter$//')
+          echo "==================================="
+          echo "📝 Создание local.properties"
+          echo "==================================="
+          
+          # Определение пути к Flutter SDK (более надежный способ)
+          if [ -n "$FLUTTER_HOME" ]; then
+            FLUTTER_ROOT="$FLUTTER_HOME"
+          elif command -v flutter &> /dev/null; then
+            # Извлечение корневой директории Flutter из пути к бинарнику:
+            # /path/to/flutter/bin/flutter -> /path/to/flutter/bin -> /path/to/flutter
+            FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          else
+            FLUTTER_ROOT=""
+          fi
+          
+          # Проверка что Flutter SDK найден
+          if [ -z "$FLUTTER_ROOT" ]; then
+            echo "❌ ОШИБКА: Flutter SDK не найден"
+            exit 1
+          fi
+          
+          echo "Flutter SDK найден: $FLUTTER_ROOT"
+          
+          # Создание local.properties
           echo "flutter.sdk=$FLUTTER_ROOT" > mobile-app/android/local.properties
-          echo "✅ local.properties создан: flutter.sdk=$FLUTTER_ROOT"
+          
+          # Проверка создания файла
+          if [ ! -f mobile-app/android/local.properties ]; then
+            echo "❌ ОШИБКА: Не удалось создать local.properties"
+            exit 1
+          fi
+          
+          # Вывод содержимого для проверки
+          echo "✅ local.properties создан успешно"
+          echo "Содержимое файла:"
+          cat mobile-app/android/local.properties
+          echo "==================================="
 
       - name: 📚 Установка Flutter зависимостей
         run: |
           cd mobile-app
-          flutter pub get
-          echo "✅ Flutter зависимости установлены"
+          echo "==================================="
+          echo "📚 Установка Flutter зависимостей"
+          echo "==================================="
+          
+          # Запуск flutter pub get с verbose выводом
+          flutter pub get --verbose
+          PUB_EXIT_CODE=$?
+          
+          # Проверка успешности установки
+          if [ $PUB_EXIT_CODE -ne 0 ]; then
+            echo "❌ ОШИБКА: Не удалось установить зависимости (exit code: $PUB_EXIT_CODE)"
+            exit $PUB_EXIT_CODE
+          fi
+          
+          # Проверка что pubspec.lock создан
+          if [ ! -f pubspec.lock ]; then
+            echo "❌ ОШИБКА: pubspec.lock не был создан"
+            exit 1
+          fi
+          
+          echo "✅ Flutter зависимости установлены успешно"
+          echo "==================================="
 
       - name: 🔍 Проверка Flutter проекта
         continue-on-error: true
         run: |
           cd mobile-app
+          echo "==================================="
+          echo "🔍 Проверка Flutter проекта"
+          echo "==================================="
+          
+          # Запуск flutter doctor для диагностики
+          echo "Flutter Doctor:"
           flutter doctor -v
+          
+          echo ""
+          echo "Flutter Analyze:"
           flutter analyze --no-fatal-infos
+          
+          echo "==================================="
+          echo "✅ Проверка завершена (не блокирует сборку)"
+          echo "==================================="
 
       # Настройка подписи APK (если доступны ключи)
       - name: 🔐 Декодирование keystore
@@ -127,11 +194,75 @@ jobs:
 
       # Сборка APK
       - name: 🏗️ Сборка Release APK
+        id: build_apk
         run: |
           cd mobile-app
-          echo "🏗️ Начинаем сборку APK..."
+          echo "==================================="
+          echo "🏗️ Начинаем сборку Release APK"
+          echo "==================================="
+          
+          # Предварительные проверки критических файлов
+          echo "📋 Предварительные проверки:"
+          
+          # Массив файлов для проверки (путь:описание)
+          declare -a CHECK_FILES=(
+            "pubspec.yaml:pubspec.yaml"
+            "android/app/build.gradle:android/app/build.gradle"
+            "android/local.properties:android/local.properties"
+            "android/settings.gradle:android/settings.gradle"
+          )
+          
+          # Проверка каждого файла
+          for file_check in "${CHECK_FILES[@]}"; do
+            file_path="${file_check%%:*}"
+            file_desc="${file_check##*:}"
+            echo "- Проверка наличия $file_desc"
+            if [ ! -f "$file_path" ]; then
+              echo "❌ ОШИБКА: $file_desc не найден"
+              exit 1
+            fi
+            echo "  ✅ $file_desc найден"
+          done
+          
+          echo ""
+          echo "==================================="
+          echo "🚀 Запуск сборки APK..."
+          echo "==================================="
+          
+          # Запуск сборки с подробным выводом
           flutter build apk --release --verbose
-          echo "✅ APK успешно собран!"
+          BUILD_EXIT_CODE=$?
+          
+          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+            echo ""
+            echo "==================================="
+            echo "✅ APK успешно собран!"
+            echo "==================================="
+          else
+            echo ""
+            echo "==================================="
+            echo "❌ ОШИБКА СБОРКИ APK"
+            echo "==================================="
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo ""
+            echo "📋 Возможные причины ошибки:"
+            echo "1. Проблемы с Gradle конфигурацией"
+            echo "2. Отсутствие необходимых зависимостей"
+            echo "3. Ошибки в коде Dart/Flutter"
+            echo "4. Проблемы с Android SDK"
+            echo "5. Нехватка памяти или ресурсов (OutOfMemoryError)"
+            echo ""
+            echo "🔍 Для диагностики проверьте:"
+            echo "- Логи выше для детальной информации об ошибке"
+            echo "- Поиск 'FAILURE' или 'ERROR' в выводе Gradle"
+            echo "- Проверьте память: OutOfMemoryError или heap space ошибки"
+            echo "- Файлы Gradle (build.gradle, settings.gradle)"
+            echo "- Версии зависимостей в pubspec.yaml"
+            echo "- Проверьте gradle daemon: ищите 'daemon stopped' или 'startup failed'"
+            echo ""
+            echo "==================================="
+            exit $BUILD_EXIT_CODE
+          fi
 
       - name: 📊 Информация о APK
         id: apk_info
