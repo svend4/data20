@@ -64,15 +64,16 @@ jobs:
           cache: true
 
       - name: 📋 Информация о окружении
+        continue-on-error: true
         run: |
           echo "==================================="
           echo "📱 Информация о сборке"
           echo "==================================="
-          echo "Java версия: $(java -version 2>&1 | head -n 1)"
-          echo "Flutter версия: $(flutter --version | head -n 1)"
-          echo "Python версия: $(python3 --version)"
-          echo "Git branch: $(git branch --show-current)"
-          echo "Git commit: $(git rev-parse --short HEAD)"
+          java -version 2>&1 | head -n 1 || echo "Java version check failed"
+          flutter --version 2>&1 | head -n 1 || echo "Flutter version check failed"
+          python3 --version || echo "Python version check failed"
+          git branch --show-current || echo "Git branch check failed"
+          git rev-parse --short HEAD || echo "Git commit check failed"
           echo "==================================="
 
       - name: 📦 Копирование Python tools
