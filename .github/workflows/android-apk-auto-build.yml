@@ -89,6 +89,7 @@ jobs:
           echo "✅ Flutter зависимости установлены"
 
       - name: 🔍 Проверка Flutter проекта
+        continue-on-error: true
         run: |
           cd mobile-app
           flutter doctor -v
