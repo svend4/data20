@@ -135,14 +135,6 @@ chaquopy {
             src false  // Don't include .pyc files to reduce size
         }
     }
-
-    // Production-specific configuration
-    productFlavors {
-        production {
-            dimension "environment"
-            version "3.9"
-        }
-    }
 }
 
 dependencies {
