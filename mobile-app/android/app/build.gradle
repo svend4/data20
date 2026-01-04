@@ -134,7 +134,8 @@ chaquopy {
             install "pandas==2.1.3"
             install "numpy==1.26.2"
             install "openpyxl==3.1.2"
-            install "lxml==4.9.3"
+            // lxml removed: requires libxml2/libxslt which aren't available on Android
+            // beautifulsoup4 can use html.parser instead
 
             // Tools dependencies
             install "Pillow==10.1.0"
