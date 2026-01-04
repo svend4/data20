@@ -96,14 +96,18 @@ jobs:
 
       # Настройка подписи APK (если доступны ключи)
       - name: 🔐 Декодирование keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_BASE64 != ''
         run: |
           echo "🔐 Настройка подписи release APK..."
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mobile-app/android/data20-release-key.jks
           echo "✅ Keystore декодирован"
 
       - name: 🔑 Создание key.properties
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_BASE64 != ''
         run: |
           cat > mobile-app/android/key.properties << EOF
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
