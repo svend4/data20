@@ -1,0 +1,53 @@
+# Prometheus Configuration for Data20 Knowledge Base
+# Phase 5.3.2: Metrics Collection
+
+global:
+  scrape_interval: 15s      # Scrape targets every 15 seconds
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: 'data20'
+    environment: 'production'
+
+# Alertmanager configuration (optional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts.yml"
+
+# Scrape configuration
+scrape_configs:
+  # Backend API metrics
+  - job_name: 'data20_backend'
+    static_configs:
+      - targets: ['backend:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # PostgreSQL metrics (if using postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    # Optional - requires postgres_exporter container
+
+  # Redis metrics (if using redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    # Optional - requires redis_exporter container
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    # Optional - requires node_exporter container

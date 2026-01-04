@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 FastAPI Backend Server for Data20 Knowledge Base
-Phase 5.3.1: Structured Logging Integration
+Phase 5.2.1: JWT Authentication Integration
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 from sqlalchemy.orm import Session
@@ -16,17 +16,35 @@ import asyncio
 import json
 from datetime import datetime
 import os
+import time
 
 # Structured logging
 from logger import (
     configure_logging, get_logger, LoggingMiddleware,
-    log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure
+    log_startup, log_shutdown, log_tool_start, log_tool_success, log_tool_failure,
+    log_auth_attempt
+)
+
+# Prometheus metrics
+from metrics import (
+    init_metrics, get_metrics, get_metrics_content_type,
+    update_system_metrics, update_db_pool_metrics, update_redis_metrics,
+    http_requests_total, http_request_duration_seconds, http_errors_total,
+    tool_executions_total, tool_execution_duration_seconds,
+    record_cache_access, track_tool_execution
+)
+
+# Authentication
+from auth import (
+    get_password_hash, authenticate_user, create_tokens_for_user,
+    get_current_user, get_current_active_user, get_current_user_optional,
+    refresh_access_token, require_admin, require_user
 )
 
 from tool_registry import ToolRegistry, ToolCategory
 from tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 from database import get_db, check_database_connection, init_database, engine
-from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus
+from models import Job as DBJob, JobResult as DBJobResult, JobLog as DBJobLog, JobStatus as DBJobStatus, User, UserRole
 from redis_client import get_redis, close_redis
 
 # Celery imports
@@ -41,6 +59,48 @@ except ImportError:
 # Pydantic Models
 # ========================
 
+# Authentication Models
+class UserRegister(BaseModel):
+    """User registration request"""
+    username: str
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    """User login request"""
+    username: str  # Can be username or email
+    password: str
+
+
+class Token(BaseModel):
+    """JWT token response"""
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+
+
+class RefreshTokenRequest(BaseModel):
+    """Refresh token request"""
+    refresh_token: str
+
+
+class UserResponse(BaseModel):
+    """User info response"""
+    id: str
+    username: str
+    email: str
+    full_name: Optional[str]
+    role: str
+    is_active: bool
+    created_at: str
+
+    class Config:
+        orm_mode = True
+
+
+# Tool Execution Models
 class ToolRunRequest(BaseModel):
     """Запрос на запуск инструмента"""
     tool_name: str
@@ -87,8 +147,8 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Data20 Knowledge Base API",
-    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery",
-    version="5.3.1"
+    description="Backend API for running 57+ data analysis tools with PostgreSQL + Redis + Celery + JWT Auth + Job Ownership",
+    version="5.2.3"
 )
 
 # Logging middleware (first!)
@@ -182,10 +242,14 @@ async def startup_event():
         if redis.cache_tool_registry(registry_data, ttl=3600):
             logger.info("registry_cached", ttl_seconds=3600)
 
+    # Initialize Prometheus metrics
+    init_metrics(app_version="5.2.3", environment=os.getenv("ENVIRONMENT", "production"))
+    logger.info("prometheus_initialized")
+
     # Log startup summary
     log_startup(
         service="data20_backend",
-        version="5.3.1",
+        version="5.3.2",
         config={
             "database": "Connected" if db_connected else "Disabled",
             "redis": "Connected" if redis_connected else "Disabled",
@@ -196,7 +260,7 @@ async def startup_event():
         }
     )
 
-    logger.info("🎯 Server ready!", api_docs="http://localhost:8001/docs")
+    logger.info("🎯 Server ready!", api_docs="http://localhost:8001/docs", metrics="/metrics")
 
 
 @app.on_event("shutdown")
@@ -238,13 +302,456 @@ async def root():
     """Корневой endpoint"""
     return {
         "name": "Data20 Knowledge Base API",
-        "version": "4.0.0",
+        "version": "5.2.3",
         "status": "running",
         "total_tools": len(registry.tools),
         "docs": "/docs",
-        "registry": "/api/tools"
+        "registry": "/api/tools",
+        "metrics": "/metrics",
+        "auth": {
+            "register": "/auth/register",
+            "login": "/auth/login",
+            "refresh": "/auth/refresh",
+            "me": "/auth/me"
+        },
+        "admin": {
+            "users": "/admin/users",
+            "user_detail": "/admin/users/{user_id}",
+            "update_role": "/admin/users/{user_id}/role",
+            "update_status": "/admin/users/{user_id}/status",
+            "delete_user": "/admin/users/{user_id}"
+        }
     }
 
+
+@app.get("/metrics")
+async def metrics():
+    """
+    Prometheus metrics endpoint
+
+    Returns metrics in Prometheus text format for scraping
+    """
+    # Update dynamic metrics
+    update_system_metrics()
+    update_db_pool_metrics(engine)
+
+    redis = get_redis()
+    update_redis_metrics(redis)
+
+    # Get metrics
+    metrics_data = get_metrics()
+
+    return Response(
+        content=metrics_data,
+        media_type=get_metrics_content_type()
+    )
+
+
+# ========================
+# Authentication Endpoints
+# ========================
+
+@app.post("/auth/register", response_model=UserResponse)
+async def register_user(user_data: UserRegister, db: Session = Depends(get_db)):
+    """
+    Register a new user
+
+    Creates a new user account with the provided credentials.
+    Default role is USER. First user becomes ADMIN.
+    """
+    logger.info("user_registration_attempt", username=user_data.username, email=user_data.email)
+
+    # Check if username already exists
+    existing_user = db.query(User).filter(User.username == user_data.username).first()
+    if existing_user:
+        logger.warning("registration_failed", reason="username_exists", username=user_data.username)
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    # Check if email already exists
+    existing_email = db.query(User).filter(User.email == user_data.email).first()
+    if existing_email:
+        logger.warning("registration_failed", reason="email_exists", email=user_data.email)
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Validate password strength
+    if len(user_data.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    # Check if this is the first user (make them admin)
+    user_count = db.query(User).count()
+    role = UserRole.ADMIN if user_count == 0 else UserRole.USER
+
+    # Create new user
+    hashed_password = get_password_hash(user_data.password)
+    new_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        hashed_password=hashed_password,
+        full_name=user_data.full_name,
+        role=role,
+        is_active=True
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    logger.info(
+        "user_registered",
+        user_id=str(new_user.id),
+        username=new_user.username,
+        role=role.value,
+        is_first_user=user_count == 0
+    )
+
+    return UserResponse(
+        id=str(new_user.id),
+        username=new_user.username,
+        email=new_user.email,
+        full_name=new_user.full_name,
+        role=new_user.role.value,
+        is_active=new_user.is_active,
+        created_at=new_user.created_at.isoformat()
+    )
+
+
+@app.post("/auth/login", response_model=Token)
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    """
+    Login with username/email and password
+
+    Returns access token (30 min) and refresh token (7 days)
+    """
+    logger.info("login_attempt", username=credentials.username)
+
+    # Authenticate user
+    user = authenticate_user(db, credentials.username, credentials.password)
+
+    if not user:
+        logger.warning("login_failed", username=credentials.username, reason="invalid_credentials")
+        log_auth_attempt(credentials.username, success=False, reason="invalid_credentials")
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Create tokens
+    tokens = create_tokens_for_user(user)
+
+    logger.info("login_success", user_id=str(user.id), username=user.username, role=user.role.value)
+    log_auth_attempt(credentials.username, success=True, user_id=str(user.id))
+
+    return Token(**tokens)
+
+
+@app.post("/auth/refresh", response_model=Token)
+async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
+    """
+    Refresh access token using refresh token
+
+    Returns a new access token without requiring re-authentication
+    """
+    try:
+        new_token = refresh_access_token(request.refresh_token, db)
+        logger.info("token_refreshed")
+        return Token(access_token=new_token, token_type="bearer")
+    except HTTPException:
+        logger.warning("token_refresh_failed", reason="invalid_token")
+        raise
+
+
+@app.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+    """
+    Get current authenticated user info
+
+    Requires valid access token
+    """
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at.isoformat()
+    )
+
+
+@app.put("/auth/me", response_model=UserResponse)
+async def update_current_user(
+    full_name: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update current user profile
+
+    Currently only supports updating full_name
+    """
+    if full_name is not None:
+        current_user.full_name = full_name
+        db.commit()
+        db.refresh(current_user)
+        logger.info("user_profile_updated", user_id=str(current_user.id), field="full_name")
+
+    return UserResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        full_name=current_user.full_name,
+        role=current_user.role.value,
+        is_active=current_user.is_active,
+        created_at=current_user.created_at.isoformat()
+    )
+
+
+@app.post("/auth/logout")
+async def logout(current_user: User = Depends(get_current_active_user)):
+    """
+    Logout current user
+
+    Note: JWT tokens are stateless, so this is a placeholder for future
+    token blacklisting implementation. Client should discard tokens.
+    """
+    logger.info("user_logout", user_id=str(current_user.id), username=current_user.username)
+    return {"message": "Logged out successfully. Please discard your tokens."}
+
+
+# ========================
+# Admin: User Management Endpoints
+# ========================
+
+@app.get("/admin/users", response_model=List[UserResponse])
+async def list_users(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    List all users (admin only)
+
+    Supports pagination with skip/limit parameters
+    """
+    logger.info("admin_list_users", admin_id=str(current_user.id), skip=skip, limit=limit)
+
+    users = db.query(User).offset(skip).limit(limit).all()
+
+    return [
+        UserResponse(
+            id=str(user.id),
+            username=user.username,
+            email=user.email,
+            full_name=user.full_name,
+            role=user.role.value,
+            is_active=user.is_active,
+            created_at=user.created_at.isoformat()
+        )
+        for user in users
+    ]
+
+
+@app.get("/admin/users/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: str,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Get user details by ID (admin only)
+    """
+    logger.info("admin_get_user", admin_id=str(current_user.id), target_user_id=user_id)
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+class UpdateUserRoleRequest(BaseModel):
+    """Request to update user role"""
+    role: str  # "admin", "user", or "guest"
+
+
+@app.put("/admin/users/{user_id}/role", response_model=UserResponse)
+async def update_user_role(
+    user_id: str,
+    request: UpdateUserRoleRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Update user role (admin only)
+
+    Roles: admin, user, guest
+    Cannot demote yourself
+    """
+    logger.info(
+        "admin_update_user_role",
+        admin_id=str(current_user.id),
+        target_user_id=user_id,
+        new_role=request.role
+    )
+
+    # Prevent self-demotion
+    if str(current_user.id) == user_id and request.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot demote yourself from admin")
+
+    # Validate role
+    try:
+        new_role = UserRole(request.role)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid role: {request.role}. Must be: admin, user, or guest")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update role
+    old_role = user.role.value
+    user.role = new_role
+    db.commit()
+    db.refresh(user)
+
+    logger.info(
+        "user_role_updated",
+        target_user_id=user_id,
+        username=user.username,
+        old_role=old_role,
+        new_role=new_role.value,
+        updated_by=str(current_user.id)
+    )
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+class UpdateUserStatusRequest(BaseModel):
+    """Request to update user active status"""
+    is_active: bool
+
+
+@app.put("/admin/users/{user_id}/status", response_model=UserResponse)
+async def update_user_status(
+    user_id: str,
+    request: UpdateUserStatusRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Activate or deactivate user account (admin only)
+
+    Cannot deactivate yourself
+    """
+    logger.info(
+        "admin_update_user_status",
+        admin_id=str(current_user.id),
+        target_user_id=user_id,
+        new_status=request.is_active
+    )
+
+    # Prevent self-deactivation
+    if str(current_user.id) == user_id and not request.is_active:
+        raise HTTPException(status_code=400, detail="Cannot deactivate yourself")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update status
+    old_status = user.is_active
+    user.is_active = request.is_active
+    db.commit()
+    db.refresh(user)
+
+    logger.info(
+        "user_status_updated",
+        target_user_id=user_id,
+        username=user.username,
+        old_status=old_status,
+        new_status=request.is_active,
+        updated_by=str(current_user.id)
+    )
+
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        created_at=user.created_at.isoformat()
+    )
+
+
+@app.delete("/admin/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete user account (admin only)
+
+    Cannot delete yourself
+    All user's jobs are preserved but orphaned
+    """
+    logger.info("admin_delete_user", admin_id=str(current_user.id), target_user_id=user_id)
+
+    # Prevent self-deletion
+    if str(current_user.id) == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    # Get target user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    username = user.username
+    role = user.role.value
+
+    # Delete user
+    db.delete(user)
+    db.commit()
+
+    logger.info(
+        "user_deleted",
+        target_user_id=user_id,
+        username=username,
+        role=role,
+        deleted_by=str(current_user.id)
+    )
+
+    return {
+        "message": f"User {username} deleted successfully",
+        "user_id": user_id,
+        "username": username
+    }
+
+
+# ========================
+# Tool Registry Endpoints
+# ========================
 
 @app.get("/api/tools")
 async def get_all_tools():
@@ -255,7 +762,12 @@ async def get_all_tools():
     if redis.is_available():
         cached = redis.get_cached_tool_registry()
         if cached:
+            # Record cache hit
+            record_cache_access("tool_registry", hit=True)
             return cached
+
+    # Cache miss
+    record_cache_access("tool_registry", hit=False)
 
     # Fallback к registry
     registry_data = registry.to_json()
@@ -367,7 +879,8 @@ async def run_tool(
     request: ToolRunRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    use_celery: bool = True
+    use_celery: bool = True,
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """
     Запустить инструмент через Celery или fallback
@@ -375,6 +888,7 @@ async def run_tool(
     Args:
         use_celery: Use Celery if available (default: True)
 
+    Authentication is optional. If authenticated, job is associated with user.
     Возвращает job_id для отслеживания прогресса
     """
 
@@ -388,13 +902,24 @@ async def run_tool(
     import uuid
     job_id = str(uuid.uuid4())
 
-    logger.info("creating_job", job_id=job_id, tool_name=request.tool_name, parameters=request.parameters)
+    # Log with user info if authenticated
+    log_data = {
+        "job_id": job_id,
+        "tool_name": request.tool_name,
+        "parameters": request.parameters
+    }
+    if current_user:
+        log_data["user_id"] = str(current_user.id)
+        log_data["username"] = current_user.username
+
+    logger.info("creating_job", **log_data)
 
     db_job = DBJob(
         id=job_id,
         tool_name=request.tool_name,
         parameters=request.parameters,
-        status=DBJobStatus.PENDING
+        status=DBJobStatus.PENDING,
+        user_id=str(current_user.id) if current_user else None
     )
 
     try:
@@ -446,6 +971,13 @@ async def run_tool(
     async def run_in_background():
         result = await runner.run_tool(request.tool_name, request.parameters)
 
+        # Record tool execution metrics
+        status_str = "completed" if result.status == RunnerJobStatus.COMPLETED else "failed"
+        tool_executions_total.labels(tool_name=request.tool_name, status=status_str).inc()
+
+        if result.duration:
+            tool_execution_duration_seconds.labels(tool_name=request.tool_name).observe(result.duration)
+
         # Сохранить результат в БД (с новой сессией)
         from database import get_db_context
         try:
@@ -481,7 +1013,7 @@ async def run_tool(
                     )
                     bg_db.add(db_log)
         except Exception as e:
-            print(f"⚠️  Failed to save job result to database: {e}")
+            logger.warning("job_save_failed", job_id=job_id, error=str(e))
 
         # Опубликовать обновление в Redis pub/sub
         redis = get_redis()
@@ -513,15 +1045,32 @@ async def run_tool(
 async def get_all_jobs(
     limit: int = 100,
     offset: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    """Получить все задачи (из памяти + БД)"""
+    """
+    Get all jobs (from memory + database)
+
+    Authorization:
+    - Admin: sees all jobs
+    - User: sees only their own jobs
+    - Anonymous: sees only anonymous jobs
+    """
 
     all_jobs = []
+
+    # Determine user filter
+    is_admin = current_user and current_user.role == UserRole.ADMIN
+    user_filter = str(current_user.id) if current_user else None
 
     # 1. Получить задачи из памяти (текущие)
     memory_jobs = runner.get_all_jobs()
     for j in memory_jobs:
+        # Skip if job doesn't belong to current user (unless admin)
+        if not is_admin and hasattr(j, 'user_id'):
+            if j.user_id != user_filter:
+                continue
+
         all_jobs.append({
             "job_id": j.job_id,
             "tool_name": j.tool_name,
@@ -535,7 +1084,18 @@ async def get_all_jobs(
 
     # 2. Получить задачи из БД (исторические)
     try:
-        db_jobs = db.query(DBJob)\
+        # Build query with ownership filter
+        query = db.query(DBJob)
+
+        if not is_admin:
+            # Non-admin users see only their own jobs
+            if current_user:
+                query = query.filter(DBJob.user_id == str(current_user.id))
+            else:
+                # Anonymous users see only anonymous jobs
+                query = query.filter(DBJob.user_id == None)
+
+        db_jobs = query\
             .order_by(DBJob.created_at.desc())\
             .limit(limit)\
             .offset(offset)\
@@ -557,7 +1117,7 @@ async def get_all_jobs(
                     "source": "database"
                 })
     except Exception as e:
-        print(f"⚠️  Failed to fetch jobs from database: {e}")
+        logger.warning("failed_to_fetch_db_jobs", error=str(e))
 
     # Сортировать по дате создания (новые первые)
     all_jobs.sort(key=lambda x: x.get("started_at") or "", reverse=True)
@@ -572,13 +1132,38 @@ async def get_all_jobs(
 
 
 @app.get("/api/jobs/{job_id}")
-async def get_job_status(job_id: str, db: Session = Depends(get_db)):
-    """Получить статус задачи (из памяти или БД)"""
+async def get_job_status(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Get job status (from memory or database)
+
+    Authorization:
+    - Admin: can access any job
+    - User: can only access their own jobs
+    - Anonymous: can only access anonymous jobs
+    """
+
+    # Determine if user is admin
+    is_admin = current_user and current_user.role == UserRole.ADMIN
 
     # Сначала проверить в памяти (запущенные задачи)
     job = runner.get_job(job_id)
 
     if job:
+        # Check ownership (unless admin)
+        if not is_admin:
+            job_user_id = getattr(job, 'user_id', None)
+            current_user_id = str(current_user.id) if current_user else None
+
+            if job_user_id != current_user_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Job {job_id} not found"
+                )
+
         # Задача в памяти (выполняется или недавно завершена)
         return JobStatusResponse(
             job_id=job.job_id,
@@ -598,6 +1183,18 @@ async def get_job_status(job_id: str, db: Session = Depends(get_db)):
         db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
 
         if db_job:
+            # Check ownership (unless admin)
+            if not is_admin:
+                db_user_id = db_job.user_id
+                current_user_id = str(current_user.id) if current_user else None
+
+                if db_user_id != current_user_id:
+                    # Return 404 instead of 403 to not leak job existence
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Job {job_id} not found"
+                    )
+
             # Загрузить result
             db_result = db.query(DBJobResult).filter(DBJobResult.job_id == job_id).first()
 
@@ -613,16 +1210,48 @@ async def get_job_status(job_id: str, db: Session = Depends(get_db)):
                 duration=db_job.duration,
                 output_files=db_result.output_files if db_result else []
             )
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"⚠️  Database query failed: {e}")
+        logger.warning("database_query_failed", error=str(e))
 
     raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
 
 @app.get("/api/jobs/{job_id}/logs")
-async def get_job_logs(job_id: str, db: Session = Depends(get_db)):
-    """Получить логи задачи"""
+async def get_job_logs(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Get job logs
+
+    Authorization:
+    - Admin: can access any job's logs
+    - User: can only access their own job logs
+    - Anonymous: can only access anonymous job logs
+    """
     try:
+        # First check if job exists and user has access
+        is_admin = current_user and current_user.role == UserRole.ADMIN
+
+        # Check job ownership
+        db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
+
+        if not db_job:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        # Check ownership (unless admin)
+        if not is_admin:
+            db_user_id = db_job.user_id
+            current_user_id = str(current_user.id) if current_user else None
+
+            if db_user_id != current_user_id:
+                # Return 404 instead of 403 to not leak job existence
+                raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        # Fetch logs
         logs = db.query(DBJobLog)\
             .filter(DBJobLog.job_id == job_id)\
             .order_by(DBJobLog.timestamp.asc())\
@@ -640,14 +1269,46 @@ async def get_job_logs(job_id: str, db: Session = Depends(get_db)):
                 for log in logs
             ]
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"⚠️  Failed to fetch logs: {e}")
+        logger.warning("failed_to_fetch_logs", job_id=job_id, error=str(e))
         return {"job_id": job_id, "total": 0, "logs": []}
 
 
 @app.delete("/api/jobs/{job_id}")
-async def cancel_job(job_id: str):
-    """Отменить задачу"""
+async def cancel_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    Cancel/delete job
+
+    Authorization:
+    - Admin: can cancel any job
+    - User: can only cancel their own jobs
+    - Anonymous: can only cancel anonymous jobs
+    """
+    # Determine if user is admin
+    is_admin = current_user and current_user.role == UserRole.ADMIN
+
+    # Check job ownership
+    try:
+        db_job = db.query(DBJob).filter(DBJob.id == job_id).first()
+
+        if db_job and not is_admin:
+            db_user_id = db_job.user_id
+            current_user_id = str(current_user.id) if current_user else None
+
+            if db_user_id != current_user_id:
+                raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.warning("ownership_check_failed", error=str(e))
+
+    # Cancel job
     success = await runner.cancel_job(job_id)
 
     if not success:

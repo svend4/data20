@@ -1,0 +1,204 @@
+# Electron Builder Configuration
+# Phase 7.1: Desktop Embedded Backend
+#
+# This configuration builds standalone installers for Windows, macOS, and Linux
+# with the embedded Python backend.
+#
+# Usage:
+#   electron-builder                    # Build for current platform
+#   electron-builder -mwl              # Build for all platforms
+#   electron-builder --win             # Windows only
+#   electron-builder --mac             # macOS only
+#   electron-builder --linux           # Linux only
+
+appId: com.data20.knowledgebase
+productName: Data20 Knowledge Base
+copyright: Copyright © 2024 Data20
+
+# Build directories
+directories:
+  output: dist
+  buildResources: resources
+
+# Files to include in the app
+files:
+  - build/**/*
+  - electron/**/*
+  - node_modules/**/*
+  - package.json
+  - "!**/*.map"
+  - "!**/*.ts"
+
+# Extra resources (backend executable, etc.)
+extraResources:
+  # Backend executable (built by PyInstaller)
+  - from: ../dist/
+    to: backend
+    filter:
+      - data20-backend*
+      - "!**/*.spec"
+      - "!**/*.txt"
+
+# Compression
+compression: maximum
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+
+# ============================================================================
+# Windows Configuration
+# ============================================================================
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  icon: resources/icons/icon.ico
+  publisherName: Data20
+  verifyUpdateCodeSignature: false
+
+nsis:
+  oneClick: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Data20 Knowledge Base
+  menuCategory: true
+  installerIcon: resources/icons/icon.ico
+  uninstallerIcon: resources/icons/icon.ico
+  installerHeader: resources/icons/installer-header.bmp
+  installerSidebar: resources/icons/installer-sidebar.bmp
+  license: ../LICENSE
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+
+portable:
+  artifactName: ${productName}-${version}-portable.exe
+
+# ============================================================================
+# macOS Configuration
+# ============================================================================
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  icon: resources/icons/icon.icns
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+  minimumSystemVersion: "10.13"
+  type: distribution
+
+dmg:
+  title: ${productName} ${version}
+  icon: resources/icons/icon.icns
+  iconSize: 100
+  window:
+    width: 600
+    height: 450
+  contents:
+    - x: 150
+      y: 220
+    - x: 450
+      y: 220
+      type: link
+      path: /Applications
+  backgroundColor: "#667eea"
+
+# ============================================================================
+# Linux Configuration
+# ============================================================================
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+    - target: rpm
+      arch:
+        - x64
+  icon: resources/icons/
+  category: Office
+  synopsis: Knowledge Base Management System
+  description: |
+    Data20 Knowledge Base is a comprehensive desktop application for managing
+    data analysis tools and workflows. It features an embedded Python backend
+    with 57+ data processing tools, JWT authentication, and local SQLite storage.
+
+    Features:
+    - 57+ data analysis tools
+    - Offline-first operation
+    - Local SQLite database
+    - User authentication
+    - Job management
+    - RESTful API
+
+  vendor: Data20
+  maintainer: data20@example.com
+
+appImage:
+  license: MIT
+  systemIntegration: ask
+  artifactName: ${productName}-${version}.AppImage
+
+deb:
+  depends:
+    - gconf2
+    - gconf-service
+    - libnotify4
+    - libappindicator1
+    - libxtst6
+    - libnss3
+  priority: optional
+  afterInstall: resources/linux/after-install.sh
+  afterRemove: resources/linux/after-remove.sh
+
+rpm:
+  depends:
+    - libXScrnSaver
+    - libappindicator
+    - libnotify
+  fpm:
+    - "--rpm-rpmbuild-define"
+    - "_build_id_links none"
+
+# ============================================================================
+# Publish Configuration (for auto-updates)
+# ============================================================================
+publish:
+  provider: github
+  owner: data20
+  repo: data20
+  releaseType: release
+  private: false
+
+# ============================================================================
+# Additional Options
+# ============================================================================
+
+# Metadata
+buildVersion: "1.0.0"
+
+# Compression and optimization
+asar: true
+asarUnpack:
+  - "**/*.node"
+
+# Code signing (configure as needed)
+# win:
+#   certificateFile: path/to/certificate.pfx
+#   certificatePassword: ${env.CERTIFICATE_PASSWORD}
+# mac:
+#   identity: "Developer ID Application: Your Name (TEAM_ID)"

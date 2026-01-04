@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/dist/
+build/index.html
+build/assets/
+
+# Cache
+.cache/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Electron
+out/
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.AppImage
+*.exe
+*.msi
+*.zip
+*.tar.gz
