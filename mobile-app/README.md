@@ -1,32 +1,89 @@
 # Data20 Mobile App
 
-Native mobile application for Data20 Knowledge Base built with Flutter.
+Native mobile application for Data20 Knowledge Base built with Flutter with **embedded Python backend**.
 
-## Features
+## 🚀 Key Features
+
+✅ **100% Offline Operation**:
+- Embedded Python 3.9 runtime
+- FastAPI backend on device (127.0.0.1:8001)
+- SQLite database
+- No internet required after installation
+
+✅ **57+ Data Processing Tools**:
+- Analysis, indexing, search
+- Visualization, export
+- All work offline
 
 ✅ **Cross-Platform**:
-- iOS (iPhone, iPad)
-- Android (phones, tablets)
-- Shared codebase (~95%)
+- Android 7.0+ (API 24)
+- iOS support (in development)
 
-✅ **Native UI**:
+✅ **Modern UI**:
 - Material Design 3
+- Dark/Light theme
 - Adaptive widgets
-- Platform-specific behaviors
-- Smooth animations
+- Touch-optimized
 
-✅ **Core Functionality**:
-- JWT authentication
-- Tools catalog with search/filters
-- Job execution (placeholder)
-- Job history (placeholder)
-- Offline storage
+## 📚 Documentation
 
-✅ **Mobile Optimizations**:
-- Touch-optimized UI
-- Pull-to-refresh
-- Responsive grid layouts
-- Secure storage for tokens
+### Quick Links
+
+- **[📱 PUBLISH_APK.md](PUBLISH_APK.md)** - Complete guide for building and publishing APK
+- **[🔑 KEYSTORE_SETUP.md](KEYSTORE_SETUP.md)** - Keystore creation and signing configuration
+- **[🏗️ BUILD_MOBILE_EMBEDDED.md](BUILD_MOBILE_EMBEDDED.md)** - Build guide for embedded Python version
+- **[📥 Root: DOWNLOAD_APK.md](../DOWNLOAD_APK.md)** - User guide for installing APK
+- **[📋 Root: RELEASE_NOTES.md](../RELEASE_NOTES.md)** - Release notes and changelog
+
+### Documentation Summary
+
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| **PUBLISH_APK.md** | How to build, sign and publish APK to GitHub Releases or Google Play Store | Developers |
+| **KEYSTORE_SETUP.md** | Keystore generation, signing setup, security best practices | Developers |
+| **BUILD_MOBILE_EMBEDDED.md** | Technical details of building with Chaquopy and embedded Python | Developers |
+| **DOWNLOAD_APK.md** | Installation guide and user manual | End Users |
+| **RELEASE_NOTES.md** | What's included, features, requirements | End Users |
+
+## 🚀 Quick Start
+
+### For Users: Install APK
+
+See **[DOWNLOAD_APK.md](../DOWNLOAD_APK.md)** for installation instructions.
+
+### For Developers: Build Release APK
+
+#### Option 1: Unsigned APK (for testing)
+
+```bash
+cd mobile-app
+./build-android-embedded.sh release
+# APK: build/app/outputs/flutter-apk/app-release.apk
+```
+
+#### Option 2: Signed APK (for publishing)
+
+```bash
+# 1. Create keystore (first time only)
+cd android
+keytool -genkey -v -keystore data20-release-key.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias data20-release
+
+# 2. Create key.properties
+cat > key.properties << 'EOF'
+storePassword=YOUR_PASSWORD
+keyPassword=YOUR_PASSWORD
+keyAlias=data20-release
+storeFile=data20-release-key.jks
+EOF
+
+# 3. Build signed APK
+cd ..
+./build-android-embedded.sh release
+```
+
+**See [PUBLISH_APK.md](PUBLISH_APK.md) for complete instructions.**
 
 ## Architecture
 
@@ -316,33 +373,63 @@ flutter test integration_test/
 
 ### Google Play Store
 
-1. Create keystore:
-```bash
-keytool -genkey -v -keystore ~/data20-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias data20
-```
+See **[PUBLISH_APK.md](PUBLISH_APK.md)** for complete publishing guide including:
+- Keystore setup and signing
+- Building signed APK/AAB
+- Preparing store listing
+- Upload process
+- Automated CI/CD with GitHub Actions
 
-2. Configure `android/key.properties`:
-```properties
-storePassword=<password>
-keyPassword=<password>
-keyAlias=data20
-storeFile=/path/to/data20-release.jks
-```
+Quick summary:
+1. Create Google Play Developer account ($25)
+2. Build signed AAB: `flutter build appbundle --release`
+3. Upload to Play Console
+4. Fill in store listing details
+5. Submit for review (1-3 days)
 
-3. Build:
-```bash
-flutter build appbundle
-```
+### Direct Distribution (GitHub Releases)
 
-4. Upload to Google Play Console
+See **[PUBLISH_APK.md](PUBLISH_APK.md)** for instructions on:
+- Creating GitHub releases
+- Uploading signed APK
+- Automated builds via GitHub Actions
 
-### Apple App Store
+Quick summary:
+1. Create release on GitHub: https://github.com/svend4/data20/releases/new
+2. Upload signed APK as asset
+3. Users download and install manually
 
-1. Create App ID in Apple Developer portal
-2. Create provisioning profile
-3. Configure signing in Xcode
-4. Archive in Xcode
-5. Upload to App Store Connect
+### Signing Configuration
+
+See **[KEYSTORE_SETUP.md](KEYSTORE_SETUP.md)** for detailed keystore setup.
+
+⚠️ **Important**: 
+- Keep keystore file secure (never commit to Git)
+- Backup keystore and passwords
+- Losing keystore means you cannot update your app!
+
+## 🔒 Security
+
+- ✅ Keystore files excluded from Git (.gitignore)
+- ✅ ProGuard rules configured for code obfuscation
+- ✅ Secure storage for JWT tokens
+- ✅ All Python code embedded (not exposed)
+- ✅ Backend runs locally (127.0.0.1 only)
+
+## 📦 APK Information
+
+**Size**: ~100MB (includes embedded Python runtime and tools)
+
+**What's included**:
+- Python 3.9 runtime (~30MB)
+- FastAPI backend (~10MB)
+- 57 data processing tools (~40MB)
+- Flutter app (~20MB)
+
+**Requirements**:
+- Android 7.0+ (API 24)
+- ~150MB storage
+- ~300MB RAM
 
 ## License
 
@@ -350,5 +437,6 @@ Same as Data20 Knowledge Base project.
 
 ## Support
 
-- Documentation: https://github.com/data20/docs
-- Issues: https://github.com/data20/issues
+- **Build Issues**: [GitHub Issues](https://github.com/svend4/data20/issues)
+- **User Guide**: [DOWNLOAD_APK.md](../DOWNLOAD_APK.md)
+- **Developer Docs**: [PUBLISH_APK.md](PUBLISH_APK.md)
