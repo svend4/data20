@@ -76,7 +76,7 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
         logger.info("📦 Using Python http.server (no FastAPI, no uvicorn)")
 
         # Use standard library http.server instead of FastAPI
-        from http.server import HTTPServer, BaseHTTPRequestHandler
+        from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
         import json
 
         class SimpleHandler(BaseHTTPRequestHandler):
@@ -147,10 +147,11 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                     import traceback
                     traceback.print_exc()
 
-        # Create and start server
-        logger.info(f"🔧 Creating HTTPServer on {host}:{port}...")
-        server = HTTPServer((host, port), SimpleHandler)
-        logger.info(f"✅ Server created, starting to serve...")
+        # Create and start server (ThreadingHTTPServer for concurrent requests)
+        logger.info(f"🔧 Creating ThreadingHTTPServer on {host}:{port}...")
+        server = ThreadingHTTPServer((host, port), SimpleHandler)
+        logger.info(f"✅ Threaded server created, can handle concurrent requests...")
+        logger.info(f"   This allows POST /auth/login and GET /health at the same time!")
 
         # This blocks until server is stopped
         server.serve_forever()
