@@ -80,8 +80,20 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
         try:
             from fastapi import FastAPI
             from fastapi.responses import JSONResponse
+            from pydantic import BaseModel
 
             test_app = FastAPI(title="Data20 Test Backend")
+
+            # Pydantic models for request validation
+            class LoginRequest(BaseModel):
+                username: str
+                password: str
+
+            class RegisterRequest(BaseModel):
+                username: str
+                email: str
+                password: str
+                full_name: str = None
 
             @test_app.get("/health")
             async def health():
@@ -90,6 +102,39 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
             @test_app.get("/")
             async def root():
                 return {"message": "Data20 Test Backend - Minimal Version"}
+
+            # Auth endpoints - minimal implementation
+            @test_app.post("/auth/login")
+            async def login(request: LoginRequest):
+                # Accept any username/password
+                logger.info(f"Login attempt: {request.username}")
+                return {
+                    "access_token": "test_token_12345",
+                    "refresh_token": "test_refresh_67890",
+                    "token_type": "bearer"
+                }
+
+            @test_app.post("/auth/register")
+            async def register(request: RegisterRequest):
+                # Accept any registration
+                logger.info(f"Register attempt: {request.username}")
+                return {
+                    "access_token": "test_token_12345",
+                    "refresh_token": "test_refresh_67890",
+                    "token_type": "bearer"
+                }
+
+            @test_app.get("/auth/me")
+            async def get_current_user():
+                # Return fake user
+                return {
+                    "id": "test-user-1",
+                    "username": "admin",
+                    "email": "admin@test.com",
+                    "full_name": "Test Admin",
+                    "role": "admin",
+                    "is_active": True
+                }
 
             app = test_app
             logger.info("✅ Minimal test app created successfully")
