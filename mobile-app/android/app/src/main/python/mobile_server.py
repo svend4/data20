@@ -126,7 +126,7 @@ async def startup():
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
     tool_runner = ToolRunner(
         tools_dir=tools_dir,
-        upload_dir=Path(upload_dir)
+        output_dir=Path(upload_dir)
     )
 
     print("✅ Mobile backend started successfully")
@@ -315,15 +315,18 @@ async def execute_tool(
 
     # Execute tool synchronously (no Celery on mobile)
     try:
-        result = tool_runner.run_tool(
+        result = await tool_runner.run_tool(
             tool_name=request.tool_name,
-            parameters=request.parameters,
-            input_file=request.input_file
+            parameters=request.parameters
         )
 
         # Update job with result
         job.status = JobStatus.COMPLETED
-        job.result = result
+        job.result = {
+            "output": result.output,
+            "output_files": result.output_files,
+            "duration": result.duration
+        }
         job.completed_at = datetime.utcnow()
 
         db.commit()
@@ -335,7 +338,7 @@ async def execute_tool(
             status=job.status.value,
             created_at=job.created_at.isoformat(),
             updated_at=job.updated_at.isoformat(),
-            result=result
+            result=job.result
         )
 
     except Exception as e:
