@@ -78,69 +78,87 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
         logger.info("📦 Creating minimal FastAPI test app...")
 
         try:
-            from fastapi import FastAPI
+            from fastapi import FastAPI, Request
             from fastapi.responses import JSONResponse
-            from pydantic import BaseModel
+            from fastapi.middleware.cors import CORSMiddleware
 
             test_app = FastAPI(title="Data20 Test Backend")
 
-            # Pydantic models for request validation
-            class LoginRequest(BaseModel):
-                username: str
-                password: str
-
-            class RegisterRequest(BaseModel):
-                username: str
-                email: str
-                password: str
-                full_name: str = None
+            # Add CORS middleware
+            test_app.add_middleware(
+                CORSMiddleware,
+                allow_origins=["*"],
+                allow_credentials=True,
+                allow_methods=["*"],
+                allow_headers=["*"],
+            )
 
             @test_app.get("/health")
             async def health():
+                logger.info("Health check")
                 return {"status": "ok", "message": "Test backend is running"}
 
             @test_app.get("/")
             async def root():
+                logger.info("Root endpoint")
                 return {"message": "Data20 Test Backend - Minimal Version"}
 
-            # Auth endpoints - minimal implementation
+            # Auth endpoints - accept RAW JSON (no Pydantic validation)
             @test_app.post("/auth/login")
-            async def login(request: LoginRequest):
-                # Accept any username/password
-                logger.info(f"Login attempt: {request.username}")
-                return {
-                    "access_token": "test_token_12345",
-                    "refresh_token": "test_refresh_67890",
-                    "token_type": "bearer"
-                }
+            async def login(request: Request):
+                try:
+                    body = await request.json()
+                    username = body.get("username", "unknown")
+                    logger.info(f"✅ Login request: username={username}")
+                    return JSONResponse({
+                        "access_token": "test_token_12345",
+                        "refresh_token": "test_refresh_67890",
+                        "token_type": "bearer"
+                    })
+                except Exception as e:
+                    logger.error(f"❌ Login error: {e}")
+                    return JSONResponse({"error": str(e)}, status_code=500)
 
             @test_app.post("/auth/register")
-            async def register(request: RegisterRequest):
-                # Accept any registration
-                logger.info(f"Register attempt: {request.username}")
-                return {
-                    "access_token": "test_token_12345",
-                    "refresh_token": "test_refresh_67890",
-                    "token_type": "bearer"
-                }
+            async def register(request: Request):
+                try:
+                    body = await request.json()
+                    username = body.get("username", "unknown")
+                    logger.info(f"✅ Register request: username={username}")
+                    return JSONResponse({
+                        "access_token": "test_token_12345",
+                        "refresh_token": "test_refresh_67890",
+                        "token_type": "bearer"
+                    })
+                except Exception as e:
+                    logger.error(f"❌ Register error: {e}")
+                    return JSONResponse({"error": str(e)}, status_code=500)
 
             @test_app.get("/auth/me")
-            async def get_current_user():
-                # Return fake user
-                return {
-                    "id": "test-user-1",
-                    "username": "admin",
-                    "email": "admin@test.com",
-                    "full_name": "Test Admin",
-                    "role": "admin",
-                    "is_active": True
-                }
+            async def get_current_user(request: Request):
+                try:
+                    # Log authorization header
+                    auth = request.headers.get("authorization", "none")
+                    logger.info(f"✅ Get user request: auth={auth[:20]}..." if len(auth) > 20 else f"auth={auth}")
+                    return JSONResponse({
+                        "id": "test-user-1",
+                        "username": "admin",
+                        "email": "admin@test.com",
+                        "full_name": "Test Admin",
+                        "role": "admin",
+                        "is_active": True
+                    })
+                except Exception as e:
+                    logger.error(f"❌ Get user error: {e}")
+                    return JSONResponse({"error": str(e)}, status_code=500)
 
             app = test_app
-            logger.info("✅ Minimal test app created successfully")
+            logger.info("✅ Minimal test app created with CORS and logging")
 
         except Exception as e:
             logger.error(f"❌ Failed to create FastAPI app: {e}")
+            import traceback
+            traceback.print_exc()
             raise Exception(f"FastAPI creation failed: {e}")
 
         # Import uvicorn
