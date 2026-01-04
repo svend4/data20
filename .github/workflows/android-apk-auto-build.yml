@@ -226,12 +226,20 @@ jobs:
           
           echo ""
           echo "==================================="
-          echo "🚀 Запуск сборки APK..."
+          echo "🚀 Запуск сборки APK через Gradle напрямую"
+          echo "⚠️  Обход Flutter из-за 'unsupported Gradle project'"
           echo "==================================="
-          
-          # Запуск сборки с подробным выводом
-          flutter build apk --release --verbose
+
+          # Сначала генерируем Flutter код
+          echo "📝 Генерация Flutter кода..."
+          flutter pub get
+
+          # Собираем через Gradle, минуя flutter build apk
+          echo "🔨 Сборка через ./gradlew assembleRelease..."
+          cd android
+          ./gradlew assembleRelease --stacktrace --info
           BUILD_EXIT_CODE=$?
+          cd ..
           
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo ""
@@ -267,7 +275,20 @@ jobs:
       - name: 📊 Информация о APK
         id: apk_info
         run: |
-          APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" | head -1)
+          # Поиск APK в обоих возможных местах (Gradle прямой сборки и Flutter)
+          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
+          fi
+
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ ОШИБКА: APK файл не найден ни в одной из ожидаемых директорий"
+            echo "Проверены директории:"
+            echo "  - mobile-app/android/app/build/outputs/apk/release/"
+            echo "  - mobile-app/build/app/outputs/flutter-apk/"
+            exit 1
+          fi
+
           APK_NAME=$(basename "$APK_PATH")
           APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
 
