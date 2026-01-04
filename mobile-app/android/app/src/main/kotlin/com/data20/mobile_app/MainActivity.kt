@@ -110,29 +110,49 @@ class MainActivity : FlutterActivity() {
                         throw Exception("Failed to setup environment: ${e.message}")
                     }
 
-                    // Mark as running
-                    isBackendRunning = true
+                    // Start server in background and wait for it to initialize
+                    Log.i(TAG, "4. Launching FastAPI server on 127.0.0.1:8001...")
 
-                    // Notify Flutter that backend started
-                    withContext(Dispatchers.Main) {
-                        if (!resultSent) {
-                            result.success(mapOf(
-                                "success" to true,
-                                "message" to "Backend started successfully",
-                                "port" to 8001,
-                                "host" to "127.0.0.1"
-                            ))
-                            resultSent = true
+                    // Launch server in a child coroutine
+                    val serverJob = launch {
+                        try {
+                            mainModule.callAttr("run_server", "127.0.0.1", 8001)
+                            Log.i(TAG, "Server exited normally")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Server crashed: ${e.message}")
+                            e.printStackTrace()
+                            isBackendRunning = false
+                            throw e
                         }
                     }
 
-                    // Run server (blocks until stopped)
-                    Log.i(TAG, "4. Running FastAPI server on 127.0.0.1:8001")
-                    try {
-                        mainModule.callAttr("run_server", "127.0.0.1", 8001)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Server runtime error: ${e.message}")
-                        // Server stopped, but this is not necessarily an error
+                    // Wait 5 seconds for server to crash or start successfully
+                    Log.i(TAG, "⏳ Waiting 5 seconds to verify server starts...")
+                    delay(5000)
+
+                    // Check if server job is still running
+                    if (serverJob.isActive) {
+                        // Server is running successfully
+                        isBackendRunning = true
+
+                        withContext(Dispatchers.Main) {
+                            if (!resultSent) {
+                                Log.i(TAG, "✅ Server is running, notifying Flutter")
+                                result.success(mapOf(
+                                    "success" to true,
+                                    "message" to "Backend started successfully",
+                                    "port" to 8001,
+                                    "host" to "127.0.0.1"
+                                ))
+                                resultSent = true
+                            }
+                        }
+
+                        // Keep this coroutine alive while server runs
+                        serverJob.join()
+                    } else {
+                        // Server crashed during startup
+                        throw Exception("Server crashed during startup")
                     }
 
                 } catch (e: Exception) {

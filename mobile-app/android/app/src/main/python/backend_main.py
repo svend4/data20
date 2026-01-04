@@ -74,37 +74,77 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
     try:
         logger.info(f"🚀 Starting mobile backend on {host}:{port}")
 
-        # Import the full mobile server
+        # Import the full mobile server with detailed error reporting
         try:
+            logger.info("📦 Step 1: Importing mobile_server module...")
             from mobile_server import app as mobile_app
             app = mobile_app
-            logger.info("✅ Full mobile server loaded")
+            logger.info("✅ Step 1 complete: Full mobile server loaded")
         except ImportError as e:
-            logger.error(f"❌ Failed to import mobile_server: {e}")
-            logger.error("Please ensure all mobile_* modules are present")
-            raise
+            logger.error(f"❌ ImportError in mobile_server: {e}")
+            logger.error(f"   Error type: {type(e).__name__}")
+            logger.error(f"   Error args: {e.args}")
+            import sys
+            logger.error(f"   Python path: {sys.path}")
+            raise Exception(f"Failed to import mobile_server: {e}")
+        except Exception as e:
+            logger.error(f"❌ Unexpected error loading mobile_server: {e}")
+            logger.error(f"   Error type: {type(e).__name__}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Failed to load mobile_server: {e}")
 
-        # Run with uvicorn
-        import uvicorn
+        # Import uvicorn
+        try:
+            logger.info("📦 Step 2: Importing uvicorn...")
+            import uvicorn
+            logger.info("✅ Step 2 complete: uvicorn imported")
+        except ImportError as e:
+            logger.error(f"❌ Failed to import uvicorn: {e}")
+            raise Exception(f"uvicorn not available: {e}")
 
-        config = uvicorn.Config(
-            app=app,
-            host=host,
-            port=port,
-            log_level="info",
-            access_log=False,  # Save resources on mobile
-            loop="asyncio"
-        )
+        # Configure uvicorn
+        try:
+            logger.info("⚙️ Step 3: Configuring uvicorn...")
+            config = uvicorn.Config(
+                app=app,
+                host=host,
+                port=port,
+                log_level="info",
+                access_log=False,  # Save resources on mobile
+                loop="asyncio"
+            )
+            logger.info("✅ Step 3 complete: uvicorn configured")
+        except Exception as e:
+            logger.error(f"❌ Failed to configure uvicorn: {e}")
+            raise Exception(f"uvicorn configuration failed: {e}")
 
-        server = uvicorn.Server(config)
+        # Create server
+        try:
+            logger.info("🔧 Step 4: Creating uvicorn server...")
+            server = uvicorn.Server(config)
+            logger.info("✅ Step 4 complete: Server instance created")
+        except Exception as e:
+            logger.error(f"❌ Failed to create server: {e}")
+            raise Exception(f"Server creation failed: {e}")
 
         # Run server (blocking)
-        logger.info("✅ Backend server started successfully")
-        server.run()
+        try:
+            logger.info(f"🚀 Step 5: Starting server on {host}:{port}...")
+            logger.info("✅ Backend server starting (this will block)...")
+            server.run()
+            logger.info("Server stopped normally")
+        except Exception as e:
+            logger.error(f"❌ Server runtime error: {e}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Server runtime error: {e}")
 
     except Exception as e:
-        logger.error(f"❌ Failed to start server: {e}")
+        logger.error(f"❌ FATAL: Failed to start server: {e}")
+        logger.error(f"   Error type: {type(e).__name__}")
         import traceback
+        logger.error("Full traceback:")
         traceback.print_exc()
         raise
 
