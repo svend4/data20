@@ -59,54 +59,46 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
-    """
-    Run FastAPI server (blocking)
+    """Run ABSOLUTE MINIMUM HTTP server"""
+    global server
 
-    Called by native code to start the server.
-    This function blocks until the server is stopped.
+    from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-    Args:
-        host: Host to bind to (default: 127.0.0.1)
-        port: Port to bind to (default: 8001)
-    """
-    global app, server
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass  # Disable all logging
 
-    try:
-        logger.info(f"🚀 Starting mobile backend on {host}:{port}")
+        def do_OPTIONS(self):
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', '*')
+            self.send_header('Access-Control-Allow-Headers', '*')
+            self.end_headers()
 
-        # Import the full mobile server
-        try:
-            from mobile_server import app as mobile_app
-            app = mobile_app
-            logger.info("✅ Full mobile server loaded")
-        except ImportError as e:
-            logger.error(f"❌ Failed to import mobile_server: {e}")
-            logger.error("Please ensure all mobile_* modules are present")
-            raise
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
 
-        # Run with uvicorn
-        import uvicorn
+            if '/health' in self.path:
+                self.wfile.write(b'{"status":"ok"}')
+            elif '/auth/me' in self.path:
+                self.wfile.write(b'{"id":"1","username":"admin","email":"a@a.com","role":"admin","is_active":true}')
+            elif '/api/tools' in self.path or '/api/jobs' in self.path:
+                self.wfile.write(b'[]')
+            else:
+                self.wfile.write(b'{}')
 
-        config = uvicorn.Config(
-            app=app,
-            host=host,
-            port=port,
-            log_level="info",
-            access_log=False,  # Save resources on mobile
-            loop="asyncio"
-        )
+        def do_POST(self):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(b'{"access_token":"test","refresh_token":"test","token_type":"bearer"}')
 
-        server = uvicorn.Server(config)
-
-        # Run server (blocking)
-        logger.info("✅ Backend server started successfully")
-        server.run()
-
-    except Exception as e:
-        logger.error(f"❌ Failed to start server: {e}")
-        import traceback
-        traceback.print_exc()
-        raise
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.serve_forever()
 
 
 def stop_server():

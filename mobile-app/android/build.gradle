@@ -19,6 +19,9 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://chaquo.com/maven" }
+        maven {
+            url "https://storage.googleapis.com/download.flutter.io"
+        }
     }
 }
 

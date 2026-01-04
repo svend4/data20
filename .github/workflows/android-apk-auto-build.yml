@@ -226,21 +226,21 @@ jobs:
           
           echo ""
           echo "==================================="
-          echo "🚀 Запуск сборки APK через Gradle напрямую"
-          echo "⚠️  Обход Flutter из-за 'unsupported Gradle project'"
+          echo "🚀 Запуск сборки APK через Gradle"
           echo "==================================="
 
-          # Сначала генерируем Flutter код
-          echo "📝 Генерация Flutter кода..."
+          # Используем прямую сборку через Gradle
+          # flutter.gradle уже подключен в build.gradle и включит все плагины
+          echo "📝 Генерация Flutter plugin registrant..."
           flutter pub get
 
-          # Собираем через Gradle, минуя flutter build apk
-          echo "🔨 Сборка через ./gradlew assembleRelease..."
+          echo "🔨 Сборка Debug APK через ./gradlew assembleDebug..."
+          echo "ℹ️ Debug APK автоматически подписывается и легко устанавливается"
           cd android
-          ./gradlew assembleRelease --stacktrace --info
+          ./gradlew assembleDebug --stacktrace
           BUILD_EXIT_CODE=$?
           cd ..
-          
+
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo ""
             echo "==================================="
@@ -275,8 +275,11 @@ jobs:
       - name: 📊 Информация о APK
         id: apk_info
         run: |
-          # Поиск APK в обоих возможных местах (Gradle прямой сборки и Flutter)
-          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          # Поиск APK в обоих возможных местах (Debug и Release)
+          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          fi
           if [ -z "$APK_PATH" ]; then
             APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
           fi
@@ -284,6 +287,7 @@ jobs:
           if [ -z "$APK_PATH" ]; then
             echo "❌ ОШИБКА: APK файл не найден ни в одной из ожидаемых директорий"
             echo "Проверены директории:"
+            echo "  - mobile-app/android/app/build/outputs/apk/debug/"
             echo "  - mobile-app/android/app/build/outputs/apk/release/"
             echo "  - mobile-app/build/app/outputs/flutter-apk/"
             exit 1
@@ -304,7 +308,10 @@ jobs:
           NEW_APK_NAME="data20-mobile-${VERSION}.apk"
           NEW_APK_PATH="mobile-app/build/app/outputs/flutter-apk/${NEW_APK_NAME}"
 
-          # Переименовываем APK
+          # Создаём директорию для APK если её нет
+          mkdir -p "$(dirname "$NEW_APK_PATH")"
+
+          # Копируем APK в стандартное место
           cp "$APK_PATH" "$NEW_APK_PATH"
 
           echo "path=$NEW_APK_PATH" >> $GITHUB_OUTPUT
