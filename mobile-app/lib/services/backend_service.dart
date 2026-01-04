@@ -23,7 +23,7 @@ class BackendService {
   // Backend configuration
   static const String baseUrl = 'http://127.0.0.1:8001';
   static const String healthEndpoint = '/health';
-  static const int maxHealthCheckAttempts = 60; // 60 seconds
+  static const int maxHealthCheckAttempts = 120; // 120 seconds (mobile startup is slower)
   static const Duration healthCheckInterval = Duration(seconds: 1);
 
   // State
@@ -71,6 +71,10 @@ class BackendService {
 
       if (result is Map && result['success'] == true) {
         print('✅ Backend start initiated: ${result['message']}');
+
+        // Give uvicorn a few seconds to bind to port before health checks
+        print('⏳ Waiting 3 seconds for server initialization...');
+        await Future.delayed(Duration(seconds: 3));
 
         // Wait for backend to be ready
         final isReady = await _waitForReady();
@@ -222,8 +226,8 @@ class BackendService {
         }
       } catch (e) {
         // Not ready yet, wait and retry
-        if (i % 10 == 0) {
-          print('⏳ Still waiting... (${i}s elapsed)');
+        if (i % 5 == 0 && i > 0) {
+          print('⏳ Still waiting... (${i}s elapsed, checking http://127.0.0.1:8001/health)');
         }
       }
 
