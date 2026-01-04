@@ -110,21 +110,6 @@ def create_tokens_for_user(user) -> dict:
         logger.error(f"❌ Token creation failed: {e}", exc_info=True)
         raise
 
-def authenticate_user_simple(db, User_model, username: str, password: str):
-    """Authenticate user WITHOUT FastAPI dependencies"""
-    # Try username or email
-    user = db.query(User_model).filter(
-        (User_model.username == username) | (User_model.email == username)
-    ).first()
-
-    if not user:
-        return None
-
-    if not verify_password(password, user.hashed_password):
-        return None
-
-    return user
-
 # Global variables
 app = None
 server = None
@@ -183,43 +168,51 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
 
     # Flag to track if DB is initialized
     db_initialized = False
-    _SessionLocal = None
-    _User = None
-    _UserRole = None
+    db_connection = None
 
     def ensure_db_initialized():
-        """Initialize database only when first needed"""
-        nonlocal db_initialized, _SessionLocal, _User, _UserRole
+        """Initialize database using pure sqlite3 (NO SQLAlchemy!)"""
+        nonlocal db_initialized, db_connection
         if not db_initialized:
             try:
-                logger.info("📦 [STEP 1/5] Starting database initialization...")
+                logger.info("📦 [STEP 1/3] Starting lightweight database initialization...")
 
-                # Step 1: Import mobile_database
-                logger.info("📦 [STEP 2/5] Importing mobile_database module...")
-                from mobile_database import init_mobile_database, SessionLocal
-                logger.info("✅ [STEP 2/5] mobile_database imported successfully")
+                # Use pure sqlite3 - NO SQLAlchemy imports!
+                import sqlite3
+                logger.info("✅ sqlite3 imported (built-in library)")
 
-                # Step 2: Import mobile_models
-                logger.info("📦 [STEP 3/5] Importing mobile_models module...")
-                from mobile_models import User, UserRole
-                logger.info("✅ [STEP 3/5] mobile_models imported successfully")
+                # Get database path from environment
+                db_path = os.getenv('DATA20_DATABASE_PATH', '/tmp/data20_mobile.db')
+                logger.info(f"📦 [STEP 2/3] Connecting to database: {db_path}")
 
-                # Step 3: Initialize database
-                logger.info("📦 [STEP 4/5] Calling init_mobile_database()...")
-                init_mobile_database()
-                logger.info("✅ [STEP 4/5] Database initialized successfully")
+                # Create database connection
+                db_connection = sqlite3.connect(db_path, check_same_thread=False)
+                db_connection.row_factory = sqlite3.Row  # Access columns by name
+                logger.info("✅ [STEP 2/3] Database connected")
 
-                # Step 4: Cache the imports
-                logger.info("📦 [STEP 5/5] Caching imports...")
-                _SessionLocal = SessionLocal
-                _User = User
-                _UserRole = UserRole
+                # Create users table if not exists
+                logger.info("📦 [STEP 3/3] Creating users table...")
+                cursor = db_connection.cursor()
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id TEXT PRIMARY KEY,
+                        username TEXT UNIQUE NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        full_name TEXT,
+                        hashed_password TEXT NOT NULL,
+                        role TEXT DEFAULT 'user',
+                        is_active INTEGER DEFAULT 1,
+                        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                db_connection.commit()
+                logger.info("✅ [STEP 3/3] Users table ready")
 
                 db_initialized = True
-                logger.info("✅ [STEP 5/5] All initialization complete!")
+                logger.info("✅ Database initialization complete (pure sqlite3)!")
 
             except Exception as e:
-                logger.error(f"❌ CRITICAL: Database initialization failed at step: {e}", exc_info=True)
+                logger.error(f"❌ CRITICAL: Database initialization failed: {e}", exc_info=True)
                 raise
 
     class Handler(BaseHTTPRequestHandler):
@@ -275,116 +268,128 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
             try:
                 logger.info(f"🌐 POST request received: {self.path}")
 
-                # Initialize DB and cache imports on first call
+                # Initialize DB on first call
                 logger.info("📦 Calling ensure_db_initialized()...")
                 ensure_db_initialized()
                 logger.info("✅ Database initialization complete")
 
-                # Use cached imports
-                logger.info("📦 Creating database session...")
-                db = _SessionLocal()
-                logger.info("✅ Database session created")
+                logger.info("📦 Reading request body...")
+                body = self._get_body()
+                logger.info(f"✅ Request body parsed: {list(body.keys())}")
 
-                try:
-                    logger.info("📦 Reading request body...")
-                    body = self._get_body()
-                    logger.info(f"✅ Request body parsed: {list(body.keys())}")
+                if '/auth/register' in self.path:
+                    # Real registration using pure sqlite3
+                    import uuid
+                    username = body.get('username')
+                    email = body.get('email')
+                    password = body.get('password')
+                    full_name = body.get('full_name', '')
 
-                    if '/auth/register' in self.path:
-                        # Real registration
-                        username = body.get('username')
-                        email = body.get('email')
-                        password = body.get('password')
-                        full_name = body.get('full_name')
+                    logger.info(f"📝 Registration attempt: {username}")
 
-                        logger.info(f"📝 Registration attempt: {username}")
+                    # Check if user exists
+                    logger.info("📦 Checking if user already exists...")
+                    cursor = db_connection.cursor()
+                    cursor.execute(
+                        "SELECT id FROM users WHERE username = ? OR email = ?",
+                        (username, email)
+                    )
+                    existing = cursor.fetchone()
+                    logger.info(f"✅ User check complete (exists: {existing is not None})")
 
-                        # Check if user exists
-                        logger.info("📦 Checking if user already exists...")
-                        existing = db.query(_User).filter(
-                            (_User.username == username) | (_User.email == email)
-                        ).first()
-                        logger.info(f"✅ User check complete (exists: {existing is not None})")
+                    if existing:
+                        logger.warning(f"❌ User already exists: {username}")
+                        self._send_json({"detail": "Username or email already exists"}, 400)
+                        return
 
-                        if existing:
-                            logger.warning(f"❌ User already exists: {username}")
-                            self._send_json({"detail": "Username or email already exists"}, 400)
-                            return
+                    # Hash password
+                    logger.info("📦 Hashing password...")
+                    hashed_password = get_password_hash(password)
+                    logger.info("✅ Password hashed")
 
-                        # Hash password
-                        logger.info("📦 Hashing password...")
-                        hashed_password = get_password_hash(password)
-                        logger.info("✅ Password hashed")
+                    # Create user
+                    logger.info("📦 Inserting user into database...")
+                    user_id = str(uuid.uuid4())
+                    cursor.execute(
+                        """INSERT INTO users (id, username, email, full_name, hashed_password, role, is_active)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                        (user_id, username, email, full_name, hashed_password, 'user', 1)
+                    )
+                    db_connection.commit()
+                    logger.info("✅ User saved to database")
 
-                        # Create user
-                        logger.info("📦 Creating user object...")
-                        user = _User(
-                            username=username,
-                            email=email,
-                            full_name=full_name,
-                            hashed_password=hashed_password,
-                            role=_UserRole.USER,
-                            is_active=True
-                        )
-                        logger.info("✅ User object created")
+                    logger.info(f"✅ User registered: {username}")
 
-                        logger.info("📦 Saving user to database...")
-                        db.add(user)
-                        db.commit()
-                        db.refresh(user)
-                        logger.info("✅ User saved to database")
+                    self._send_json({
+                        "id": user_id,
+                        "username": username,
+                        "email": email,
+                        "full_name": full_name,
+                        "role": "user",
+                        "is_active": True
+                    })
 
-                        logger.info(f"✅ User registered: {username}")
+                elif '/auth/login' in self.path:
+                    # Real login using pure sqlite3
+                    username = body.get('username')
+                    password = body.get('password')
 
-                        self._send_json({
-                            "id": user.id,
-                            "username": user.username,
-                            "email": user.email,
-                            "full_name": user.full_name,
-                            "role": user.role.value,
-                            "is_active": user.is_active
-                        })
+                    logger.info(f"🔐 Login attempt: {username}")
 
-                    elif '/auth/login' in self.path:
-                        # Real login
-                        username = body.get('username')
-                        password = body.get('password')
+                    # Find user
+                    logger.info("📦 Finding user in database...")
+                    cursor = db_connection.cursor()
+                    cursor.execute(
+                        "SELECT id, username, email, full_name, hashed_password, role, is_active FROM users WHERE username = ? OR email = ?",
+                        (username, username)
+                    )
+                    user_row = cursor.fetchone()
+                    logger.info(f"✅ User lookup complete (found: {user_row is not None})")
 
-                        logger.info(f"🔐 Login attempt: {username}")
+                    if not user_row:
+                        logger.warning(f"❌ User not found: {username}")
+                        self._send_json({"detail": "Invalid credentials"}, 401)
+                        return
 
-                        logger.info("📦 Authenticating user...")
-                        user = authenticate_user_simple(db, _User, username, password)
-                        logger.info(f"✅ Authentication complete (success: {user is not None})")
+                    # Verify password
+                    logger.info("📦 Verifying password...")
+                    if not verify_password(password, user_row['hashed_password']):
+                        logger.warning(f"❌ Invalid password: {username}")
+                        self._send_json({"detail": "Invalid credentials"}, 401)
+                        return
+                    logger.info("✅ Password verified")
 
-                        if not user:
-                            logger.warning(f"❌ Invalid credentials: {username}")
-                            self._send_json({"detail": "Invalid credentials"}, 401)
-                            return
+                    if not user_row['is_active']:
+                        logger.warning(f"❌ Inactive user: {username}")
+                        self._send_json({"detail": "User is inactive"}, 401)
+                        return
 
-                        if not user.is_active:
-                            logger.warning(f"❌ Inactive user: {username}")
-                            self._send_json({"detail": "User is inactive"}, 401)
-                            return
+                    # Create tokens
+                    logger.info("📦 Creating JWT tokens...")
+                    user_data = {
+                        'id': user_row['id'],
+                        'username': user_row['username'],
+                        'role': user_row['role']
+                    }
 
-                        logger.info("📦 Creating JWT tokens...")
-                        tokens = create_tokens_for_user(user)
-                        logger.info("✅ JWT tokens created")
+                    class UserObj:
+                        def __init__(self, data):
+                            self.id = data['id']
+                            self.username = data['username']
+                            self.role = type('Role', (), {'value': data['role']})()
 
-                        logger.info(f"✅ User logged in: {username}")
-                        self._send_json(tokens)
+                    tokens = create_tokens_for_user(UserObj(user_data))
+                    logger.info("✅ JWT tokens created")
 
-                    else:
-                        self._send_json({"access_token": "test", "token_type": "bearer"})
+                    logger.info(f"✅ User logged in: {username}")
+                    self._send_json(tokens)
 
-                except Exception as e:
-                    logger.error(f"❌ Error in POST handler: {e}", exc_info=True)
-                    self._send_json({"detail": str(e)}, 500)
-                finally:
-                    db.close()
+                else:
+                    self._send_json({"access_token": "test", "token_type": "bearer"})
 
             except Exception as e:
                 logger.error(f"❌ Critical error in do_POST: {e}", exc_info=True)
-                self._send_json({"detail": "Internal server error"}, 500)
+                self._send_json({"detail": str(e)}, 500)
 
     try:
         server = ThreadingHTTPServer((host, port), Handler)
