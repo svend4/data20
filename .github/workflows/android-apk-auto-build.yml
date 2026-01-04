@@ -303,7 +303,10 @@ jobs:
           NEW_APK_NAME="data20-mobile-${VERSION}.apk"
           NEW_APK_PATH="mobile-app/build/app/outputs/flutter-apk/${NEW_APK_NAME}"
 
-          # Переименовываем APK
+          # Создаём директорию для APK если её нет
+          mkdir -p "$(dirname "$NEW_APK_PATH")"
+
+          # Копируем APK в стандартное место
           cp "$APK_PATH" "$NEW_APK_PATH"
 
           echo "path=$NEW_APK_PATH" >> $GITHUB_OUTPUT
