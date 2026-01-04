@@ -134,15 +134,20 @@ chaquopy {
             install "python-dotenv==1.0.0"
             install "httpx==0.25.2"
 
-            // Data processing (lightweight versions)
-            install "pandas==2.1.3"
-            install "numpy==1.26.2"
-            install "openpyxl==3.1.2"
-            // lxml removed: requires libxml2/libxslt which aren't available on Android
-            // beautifulsoup4 can use html.parser instead
+            // Data processing - REMOVED for Android build:
+            // These packages have native C/Fortran dependencies and are not used in mobile app:
+            // - pandas (requires numpy, has C extensions)
+            // - numpy (requires BLAS/LAPACK, Fortran compiler)
+            // - Pillow (requires libjpeg, zlib, etc.)
+            // - openpyxl (Excel support, not needed for mobile)
+            //
+            // If data processing is needed, it should be done server-side
+            // install "pandas==2.1.3"
+            // install "numpy==1.26.2"
+            // install "openpyxl==3.1.2"
+            // install "Pillow==10.1.0"
 
             // Tools dependencies
-            install "Pillow==10.1.0"
             install "requests==2.31.0"
             install "beautifulsoup4==4.12.2"
             install "markdown==3.5.1"
