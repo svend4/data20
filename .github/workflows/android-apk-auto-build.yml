@@ -126,12 +126,21 @@ jobs:
           echo "✅ key.properties создан"
 
       # Сборка APK
-      - name: 🏗️ Сборка Release APK
+      - name: 🏗️ Сборка Release APK (через Gradle напрямую)
         run: |
           cd mobile-app
-          echo "🏗️ Начинаем сборку APK..."
-          flutter build apk --release --verbose
-          echo "✅ APK успешно собран!"
+          echo "🏗️ Начинаем сборку APK через Gradle..."
+          echo "⚠️ Обходим flutter build apk из-за 'unsupported Gradle project'"
+
+          # Генерируем Flutter код
+          flutter pub get
+          flutter packages get
+
+          # Собираем через Gradle напрямую, минуя Flutter
+          cd android
+          ./gradlew assembleRelease --stacktrace
+
+          echo "✅ APK успешно собран через Gradle!"
 
       - name: 📊 Информация о APK
         id: apk_info
