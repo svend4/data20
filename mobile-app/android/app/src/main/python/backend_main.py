@@ -59,46 +59,40 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
-    """Run ABSOLUTE MINIMUM HTTP server"""
+    """
+    Run FastAPI mobile backend server
+
+    This function starts the actual mobile_server.py FastAPI application
+    with uvicorn in a blocking manner.
+    """
     global server
 
-    from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+    try:
+        logger.info(f"🚀 Starting FastAPI backend on {host}:{port}...")
 
-    class Handler(BaseHTTPRequestHandler):
-        def log_message(self, *args):
-            pass  # Disable all logging
+        # Import mobile_server app
+        from mobile_server import app
 
-        def do_OPTIONS(self):
-            self.send_response(200)
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', '*')
-            self.send_header('Access-Control-Allow-Headers', '*')
-            self.end_headers()
+        # Import uvicorn
+        import uvicorn
 
-        def do_GET(self):
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
+        # Run FastAPI with uvicorn
+        # Note: This blocks until server is stopped
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            log_level="error",  # Minimize logging
+            access_log=False    # Disable access logs for performance
+        )
 
-            if '/health' in self.path:
-                self.wfile.write(b'{"status":"ok"}')
-            elif '/auth/me' in self.path:
-                self.wfile.write(b'{"id":"1","username":"admin","email":"a@a.com","role":"admin","is_active":true}')
-            elif '/api/tools' in self.path or '/api/jobs' in self.path:
-                self.wfile.write(b'[]')
-            else:
-                self.wfile.write(b'{}')
+        logger.info("✅ FastAPI server started successfully")
 
-        def do_POST(self):
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(b'{"access_token":"test","refresh_token":"test","token_type":"bearer"}')
-
-    server = ThreadingHTTPServer((host, port), Handler)
-    server.serve_forever()
+    except Exception as e:
+        logger.error(f"❌ Failed to start FastAPI server: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 def stop_server():
