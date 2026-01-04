@@ -59,129 +59,46 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
-    """
-    Run simple HTTP server (blocking)
+    """Run ABSOLUTE MINIMUM HTTP server"""
+    global server
 
-    Called by native code to start the server.
-    This function blocks until the server is stopped.
+    from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-    Args:
-        host: Host to bind to (default: 127.0.0.1)
-        port: Port to bind to (default: 8001)
-    """
-    global app, server
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass  # Disable all logging
 
-    try:
-        logger.info(f"🚀 Starting ULTRA-SIMPLE HTTP server on {host}:{port}")
-        logger.info("📦 Using Python http.server (no FastAPI, no uvicorn)")
+        def do_OPTIONS(self):
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', '*')
+            self.send_header('Access-Control-Allow-Headers', '*')
+            self.end_headers()
 
-        # Use standard library http.server instead of FastAPI
-        from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-        import json
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
 
-        class SimpleHandler(BaseHTTPRequestHandler):
-            def log_message(self, format, *args):
-                """Override to use logger instead of stderr"""
-                logger.info(f"HTTP: {format % args}")
+            if '/health' in self.path:
+                self.wfile.write(b'{"status":"ok"}')
+            elif '/auth/me' in self.path:
+                self.wfile.write(b'{"id":"1","username":"admin","email":"a@a.com","role":"admin","is_active":true}')
+            elif '/api/tools' in self.path or '/api/jobs' in self.path:
+                self.wfile.write(b'[]')
+            else:
+                self.wfile.write(b'{}')
 
-            def _send_json(self, data, status=200):
-                """Helper to send JSON response"""
-                self.send_response(status)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-                self.end_headers()
-                self.wfile.write(json.dumps(data).encode('utf-8'))
+        def do_POST(self):
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(b'{"access_token":"test","refresh_token":"test","token_type":"bearer"}')
 
-            def do_OPTIONS(self):
-                """Handle CORS preflight"""
-                self.send_response(200)
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-                self.end_headers()
-
-            def do_GET(self):
-                """Handle GET requests"""
-                logger.info(f"GET {self.path}")
-
-                if self.path == '/health':
-                    self._send_json({"status": "ok", "message": "Ultra-simple backend running"})
-                elif self.path == '/':
-                    self._send_json({"message": "Data20 Ultra-Simple Backend"})
-                elif self.path == '/auth/me':
-                    self._send_json({
-                        "id": "test-user-1",
-                        "username": "admin",
-                        "email": "admin@test.com",
-                        "full_name": "Test Admin",
-                        "role": "admin",
-                        "is_active": True
-                    })
-                elif self.path == '/api/tools':
-                    # Return empty tools list - app will show "no tools"
-                    logger.info("  Returning empty tools list")
-                    self._send_json([])
-                elif self.path.startswith('/api/jobs'):
-                    # Return empty jobs list
-                    logger.info("  Returning empty jobs list")
-                    self._send_json([])
-                else:
-                    # Return empty object instead of 404 - prevents Flutter from thinking backend crashed
-                    logger.info(f"  Unknown endpoint, returning empty object")
-                    self._send_json({})
-
-            def do_POST(self):
-                """Handle POST requests - SIMPLEST POSSIBLE"""
-                logger.info(f"POST {self.path} - INSTANT RESPONSE")
-
-                # DON'T read body - just send response immediately
-                # This avoids any threading/blocking issues
-
-                try:
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                    self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-                    self.end_headers()
-
-                    # Different responses for different endpoints
-                    if self.path in ['/auth/login', '/auth/register']:
-                        response = '{"access_token":"test_token_12345","refresh_token":"test_refresh_67890","token_type":"bearer"}'
-                    elif self.path == '/api/run':
-                        # Return fake job response
-                        response = '{"job_id":"test-job-123","tool_name":"test","status":"completed","result":{}}'
-                    else:
-                        # Return empty success
-                        response = '{"success":true}'
-
-                    self.wfile.write(response.encode('utf-8'))
-                    logger.info(f"POST {self.path} - SUCCESS")
-
-                except Exception as e:
-                    logger.error(f"POST {self.path} - ERROR: {e}")
-                    import traceback
-                    traceback.print_exc()
-
-        # Create and start server (ThreadingHTTPServer for concurrent requests)
-        logger.info(f"🔧 Creating ThreadingHTTPServer on {host}:{port}...")
-        server = ThreadingHTTPServer((host, port), SimpleHandler)
-        logger.info(f"✅ Threaded server created, can handle concurrent requests...")
-        logger.info(f"   This allows POST /auth/login and GET /health at the same time!")
-
-        # This blocks until server is stopped
-        server.serve_forever()
-
-        logger.info("Server stopped")
-
-    except Exception as e:
-        logger.error(f"❌ FATAL: {e}")
-        logger.error(f"   Type: {type(e).__name__}")
-        import traceback
-        traceback.print_exc()
-        raise
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.serve_forever()
 
 
 def stop_server():
