@@ -89,7 +89,7 @@ chaquopy {
         version "3.9"
 
         // Build Python from source (slower but more compatible)
-        buildPython "/usr/bin/python3"
+        // buildPython "/usr/bin/python3"  // Закомментировано для CI/CD - используются предкомпилированные пакеты
 
         // Python pip packages
         pip {
