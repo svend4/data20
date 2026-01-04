@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
@@ -129,6 +130,67 @@ class _LoginScreenState extends State<LoginScreen>
             content: Text('Backend запущен! Теперь можно войти.'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } on PlatformException catch (e) {
+      // Detailed error from native code
+      final errorMsg = e.message ?? 'Unknown error';
+      final errorDetails = e.details?.toString() ?? '';
+
+      if (mounted) {
+        setState(() {
+          _isBackendStarting = false;
+          _backendStatus = 'Ошибка: ${e.code}';
+        });
+
+        // Show detailed error dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Ошибка запуска Backend'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Код ошибки: ${e.code}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(errorMsg),
+                  if (errorDetails.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    const Divider(),
+                    const Text(
+                      'Детали:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      errorDetails,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }

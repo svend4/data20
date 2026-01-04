@@ -82,51 +82,85 @@ class MainActivity : FlutterActivity() {
 
         Log.i(TAG, "Starting Python backend...")
 
-        backendJob = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // Setup environment
-                setupEnvironment()
+        // Track if we've already sent a result to Flutter
+        var resultSent = false
 
-                // Get Python main module
-                val mainModule = python!!.getModule("backend_main")
+        try {
+            backendJob = CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    Log.i(TAG, "1. Setting up environment...")
+                    setupEnvironment()
 
-                // Setup Android-specific paths
-                mainModule.callAttr(
-                    "setup_environment",
-                    getDatabasePath(),
-                    getUploadPath(),
-                    getLogsPath()
+                    Log.i(TAG, "2. Getting backend_main module...")
+                    val mainModule = try {
+                        python!!.getModule("backend_main")
+                    } catch (e: Exception) {
+                        throw Exception("Failed to load backend_main module: ${e.message}")
+                    }
+
+                    Log.i(TAG, "3. Setting up Android paths...")
+                    try {
+                        mainModule.callAttr(
+                            "setup_environment",
+                            getDatabasePath(),
+                            getUploadPath(),
+                            getLogsPath()
+                        )
+                    } catch (e: Exception) {
+                        throw Exception("Failed to setup environment: ${e.message}")
+                    }
+
+                    // Mark as running
+                    isBackendRunning = true
+
+                    // Notify Flutter that backend started
+                    withContext(Dispatchers.Main) {
+                        if (!resultSent) {
+                            result.success(mapOf(
+                                "success" to true,
+                                "message" to "Backend started successfully",
+                                "port" to 8001,
+                                "host" to "127.0.0.1"
+                            ))
+                            resultSent = true
+                        }
+                    }
+
+                    // Run server (blocks until stopped)
+                    Log.i(TAG, "4. Running FastAPI server on 127.0.0.1:8001")
+                    try {
+                        mainModule.callAttr("run_server", "127.0.0.1", 8001)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Server runtime error: ${e.message}")
+                        // Server stopped, but this is not necessarily an error
+                    }
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Backend error: ${e.message}")
+                    e.printStackTrace()
+                    isBackendRunning = false
+
+                    withContext(Dispatchers.Main) {
+                        if (!resultSent) {
+                            result.error(
+                                "BACKEND_ERROR",
+                                e.message ?: "Unknown error",
+                                e.stackTraceToString()
+                            )
+                            resultSent = true
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch backend coroutine: ${e.message}")
+            e.printStackTrace()
+            if (!resultSent) {
+                result.error(
+                    "LAUNCH_ERROR",
+                    "Failed to launch backend: ${e.message}",
+                    e.stackTraceToString()
                 )
-
-                // Mark as running
-                isBackendRunning = true
-
-                // Notify Flutter that backend started
-                withContext(Dispatchers.Main) {
-                    result.success(mapOf(
-                        "success" to true,
-                        "message" to "Backend started successfully",
-                        "port" to 8001,
-                        "host" to "127.0.0.1"
-                    ))
-                }
-
-                // Run server (blocks until stopped)
-                Log.i(TAG, "Running FastAPI server on 127.0.0.1:8001")
-                mainModule.callAttr("run_server", "127.0.0.1", 8001)
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Backend error: ${e.message}")
-                e.printStackTrace()
-                isBackendRunning = false
-
-                withContext(Dispatchers.Main) {
-                    result.error(
-                        "BACKEND_ERROR",
-                        "Failed to start backend: ${e.message}",
-                        null
-                    )
-                }
             }
         }
     }
