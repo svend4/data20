@@ -1,2 +1,9 @@
-// Intentionally minimal for Flutter 3.16+
+// Minimal build.gradle with only dependency repositories
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://chaquo.com/maven" }
+    }
+}
 
