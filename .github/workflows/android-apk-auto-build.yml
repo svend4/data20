@@ -226,14 +226,19 @@ jobs:
           
           echo ""
           echo "==================================="
-          echo "🚀 Запуск сборки APK через Flutter"
+          echo "🚀 Запуск сборки APK через Gradle"
           echo "==================================="
 
-          # Используем flutter build apk для полной сборки
-          # Flutter автоматически подключит все плагины и зависимости
-          echo "🔨 Сборка APK через flutter build apk --release..."
-          flutter build apk --release --verbose
+          # Используем прямую сборку через Gradle
+          # flutter.gradle уже подключен в build.gradle и включит все плагины
+          echo "📝 Генерация Flutter plugin registrant..."
+          flutter pub get
+
+          echo "🔨 Сборка APK через ./gradlew assembleRelease..."
+          cd android
+          ./gradlew assembleRelease --stacktrace
           BUILD_EXIT_CODE=$?
+          cd ..
 
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo ""
