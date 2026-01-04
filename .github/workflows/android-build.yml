@@ -72,4 +72,4 @@ jobs:
           body: |
             This release was built automatically. See attached APK file.
           draft: false
-          prerelease: false.
+          prerelease: false
