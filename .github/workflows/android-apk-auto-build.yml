@@ -85,22 +85,80 @@ jobs:
 
       - name: 📝 Создание local.properties для Android
         run: |
+          echo "==================================="
+          echo "📝 Создание local.properties"
+          echo "==================================="
+          
+          # Определение пути к Flutter SDK
           FLUTTER_ROOT=$(which flutter | sed 's/\/bin\/flutter$//')
+          
+          # Проверка что Flutter SDK найден
+          if [ -z "$FLUTTER_ROOT" ]; then
+            echo "❌ ОШИБКА: Flutter SDK не найден"
+            exit 1
+          fi
+          
+          echo "Flutter SDK найден: $FLUTTER_ROOT"
+          
+          # Создание local.properties
           echo "flutter.sdk=$FLUTTER_ROOT" > mobile-app/android/local.properties
-          echo "✅ local.properties создан: flutter.sdk=$FLUTTER_ROOT"
+          
+          # Проверка создания файла
+          if [ ! -f mobile-app/android/local.properties ]; then
+            echo "❌ ОШИБКА: Не удалось создать local.properties"
+            exit 1
+          fi
+          
+          # Вывод содержимого для проверки
+          echo "✅ local.properties создан успешно"
+          echo "Содержимое файла:"
+          cat mobile-app/android/local.properties
+          echo "==================================="
 
       - name: 📚 Установка Flutter зависимостей
         run: |
           cd mobile-app
-          flutter pub get
-          echo "✅ Flutter зависимости установлены"
+          echo "==================================="
+          echo "📚 Установка Flutter зависимостей"
+          echo "==================================="
+          
+          # Запуск flutter pub get с verbose выводом
+          flutter pub get --verbose
+          
+          # Проверка успешности установки
+          if [ $? -ne 0 ]; then
+            echo "❌ ОШИБКА: Не удалось установить зависимости"
+            exit 1
+          fi
+          
+          # Проверка что pubspec.lock создан
+          if [ ! -f pubspec.lock ]; then
+            echo "❌ ОШИБКА: pubspec.lock не был создан"
+            exit 1
+          fi
+          
+          echo "✅ Flutter зависимости установлены успешно"
+          echo "==================================="
 
       - name: 🔍 Проверка Flutter проекта
         continue-on-error: true
         run: |
           cd mobile-app
-          flutter doctor -v
-          flutter analyze --no-fatal-infos
+          echo "==================================="
+          echo "🔍 Проверка Flutter проекта"
+          echo "==================================="
+          
+          # Запуск flutter doctor для диагностики
+          echo "Flutter Doctor:"
+          flutter doctor -v || echo "Flutter doctor выполнен с предупреждениями"
+          
+          echo ""
+          echo "Flutter Analyze:"
+          flutter analyze --no-fatal-infos || echo "Flutter analyze выполнен с предупреждениями"
+          
+          echo "==================================="
+          echo "✅ Проверка завершена (не блокирует сборку)"
+          echo "==================================="
 
       # Настройка подписи APK (если доступны ключи)
       - name: 🔐 Декодирование keystore
@@ -127,11 +185,78 @@ jobs:
 
       # Сборка APK
       - name: 🏗️ Сборка Release APK
+        id: build_apk
         run: |
           cd mobile-app
-          echo "🏗️ Начинаем сборку APK..."
-          flutter build apk --release --verbose
-          echo "✅ APK успешно собран!"
+          echo "==================================="
+          echo "🏗️ Начинаем сборку Release APK"
+          echo "==================================="
+          
+          # Предварительные проверки
+          echo "📋 Предварительные проверки:"
+          echo "- Проверка наличия pubspec.yaml"
+          if [ ! -f pubspec.yaml ]; then
+            echo "❌ ОШИБКА: pubspec.yaml не найден"
+            exit 1
+          fi
+          echo "  ✅ pubspec.yaml найден"
+          
+          echo "- Проверка наличия android/app/build.gradle"
+          if [ ! -f android/app/build.gradle ]; then
+            echo "❌ ОШИБКА: android/app/build.gradle не найден"
+            exit 1
+          fi
+          echo "  ✅ android/app/build.gradle найден"
+          
+          echo "- Проверка наличия android/local.properties"
+          if [ ! -f android/local.properties ]; then
+            echo "❌ ОШИБКА: android/local.properties не найден"
+            exit 1
+          fi
+          echo "  ✅ android/local.properties найден"
+          
+          echo "- Проверка наличия android/settings.gradle"
+          if [ ! -f android/settings.gradle ]; then
+            echo "❌ ОШИБКА: android/settings.gradle не найден"
+            exit 1
+          fi
+          echo "  ✅ android/settings.gradle найден"
+          
+          echo ""
+          echo "==================================="
+          echo "🚀 Запуск сборки APK..."
+          echo "==================================="
+          
+          # Запуск сборки с подробным выводом
+          if flutter build apk --release --verbose; then
+            echo ""
+            echo "==================================="
+            echo "✅ APK успешно собран!"
+            echo "==================================="
+          else
+            BUILD_EXIT_CODE=$?
+            echo ""
+            echo "==================================="
+            echo "❌ ОШИБКА СБОРКИ APK"
+            echo "==================================="
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo ""
+            echo "📋 Возможные причины ошибки:"
+            echo "1. Проблемы с Gradle конфигурацией"
+            echo "2. Отсутствие необходимых зависимостей"
+            echo "3. Ошибки в коде Dart/Flutter"
+            echo "4. Проблемы с Android SDK"
+            echo "5. Нехватка памяти или ресурсов"
+            echo ""
+            echo "🔍 Для диагностики проверьте:"
+            echo "- Логи выше для детальной информации об ошибке"
+            echo "- Файлы Gradle (build.gradle, settings.gradle)"
+            echo "- Версии зависимостей в pubspec.yaml"
+            echo "- Доступность Android SDK компонентов"
+            echo ""
+            echo "==================================="
+            exit $BUILD_EXIT_CODE
+          fi
 
       - name: 📊 Информация о APK
         id: apk_info
