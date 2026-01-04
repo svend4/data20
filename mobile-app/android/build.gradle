@@ -1,15 +1,5 @@
 // Top-level build file for Android project
-// Modern Gradle structure for Flutter 3.16+
-
-buildscript {
-    repositories {
-        maven { url "https://chaquo.com/maven" }
-    }
-    dependencies {
-        // Chaquopy plugin for Python integration
-        classpath 'com.chaquo.python:gradle:14.0.2'
-    }
-}
+// Modern Gradle structure for Flutter 3.16+ (NO buildscript block)
 
 allprojects {
     repositories {
