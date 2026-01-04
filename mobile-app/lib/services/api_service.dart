@@ -59,16 +59,49 @@ class ApiService {
 
   // Authentication
   Future<Map<String, dynamic>> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/login'),
-      headers: _getHeaders(includeAuth: false),
-      body: json.encode({
+    print('🔵 [API] Starting login request...');
+    print('🔵 [API] Base URL: $_baseUrl');
+    print('🔵 [API] Username: $username');
+
+    try {
+      final uri = Uri.parse('$_baseUrl/auth/login');
+      print('🔵 [API] URI parsed: $uri');
+
+      final headers = _getHeaders(includeAuth: false);
+      print('🔵 [API] Headers: $headers');
+
+      final bodyData = {
         'username': username,
         'password': password,
-      }),
-    );
+      };
+      final bodyJson = json.encode(bodyData);
+      print('🔵 [API] Request body: $bodyJson');
 
-    return await _handleResponse(response);
+      print('🔵 [API] Sending POST request...');
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: bodyJson,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('🔴 [API] Request timeout after 10 seconds!');
+          throw ApiException('Timeout: backend не отвечает');
+        },
+      );
+
+      print('🔵 [API] Response received!');
+      print('🔵 [API] Status code: ${response.statusCode}');
+      print('🔵 [API] Response body: ${response.body}');
+
+      final result = await _handleResponse(response);
+      print('🟢 [API] Login successful!');
+      return result;
+    } catch (e, stackTrace) {
+      print('🔴 [API] Login error: $e');
+      print('🔴 [API] Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<User> register({
@@ -77,19 +110,51 @@ class ApiService {
     required String password,
     String? fullName,
   }) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/register'),
-      headers: _getHeaders(includeAuth: false),
-      body: json.encode({
+    print('🔵 [API] Starting register request...');
+    print('🔵 [API] Base URL: $_baseUrl');
+    print('🔵 [API] Username: $username, Email: $email');
+
+    try {
+      final uri = Uri.parse('$_baseUrl/auth/register');
+      print('🔵 [API] URI parsed: $uri');
+
+      final headers = _getHeaders(includeAuth: false);
+      print('🔵 [API] Headers: $headers');
+
+      final bodyData = {
         'username': username,
         'email': email,
         'password': password,
         'full_name': fullName,
-      }),
-    );
+      };
+      final bodyJson = json.encode(bodyData);
+      print('🔵 [API] Request body: $bodyJson');
 
-    final data = await _handleResponse(response);
-    return User.fromJson(data);
+      print('🔵 [API] Sending POST request...');
+      final response = await http.post(
+        uri,
+        headers: headers,
+        body: bodyJson,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('🔴 [API] Request timeout after 10 seconds!');
+          throw ApiException('Timeout: backend не отвечает');
+        },
+      );
+
+      print('🔵 [API] Response received!');
+      print('🔵 [API] Status code: ${response.statusCode}');
+      print('🔵 [API] Response body: ${response.body}');
+
+      final data = await _handleResponse(response);
+      print('🟢 [API] Register successful!');
+      return User.fromJson(data);
+    } catch (e, stackTrace) {
+      print('🔴 [API] Register error: $e');
+      print('🔴 [API] Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<User> getCurrentUser() async {
