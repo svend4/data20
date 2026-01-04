@@ -23,7 +23,7 @@ class BackendService {
   // Backend configuration
   static const String baseUrl = 'http://127.0.0.1:8001';
   static const String healthEndpoint = '/health';
-  static const int maxHealthCheckAttempts = 120; // 120 seconds (mobile startup is slower)
+  static const int maxHealthCheckAttempts = 300; // 5 minutes - loading 50-60 tools takes time
   static const Duration healthCheckInterval = Duration(seconds: 1);
 
   // State

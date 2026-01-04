@@ -115,12 +115,20 @@ async def startup():
     init_mobile_database()
 
     # Initialize tool registry
-    tools_dir = Path(__file__).parent.parent / "tools"
+    tools_dir = Path(__file__).parent / "tools"
     if not tools_dir.exists():
-        tools_dir = Path(__file__).parent / "tools"
+        tools_dir = Path(__file__).parent.parent / "tools"
 
+    print(f"🔍 Scanning tools directory: {tools_dir}")
     tool_registry = ToolRegistry(tools_dir=tools_dir)
-    print(f"✅ Loaded {len(tool_registry.tools)} tools")
+
+    # Scan and load tools (may take time for 50-60 tools)
+    if tools_dir.exists():
+        tools_count = tool_registry.scan_tools()
+        print(f"✅ Loaded {tools_count} tools")
+    else:
+        print(f"⚠️ Tools directory not found: {tools_dir}")
+        print(f"✅ Tool registry initialized with 0 tools")
 
     # Initialize tool runner
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
