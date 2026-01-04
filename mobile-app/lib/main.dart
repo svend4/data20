@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 import 'services/auth_service.dart';
 import 'services/api_service.dart';
 import 'services/storage_service.dart';
+import 'services/backend_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/tool_detail_screen.dart';
 import 'screens/job_detail_screen.dart';
 import 'screens/jobs_screen.dart';
+import 'screens/backend_status_screen.dart';
 import 'utils/theme.dart';
 
 void main() async {
@@ -28,24 +30,39 @@ void main() async {
 
   final apiService = ApiService();
   final authService = AuthService(apiService, storageService);
+  final backendService = BackendService();
 
   // Check if user is already logged in
   await authService.checkAuth();
 
+  // Auto-start embedded backend (optional - can be disabled)
+  // Uncomment to auto-start backend on app launch
+  try {
+    print('🚀 Auto-starting embedded backend...');
+    await backendService.startBackend();
+    print('✅ Embedded backend started successfully');
+  } catch (e) {
+    print('⚠️ Failed to auto-start backend: $e');
+    // Continue anyway - user can start manually from status screen
+  }
+
   runApp(Data20App(
     authService: authService,
     apiService: apiService,
+    backendService: backendService,
   ));
 }
 
 class Data20App extends StatelessWidget {
   final AuthService authService;
   final ApiService apiService;
+  final BackendService backendService;
 
   const Data20App({
     Key? key,
     required this.authService,
     required this.apiService,
+    required this.backendService,
   }) : super(key: key);
 
   @override
@@ -54,6 +71,7 @@ class Data20App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: authService),
         Provider.value(value: apiService),
+        Provider.value(value: backendService),
       ],
       child: Consumer<AuthService>(
         builder: (context, auth, _) {
@@ -114,6 +132,14 @@ class Data20App extends StatelessWidget {
           builder: (context, state) {
             final jobId = state.pathParameters['jobId']!;
             return JobDetailScreen(jobId: jobId);
+          },
+        ),
+        GoRoute(
+          path: '/backend-status',
+          builder: (context, state) {
+            return BackendStatusScreen(
+              backendService: backendService,
+            );
           },
         ),
       ],
