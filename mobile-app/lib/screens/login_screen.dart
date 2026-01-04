@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../services/backend_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -27,6 +28,9 @@ class _LoginScreenState extends State<LoginScreen>
   final _registerFullNameController = TextEditingController();
 
   String? _errorMessage;
+  bool _isBackendStarting = false;
+  bool _isBackendRunning = false;
+  String? _backendStatus;
 
   @override
   void initState() {
@@ -100,11 +104,83 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Future<void> _startBackend() async {
+    if (_isBackendStarting || _isBackendRunning) return;
+
+    setState(() {
+      _isBackendStarting = true;
+      _backendStatus = 'Запуск backend сервера...';
+    });
+
+    final backendService = context.read<BackendService>();
+
+    try {
+      await backendService.startBackend();
+
+      if (mounted) {
+        setState(() {
+          _isBackendRunning = true;
+          _isBackendStarting = false;
+          _backendStatus = 'Backend запущен ✓';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Backend запущен! Теперь можно войти.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isBackendStarting = false;
+          _backendStatus = 'Ошибка запуска backend';
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка запуска backend: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _isBackendStarting || _isBackendRunning ? null : _startBackend,
+        icon: _isBackendStarting
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(_isBackendRunning ? Icons.check_circle : Icons.power_settings_new),
+        label: Text(
+          _isBackendRunning
+              ? 'Backend запущен'
+              : _isBackendStarting
+                  ? 'Запуск...'
+                  : 'Запустить Backend',
+        ),
+        backgroundColor: _isBackendRunning
+            ? Colors.green
+            : _isBackendStarting
+                ? Colors.orange
+                : Theme.of(context).colorScheme.primary,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -151,7 +227,62 @@ class _LoginScreenState extends State<LoginScreen>
                               color: Colors.grey[600],
                             ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
+
+                      // Backend status indicator
+                      if (_backendStatus != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _isBackendRunning
+                                ? Colors.green[50]
+                                : _isBackendStarting
+                                    ? Colors.orange[50]
+                                    : Colors.red[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _isBackendRunning
+                                  ? Colors.green[200]!
+                                  : _isBackendStarting
+                                      ? Colors.orange[200]!
+                                      : Colors.red[200]!,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isBackendRunning
+                                    ? Icons.check_circle
+                                    : _isBackendStarting
+                                        ? Icons.hourglass_empty
+                                        : Icons.error_outline,
+                                size: 16,
+                                color: _isBackendRunning
+                                    ? Colors.green
+                                    : _isBackendStarting
+                                        ? Colors.orange
+                                        : Colors.red,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _backendStatus!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _isBackendRunning
+                                      ? Colors.green[900]
+                                      : _isBackendStarting
+                                          ? Colors.orange[900]
+                                          : Colors.red[900],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 16),
 
                       // Tabs
                       TabBar(
