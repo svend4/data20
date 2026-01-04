@@ -60,7 +60,7 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
     """
-    Run FastAPI server (blocking)
+    Run simple HTTP server (blocking)
 
     Called by native code to start the server.
     This function blocks until the server is stopped.
@@ -72,75 +72,46 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
     global app, server
 
     try:
-        logger.info(f"🚀 Starting MINIMAL test backend on {host}:{port}")
+        logger.info(f"🚀 Starting ULTRA-SIMPLE HTTP server on {host}:{port}")
+        logger.info("📦 Using Python http.server (no FastAPI, no uvicorn)")
 
-        # Create minimal FastAPI app instead of importing mobile_server
-        logger.info("📦 Creating minimal FastAPI test app...")
+        # Use standard library http.server instead of FastAPI
+        from http.server import HTTPServer, BaseHTTPRequestHandler
+        import json
 
-        try:
-            from fastapi import FastAPI, Request
-            from fastapi.responses import JSONResponse
-            from fastapi.middleware.cors import CORSMiddleware
+        class SimpleHandler(BaseHTTPRequestHandler):
+            def log_message(self, format, *args):
+                """Override to use logger instead of stderr"""
+                logger.info(f"HTTP: {format % args}")
 
-            test_app = FastAPI(title="Data20 Test Backend")
+            def _send_json(self, data, status=200):
+                """Helper to send JSON response"""
+                self.send_response(status)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                self.end_headers()
+                self.wfile.write(json.dumps(data).encode('utf-8'))
 
-            # Add CORS middleware
-            test_app.add_middleware(
-                CORSMiddleware,
-                allow_origins=["*"],
-                allow_credentials=True,
-                allow_methods=["*"],
-                allow_headers=["*"],
-            )
+            def do_OPTIONS(self):
+                """Handle CORS preflight"""
+                self.send_response(200)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+                self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+                self.end_headers()
 
-            @test_app.get("/health")
-            async def health():
-                logger.info("Health check")
-                return {"status": "ok", "message": "Test backend is running"}
+            def do_GET(self):
+                """Handle GET requests"""
+                logger.info(f"GET {self.path}")
 
-            @test_app.get("/")
-            async def root():
-                logger.info("Root endpoint")
-                return {"message": "Data20 Test Backend - Minimal Version"}
-
-            # Auth endpoints - accept RAW JSON (no Pydantic validation)
-            @test_app.post("/auth/login")
-            async def login(request: Request):
-                try:
-                    body = await request.json()
-                    username = body.get("username", "unknown")
-                    logger.info(f"✅ Login request: username={username}")
-                    return JSONResponse({
-                        "access_token": "test_token_12345",
-                        "refresh_token": "test_refresh_67890",
-                        "token_type": "bearer"
-                    })
-                except Exception as e:
-                    logger.error(f"❌ Login error: {e}")
-                    return JSONResponse({"error": str(e)}, status_code=500)
-
-            @test_app.post("/auth/register")
-            async def register(request: Request):
-                try:
-                    body = await request.json()
-                    username = body.get("username", "unknown")
-                    logger.info(f"✅ Register request: username={username}")
-                    return JSONResponse({
-                        "access_token": "test_token_12345",
-                        "refresh_token": "test_refresh_67890",
-                        "token_type": "bearer"
-                    })
-                except Exception as e:
-                    logger.error(f"❌ Register error: {e}")
-                    return JSONResponse({"error": str(e)}, status_code=500)
-
-            @test_app.get("/auth/me")
-            async def get_current_user(request: Request):
-                try:
-                    # Log authorization header
-                    auth = request.headers.get("authorization", "none")
-                    logger.info(f"✅ Get user request: auth={auth[:20]}..." if len(auth) > 20 else f"auth={auth}")
-                    return JSONResponse({
+                if self.path == '/health':
+                    self._send_json({"status": "ok", "message": "Ultra-simple backend running"})
+                elif self.path == '/':
+                    self._send_json({"message": "Data20 Ultra-Simple Backend"})
+                elif self.path == '/auth/me':
+                    self._send_json({
                         "id": "test-user-1",
                         "username": "admin",
                         "email": "admin@test.com",
@@ -148,51 +119,51 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                         "role": "admin",
                         "is_active": True
                     })
+                else:
+                    self._send_json({"error": "Not found"}, 404)
+
+            def do_POST(self):
+                """Handle POST requests"""
+                logger.info(f"POST {self.path}")
+
+                try:
+                    # Read request body
+                    content_length = int(self.headers.get('Content-Length', 0))
+                    body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+                    data = json.loads(body) if body else {}
+
+                    if self.path == '/auth/login':
+                        username = data.get('username', 'unknown')
+                        logger.info(f"✅ Login: {username}")
+                        self._send_json({
+                            "access_token": "test_token_12345",
+                            "refresh_token": "test_refresh_67890",
+                            "token_type": "bearer"
+                        })
+                    elif self.path == '/auth/register':
+                        username = data.get('username', 'unknown')
+                        logger.info(f"✅ Register: {username}")
+                        self._send_json({
+                            "access_token": "test_token_12345",
+                            "refresh_token": "test_refresh_67890",
+                            "token_type": "bearer"
+                        })
+                    else:
+                        self._send_json({"error": "Not found"}, 404)
+
                 except Exception as e:
-                    logger.error(f"❌ Get user error: {e}")
-                    return JSONResponse({"error": str(e)}, status_code=500)
+                    logger.error(f"❌ POST error: {e}")
+                    self._send_json({"error": str(e)}, 500)
 
-            app = test_app
-            logger.info("✅ Minimal test app created with CORS and logging")
+        # Create and start server
+        logger.info(f"🔧 Creating HTTPServer on {host}:{port}...")
+        server = HTTPServer((host, port), SimpleHandler)
+        logger.info(f"✅ Server created, starting to serve...")
 
-        except Exception as e:
-            logger.error(f"❌ Failed to create FastAPI app: {e}")
-            import traceback
-            traceback.print_exc()
-            raise Exception(f"FastAPI creation failed: {e}")
+        # This blocks until server is stopped
+        server.serve_forever()
 
-        # Import uvicorn
-        try:
-            logger.info("📦 Importing uvicorn...")
-            import uvicorn
-            logger.info("✅ uvicorn imported")
-        except ImportError as e:
-            logger.error(f"❌ Failed to import uvicorn: {e}")
-            raise Exception(f"uvicorn not available: {e}")
-
-        # Configure and run
-        try:
-            logger.info(f"🚀 Starting uvicorn server on {host}:{port}...")
-
-            config = uvicorn.Config(
-                app=app,
-                host=host,
-                port=port,
-                log_level="info",
-                access_log=False,
-            )
-
-            server = uvicorn.Server(config)
-            logger.info("✅ Server starting (this will block)...")
-            server.run()
-
-            logger.info("Server stopped normally")
-
-        except Exception as e:
-            logger.error(f"❌ Server error: {e}")
-            import traceback
-            traceback.print_exc()
-            raise Exception(f"Server failed: {e}")
+        logger.info("Server stopped")
 
     except Exception as e:
         logger.error(f"❌ FATAL: {e}")
