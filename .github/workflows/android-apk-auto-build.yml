@@ -226,21 +226,14 @@ jobs:
           
           echo ""
           echo "==================================="
-          echo "🚀 Запуск сборки APK через Gradle напрямую"
-          echo "⚠️  Обход Flutter из-за 'unsupported Gradle project'"
+          echo "🚀 Запуск сборки APK через Flutter"
           echo "==================================="
 
-          # Сначала генерируем Flutter код
-          echo "📝 Генерация Flutter кода..."
-          flutter pub get
-
-          # Собираем через Gradle, минуя flutter build apk
-          echo "🔨 Сборка через ./gradlew assembleRelease..."
-          cd android
-          ./gradlew assembleRelease --stacktrace --info
+          # Используем flutter build apk теперь, т.к. все проблемы конфигурации исправлены
+          echo "🔨 Сборка через flutter build apk --release..."
+          flutter build apk --release --verbose
           BUILD_EXIT_CODE=$?
-          cd ..
-          
+
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo ""
             echo "==================================="
