@@ -50,7 +50,14 @@ def _verify_password_pbkdf2(plain_password: str, stored_hash: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Hash password using PBKDF2"""
-    return _hash_password_pbkdf2(password)
+    try:
+        logger.info("🔐 Hashing password with PBKDF2...")
+        result = _hash_password_pbkdf2(password)
+        logger.info("✅ Password hash created successfully")
+        return result
+    except Exception as e:
+        logger.error(f"❌ Password hashing failed: {e}", exc_info=True)
+        raise
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash"""
@@ -58,29 +65,50 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create JWT access token"""
-    import jwt  # Import only when needed
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire, "type": "access"})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    try:
+        logger.info("📦 Importing jwt library...")
+        import jwt  # Import only when needed
+        logger.info("✅ jwt library imported")
+
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        to_encode.update({"exp": expire, "type": "access"})
+
+        logger.info("📦 Encoding JWT token...")
+        token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        logger.info("✅ JWT token encoded")
+        return token
+    except Exception as e:
+        logger.error(f"❌ JWT token encoding failed: {e}", exc_info=True)
+        raise
 
 def create_tokens_for_user(user) -> dict:
     """Create access and refresh tokens for user"""
-    access_token = create_access_token(
-        data={"sub": user.id, "username": user.username, "role": user.role.value}
-    )
-    refresh_token = create_access_token(
-        data={"sub": user.id, "username": user.username},
-        expires_delta=timedelta(days=30)
-    )
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+    try:
+        logger.info("🔑 Creating access token...")
+        access_token = create_access_token(
+            data={"sub": user.id, "username": user.username, "role": user.role.value}
+        )
+        logger.info("✅ Access token created")
+
+        logger.info("🔑 Creating refresh token...")
+        refresh_token = create_access_token(
+            data={"sub": user.id, "username": user.username},
+            expires_delta=timedelta(days=30)
+        )
+        logger.info("✅ Refresh token created")
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        logger.error(f"❌ Token creation failed: {e}", exc_info=True)
+        raise
 
 def authenticate_user_simple(db, User_model, username: str, password: str):
     """Authenticate user WITHOUT FastAPI dependencies"""
@@ -163,22 +191,36 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
         """Initialize database only when first needed"""
         nonlocal db_initialized, _SessionLocal, _User, _UserRole
         if not db_initialized:
-            logger.info("📦 Initializing database on first auth request...")
+            try:
+                logger.info("📦 [STEP 1/5] Starting database initialization...")
 
-            # Import DB modules ONCE and cache them
-            from mobile_database import init_mobile_database, SessionLocal
-            from mobile_models import User, UserRole
+                # Step 1: Import mobile_database
+                logger.info("📦 [STEP 2/5] Importing mobile_database module...")
+                from mobile_database import init_mobile_database, SessionLocal
+                logger.info("✅ [STEP 2/5] mobile_database imported successfully")
 
-            # Initialize database
-            init_mobile_database()
+                # Step 2: Import mobile_models
+                logger.info("📦 [STEP 3/5] Importing mobile_models module...")
+                from mobile_models import User, UserRole
+                logger.info("✅ [STEP 3/5] mobile_models imported successfully")
 
-            # Cache the imports
-            _SessionLocal = SessionLocal
-            _User = User
-            _UserRole = UserRole
+                # Step 3: Initialize database
+                logger.info("📦 [STEP 4/5] Calling init_mobile_database()...")
+                init_mobile_database()
+                logger.info("✅ [STEP 4/5] Database initialized successfully")
 
-            db_initialized = True
-            logger.info("✅ Database initialized and imports cached")
+                # Step 4: Cache the imports
+                logger.info("📦 [STEP 5/5] Caching imports...")
+                _SessionLocal = SessionLocal
+                _User = User
+                _UserRole = UserRole
+
+                db_initialized = True
+                logger.info("✅ [STEP 5/5] All initialization complete!")
+
+            except Exception as e:
+                logger.error(f"❌ CRITICAL: Database initialization failed at step: {e}", exc_info=True)
+                raise
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -231,13 +273,22 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
 
         def do_POST(self):
             try:
+                logger.info(f"🌐 POST request received: {self.path}")
+
                 # Initialize DB and cache imports on first call
+                logger.info("📦 Calling ensure_db_initialized()...")
                 ensure_db_initialized()
+                logger.info("✅ Database initialization complete")
 
                 # Use cached imports
+                logger.info("📦 Creating database session...")
                 db = _SessionLocal()
+                logger.info("✅ Database session created")
+
                 try:
+                    logger.info("📦 Reading request body...")
                     body = self._get_body()
+                    logger.info(f"✅ Request body parsed: {list(body.keys())}")
 
                     if '/auth/register' in self.path:
                         # Real registration
@@ -249,28 +300,39 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                         logger.info(f"📝 Registration attempt: {username}")
 
                         # Check if user exists
+                        logger.info("📦 Checking if user already exists...")
                         existing = db.query(_User).filter(
                             (_User.username == username) | (_User.email == email)
                         ).first()
+                        logger.info(f"✅ User check complete (exists: {existing is not None})")
 
                         if existing:
                             logger.warning(f"❌ User already exists: {username}")
                             self._send_json({"detail": "Username or email already exists"}, 400)
                             return
 
+                        # Hash password
+                        logger.info("📦 Hashing password...")
+                        hashed_password = get_password_hash(password)
+                        logger.info("✅ Password hashed")
+
                         # Create user
+                        logger.info("📦 Creating user object...")
                         user = _User(
                             username=username,
                             email=email,
                             full_name=full_name,
-                            hashed_password=get_password_hash(password),
+                            hashed_password=hashed_password,
                             role=_UserRole.USER,
                             is_active=True
                         )
+                        logger.info("✅ User object created")
 
+                        logger.info("📦 Saving user to database...")
                         db.add(user)
                         db.commit()
                         db.refresh(user)
+                        logger.info("✅ User saved to database")
 
                         logger.info(f"✅ User registered: {username}")
 
@@ -290,7 +352,9 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
 
                         logger.info(f"🔐 Login attempt: {username}")
 
+                        logger.info("📦 Authenticating user...")
                         user = authenticate_user_simple(db, _User, username, password)
+                        logger.info(f"✅ Authentication complete (success: {user is not None})")
 
                         if not user:
                             logger.warning(f"❌ Invalid credentials: {username}")
@@ -302,7 +366,10 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                             self._send_json({"detail": "User is inactive"}, 401)
                             return
 
+                        logger.info("📦 Creating JWT tokens...")
                         tokens = create_tokens_for_user(user)
+                        logger.info("✅ JWT tokens created")
+
                         logger.info(f"✅ User logged in: {username}")
                         self._send_json(tokens)
 
