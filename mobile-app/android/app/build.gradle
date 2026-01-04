@@ -70,6 +70,11 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries true
+    }
+
     kotlinOptions {
         jvmTarget = '17'
     }
@@ -104,9 +109,13 @@ chaquopy {
             install "alembic==1.12.1"
 
             // Authentication
-            install "python-jose[cryptography]==3.3.0"
-            install "passlib[bcrypt]==1.7.4"
+            // Note: Installing base packages without extras to avoid Chaquopy compatibility issues
+            // Cryptography dependencies will be installed separately if needed
+            install "python-jose==3.3.0"
+            install "passlib==1.7.4"
             install "python-multipart==0.0.6"
+            install "cryptography==41.0.7"  // Explicit cryptography for jose
+            install "bcrypt==4.1.2"  // Explicit bcrypt for passlib
 
             // Logging and monitoring
             install "structlog==23.2.0"
