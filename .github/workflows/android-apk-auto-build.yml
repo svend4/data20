@@ -83,6 +83,12 @@ jobs:
           ./copy-tools-to-python.sh
           echo "✅ Python tools скопированы"
 
+      - name: 📝 Создание local.properties для Android
+        run: |
+          FLUTTER_ROOT=$(which flutter | sed 's/\/bin\/flutter$//')
+          echo "flutter.sdk=$FLUTTER_ROOT" > mobile-app/android/local.properties
+          echo "✅ local.properties создан: flutter.sdk=$FLUTTER_ROOT"
+
       - name: 📚 Установка Flutter зависимостей
         run: |
           cd mobile-app
