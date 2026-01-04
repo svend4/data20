@@ -93,7 +93,8 @@ jobs:
           if [ -n "$FLUTTER_HOME" ]; then
             FLUTTER_ROOT="$FLUTTER_HOME"
           elif command -v flutter &> /dev/null; then
-            # Получаем родительскую директорию для /path/to/flutter/bin/flutter -> /path/to/flutter
+            # Извлечение корневой директории Flutter из пути к бинарнику:
+            # /path/to/flutter/bin/flutter -> /path/to/flutter/bin -> /path/to/flutter
             FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
           else
             FLUTTER_ROOT=""
@@ -200,35 +201,28 @@ jobs:
           echo "🏗️ Начинаем сборку Release APK"
           echo "==================================="
           
-          # Предварительные проверки
+          # Предварительные проверки критических файлов
           echo "📋 Предварительные проверки:"
-          echo "- Проверка наличия pubspec.yaml"
-          if [ ! -f pubspec.yaml ]; then
-            echo "❌ ОШИБКА: pubspec.yaml не найден"
-            exit 1
-          fi
-          echo "  ✅ pubspec.yaml найден"
           
-          echo "- Проверка наличия android/app/build.gradle"
-          if [ ! -f android/app/build.gradle ]; then
-            echo "❌ ОШИБКА: android/app/build.gradle не найден"
-            exit 1
-          fi
-          echo "  ✅ android/app/build.gradle найден"
+          # Массив файлов для проверки (путь:описание)
+          declare -a CHECK_FILES=(
+            "pubspec.yaml:pubspec.yaml"
+            "android/app/build.gradle:android/app/build.gradle"
+            "android/local.properties:android/local.properties"
+            "android/settings.gradle:android/settings.gradle"
+          )
           
-          echo "- Проверка наличия android/local.properties"
-          if [ ! -f android/local.properties ]; then
-            echo "❌ ОШИБКА: android/local.properties не найден"
-            exit 1
-          fi
-          echo "  ✅ android/local.properties найден"
-          
-          echo "- Проверка наличия android/settings.gradle"
-          if [ ! -f android/settings.gradle ]; then
-            echo "❌ ОШИБКА: android/settings.gradle не найден"
-            exit 1
-          fi
-          echo "  ✅ android/settings.gradle найден"
+          # Проверка каждого файла
+          for file_check in "${CHECK_FILES[@]}"; do
+            file_path="${file_check%%:*}"
+            file_desc="${file_check##*:}"
+            echo "- Проверка наличия $file_desc"
+            if [ ! -f "$file_path" ]; then
+              echo "❌ ОШИБКА: $file_desc не найден"
+              exit 1
+            fi
+            echo "  ✅ $file_desc найден"
+          done
           
           echo ""
           echo "==================================="
