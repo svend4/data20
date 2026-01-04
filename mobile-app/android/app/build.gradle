@@ -5,6 +5,13 @@ plugins {
     id 'com.chaquo.python'
 }
 
+// Load keystore properties for signing
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.data20.mobile_app'
     compileSdk 34
@@ -25,8 +32,25 @@ android {
         multiDexEnabled true
     }
 
+    // Signing configuration for release builds
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Sign with release keystore if available
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+            
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
