@@ -258,7 +258,7 @@ jobs:
             echo "- Проверьте память: OutOfMemoryError или heap space ошибки"
             echo "- Файлы Gradle (build.gradle, settings.gradle)"
             echo "- Версии зависимостей в pubspec.yaml"
-            echo "- Проверьте gradle daemon: ищите 'Daemon' в логах"
+            echo "- Проверьте gradle daemon: ищите 'daemon stopped' или 'startup failed'"
             echo ""
             echo "==================================="
             exit $BUILD_EXIT_CODE
