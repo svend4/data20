@@ -12,6 +12,11 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 
+# Ignore missing Google Play Core classes (deferred components not used)
+# Flutter references these for deferred component support, but we don't use it
+-dontwarn com.google.android.play.core.**
+-dontnote com.google.android.play.core.**
+
 # Keep Chaquopy Python classes
 -keep class com.chaquo.python.** { *; }
 -dontwarn com.chaquo.python.**
