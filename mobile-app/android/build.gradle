@@ -1,21 +1,6 @@
-// Top-level build file for Android project
-// Modern Gradle structure for Flutter 3.16+ (NO buildscript block)
+// Minimal build.gradle for Flutter 3.16+
+// All configuration moved to settings.gradle
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://chaquo.com/maven" }
-    }
-}
-
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
 subprojects {
     project.evaluationDependsOn(':app')
-}
-
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
 }

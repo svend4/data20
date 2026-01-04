@@ -39,4 +39,13 @@ plugins {
     id "org.jetbrains.kotlin.android" version "1.9.10" apply false
 }
 
+// Repositories for all subprojects (moved from build.gradle)
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://chaquo.com/maven" }
+    }
+}
+
 include ":app"
