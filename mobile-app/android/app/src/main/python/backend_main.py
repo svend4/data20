@@ -1,25 +1,14 @@
 """
 Mobile Backend Wrapper for Data20
 
-This is a lightweight wrapper around the main FastAPI backend,
-optimized for mobile devices (Android/iOS).
-
-Key differences from desktop backend:
-- Uses SQLite (no PostgreSQL)
-- Runs on localhost only (127.0.0.1)
-- No Celery workers (all tasks run synchronously)
-- No Redis (no caching)
-- Reduced memory footprint
-- Mobile-specific file paths
+This module is called by the native Android/iOS code to start the embedded Python backend.
+It imports and runs the full mobile_server.py FastAPI application.
 """
 
 import os
 import sys
 import logging
-import asyncio
-import threading
 from pathlib import Path
-from typing import Optional
 
 # Configure logging
 logging.basicConfig(
@@ -31,7 +20,6 @@ logger = logging.getLogger(__name__)
 # Global variables
 app = None
 server = None
-server_thread = None
 database_path = None
 upload_path = None
 logs_path = None
@@ -40,6 +28,8 @@ logs_path = None
 def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     """
     Setup environment for mobile backend
+
+    Called by native code (MainActivity.kt / BackendBridge.swift)
 
     Args:
         db_path: Path to SQLite database file
@@ -52,105 +42,28 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     upload_path = upload_dir
     logs_path = logs_dir
 
-    # Create directories if they don't exist
+    # Create directories
     for path in [upload_dir, logs_dir]:
         Path(path).mkdir(parents=True, exist_ok=True)
 
     # Set environment variables for FastAPI app
-    os.environ['DATABASE_URL'] = f'sqlite:///{db_path}'
-    os.environ['UPLOAD_DIR'] = upload_dir
-    os.environ['LOGS_DIR'] = logs_dir
-
-    # Mobile-specific settings
+    os.environ['DATA20_DATABASE_PATH'] = db_path
+    os.environ['DATA20_UPLOAD_PATH'] = upload_dir
+    os.environ['DATA20_LOGS_PATH'] = logs_dir
     os.environ['ENVIRONMENT'] = 'mobile'
-    os.environ['DEBUG'] = 'false'
-    os.environ['CORS_ORIGINS'] = '*'  # Allow all origins on mobile
 
-    # Disable features not needed on mobile
-    os.environ['ENABLE_CELERY'] = 'false'
-    os.environ['ENABLE_REDIS'] = 'false'
-    os.environ['ENABLE_METRICS'] = 'false'
-
-    logger.info(f"Environment configured:")
-    logger.info(f"  Database: {db_path}")
-    logger.info(f"  Uploads: {upload_dir}")
-    logger.info(f"  Logs: {logs_dir}")
-
-
-def create_mobile_app():
-    """
-    Create FastAPI application optimized for mobile
-
-    Returns:
-        FastAPI application instance
-    """
-    from fastapi import FastAPI
-    from fastapi.middleware.cors import CORSMiddleware
-
-    # Create app
-    mobile_app = FastAPI(
-        title="Data20 Mobile Backend",
-        description="Embedded FastAPI backend for mobile app",
-        version="1.0.0",
-        docs_url="/docs",
-        redoc_url="/redoc"
-    )
-
-    # CORS middleware (allow all on mobile)
-    mobile_app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Health check endpoint
-    @mobile_app.get("/health")
-    async def health_check():
-        """Health check endpoint"""
-        return {
-            "status": "ok",
-            "environment": "mobile",
-            "database": database_path,
-            "version": "1.0.0"
-        }
-
-    # Root endpoint
-    @mobile_app.get("/")
-    async def root():
-        """Root endpoint"""
-        return {
-            "message": "Data20 Mobile Backend",
-            "status": "running",
-            "docs": "/docs"
-        }
-
-    # Import and include routers from main backend
-    try:
-        # Try to import main backend routers
-        # In production, you would copy the entire backend/ directory
-        # to src/main/python/ and import from there
-
-        # For now, create minimal endpoints
-        logger.info("Setting up minimal endpoints (TODO: import full backend)")
-
-        # TODO: Import actual routers when backend is available
-        # from backend.api.routes import auth, tools, jobs
-        # mobile_app.include_router(auth.router, prefix="/auth", tags=["auth"])
-        # mobile_app.include_router(tools.router, prefix="/tools", tags=["tools"])
-        # mobile_app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
-
-    except ImportError as e:
-        logger.warning(f"Could not import backend modules: {e}")
-        logger.info("Running with minimal endpoints only")
-
-    return mobile_app
+    logger.info(f"✅ Environment configured:")
+    logger.info(f"   Database: {db_path}")
+    logger.info(f"   Uploads: {upload_dir}")
+    logger.info(f"   Logs: {logs_dir}")
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
     """
     Run FastAPI server (blocking)
+
+    Called by native code to start the server.
+    This function blocks until the server is stopped.
 
     Args:
         host: Host to bind to (default: 127.0.0.1)
@@ -159,14 +72,17 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
     global app, server
 
     try:
-        logger.info(f"Starting mobile backend on {host}:{port}")
+        logger.info(f"🚀 Starting mobile backend on {host}:{port}")
 
-        # Create app if not exists
-        if app is None:
-            app = create_mobile_app()
-
-        # Initialize database
-        initialize_database()
+        # Import the full mobile server
+        try:
+            from mobile_server import app as mobile_app
+            app = mobile_app
+            logger.info("✅ Full mobile server loaded")
+        except ImportError as e:
+            logger.error(f"❌ Failed to import mobile_server: {e}")
+            logger.error("Please ensure all mobile_* modules are present")
+            raise
 
         # Run with uvicorn
         import uvicorn
@@ -176,98 +92,52 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
             host=host,
             port=port,
             log_level="info",
-            access_log=False,  # Disable access log on mobile to save resources
+            access_log=False,  # Save resources on mobile
             loop="asyncio"
         )
 
         server = uvicorn.Server(config)
 
         # Run server (blocking)
-        logger.info("Backend server started successfully")
+        logger.info("✅ Backend server started successfully")
         server.run()
 
     except Exception as e:
-        logger.error(f"Failed to start server: {e}")
+        logger.error(f"❌ Failed to start server: {e}")
+        import traceback
+        traceback.print_exc()
         raise
-
-
-def run_server_async(host: str = "127.0.0.1", port: int = 8001):
-    """
-    Run server in background thread (non-blocking)
-
-    Args:
-        host: Host to bind to
-        port: Port to bind to
-    """
-    global server_thread
-
-    def run():
-        run_server(host, port)
-
-    server_thread = threading.Thread(target=run, daemon=True)
-    server_thread.start()
-
-    logger.info(f"Backend started in background thread")
 
 
 def stop_server():
     """
     Stop the running server
+
+    Called by native code when app is closing.
     """
-    global server, server_thread
+    global server
 
     try:
         if server is not None:
-            logger.info("Stopping server...")
+            logger.info("🛑 Stopping server...")
             server.should_exit = True
             server = None
-
-        if server_thread is not None:
-            server_thread = None
-
-        logger.info("Server stopped")
-
+            logger.info("✅ Server stopped")
     except Exception as e:
-        logger.error(f"Error stopping server: {e}")
+        logger.error(f"❌ Error stopping server: {e}")
 
 
-def initialize_database():
-    """
-    Initialize SQLite database
-    """
-    try:
-        logger.info("Initializing database...")
-
-        # Create database file if it doesn't exist
-        db_file = Path(database_path)
-        if not db_file.exists():
-            db_file.parent.mkdir(parents=True, exist_ok=True)
-            db_file.touch()
-            logger.info(f"Created new database: {database_path}")
-
-        # TODO: Run migrations when backend is integrated
-        # from alembic.config import Config
-        # from alembic import command
-        # alembic_cfg = Config("alembic.ini")
-        # command.upgrade(alembic_cfg, "head")
-
-        logger.info("Database initialized")
-
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
-        raise
-
-
-# For testing/debugging
+# For testing directly with Python
 if __name__ == "__main__":
-    # Setup test environment
     import tempfile
+
+    # Setup test environment
     temp_dir = tempfile.gettempdir()
 
     setup_environment(
         db_path=f"{temp_dir}/test_data20.db",
-        upload_dir=f"{temp_dir}/uploads",
-        logs_dir=f"{temp_dir}/logs"
+        upload_dir=f"{temp_dir}/data20_uploads",
+        logs_dir=f"{temp_dir}/data20_logs"
     )
 
     # Run server
