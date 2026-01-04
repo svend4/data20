@@ -1,6 +1,2 @@
-// Minimal build.gradle for Flutter 3.16+
-// All configuration moved to settings.gradle
+// Intentionally minimal for Flutter 3.16+
 
-subprojects {
-    project.evaluationDependsOn(':app')
-}
