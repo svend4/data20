@@ -1,18 +1,11 @@
 // Top-level build file for Android project
-buildscript {
-    ext.kotlin_version = '1.9.10'
+// Modern Gradle structure for Flutter 3.16+
 
+buildscript {
     repositories {
-        google()
-        mavenCentral()
-        // Chaquopy Maven repository
         maven { url "https://chaquo.com/maven" }
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
         // Chaquopy plugin for Python integration
         classpath 'com.chaquo.python:gradle:14.0.2'
     }
@@ -26,12 +19,13 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
-
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+subprojects {
+    project.evaluationDependsOn(':app')
+}
 
-task clean(type: Delete) {
+tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
