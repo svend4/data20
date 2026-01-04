@@ -29,6 +29,18 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// Set Flutter source directory explicitly (parent of android directory)
+// This is needed because flutter.gradle can't auto-detect with Chaquopy config
+def flutterProjectRoot = rootProject.projectDir.parentFile
+
+// Configure Flutter properties before applying flutter.gradle
+project.ext {
+    flutter = [
+        source: '../',
+        target: 'lib/main.dart'
+    ]
+}
+
 // Apply Flutter gradle script
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
