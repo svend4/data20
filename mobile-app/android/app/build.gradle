@@ -34,9 +34,11 @@ if (flutterVersionName == null) {
 def flutterProjectRoot = rootProject.projectDir.parentFile
 
 // Configure Flutter properties before applying flutter.gradle
+// Path is relative to this file (mobile-app/android/app/build.gradle)
+// '../..' goes up to mobile-app/ directory where pubspec.yaml is located
 project.ext {
     flutter = [
-        source: '../',
+        source: '../..',           // mobile-app/ (Flutter project root)
         target: 'lib/main.dart'
     ]
 }
