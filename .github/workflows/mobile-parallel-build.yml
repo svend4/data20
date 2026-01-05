@@ -174,35 +174,89 @@ jobs:
             fi
           done
 
-          echo "🚀 Запуск сборки Debug APK..."
-          flutter pub get
+          echo "🚀 Запуск сборки Debug APK через Flutter..."
 
-          cd android
-          ./gradlew assembleDebug --stacktrace
-          BUILD_EXIT_CODE=$?
-          cd ..
+          # Используем flutter build apk вместо gradlew
+          # Debug APK подписывается автоматически и легко устанавливается
 
-          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+          # Показываем окружение для диагностики
+          echo "==================================="
+          echo "📊 Диагностическая информация:"
+          echo "Flutter version: $(flutter --version | head -1)"
+          echo "Dart version: $(dart --version)"
+          echo "Java version: $(java -version 2>&1 | head -1)"
+          echo "Свободная память: $(free -h | grep Mem)"
+          echo "Свободное место: $(df -h . | tail -1)"
+          echo "==================================="
+
+          # Запускаем сборку с выводом всех ошибок
+          echo "Начинаем сборку APK..."
+          flutter build apk --debug --verbose 2>&1 | tee build.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
+
+          echo ""
+          echo "==================================="
+          echo "📦 Проверка результатов сборки..."
+          echo "==================================="
+
+          # Ищем собранный APK
+          APK_FOUND=""
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            APK_FOUND="build/app/outputs/flutter-apk/app-debug.apk"
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          elif find build -name "*.apk" 2>/dev/null | grep -q apk; then
+            APK_FOUND=$(find build -name "*.apk" | head -1)
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          else
+            echo "❌ APK НЕ НАЙДЕН!"
+            echo "Проверка всех build директорий:"
+            find . -type d -name "build" -o -name "outputs" 2>/dev/null || true
+            echo ""
+            echo "Поиск APK файлов:"
+            find . -name "*.apk" 2>/dev/null || echo "APK файлы не найдены"
+          fi
+
+          echo "==================================="
+
+          if [ $BUILD_EXIT_CODE -eq 0 ] && [ -n "$APK_FOUND" ]; then
             echo "✅ LITE APK успешно собран!"
           else
-            echo "❌ ОШИБКА СБОРКИ LITE APK (exit code: $BUILD_EXIT_CODE)"
-            exit $BUILD_EXIT_CODE
+            echo "❌ ОШИБКА СБОРКИ LITE APK"
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo "APK found: ${APK_FOUND:-NO}"
+            echo ""
+            echo "========================================="
+            echo "🔍 Последние 100 строк лога сборки:"
+            echo "========================================="
+            tail -100 build.log
+            echo "========================================="
+            echo ""
+            echo "🔍 Поиск Gradle ошибок:"
+            grep -i "FAILURE\|BUILD FAILED\|error:" build.log | tail -30 || echo "Gradle ошибки не найдены"
+            echo "========================================="
+            exit 1
           fi
 
       - name: 📊 Информация о LITE APK
         id: lite_apk_info
         run: |
-          # Поиск LITE APK
-          APK_PATH=$(find mobile-app-lite/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+          # Поиск LITE APK (flutter build apk создаёт в flutter-apk директории)
+          APK_PATH=$(find mobile-app-lite/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find mobile-app-lite/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+            APK_PATH=$(find mobile-app-lite/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
           fi
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find mobile-app-lite/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
+            APK_PATH=$(find mobile-app-lite/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
           fi
 
           if [ -z "$APK_PATH" ]; then
             echo "❌ LITE APK не найден"
+            echo "Проверены директории:"
+            echo "  - mobile-app-lite/build/app/outputs/flutter-apk/"
+            echo "  - mobile-app-lite/android/app/build/outputs/apk/debug/"
+            echo "  - mobile-app-lite/android/app/build/outputs/apk/release/"
             exit 1
           fi
 
@@ -399,35 +453,89 @@ jobs:
             fi
           done
 
-          echo "🚀 Запуск сборки Debug APK..."
-          flutter pub get
+          echo "🚀 Запуск сборки Debug APK через Flutter..."
 
-          cd android
-          ./gradlew assembleDebug --stacktrace
-          BUILD_EXIT_CODE=$?
-          cd ..
+          # Используем flutter build apk вместо gradlew
+          # Debug APK подписывается автоматически и легко устанавливается
 
-          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+          # Показываем окружение для диагностики
+          echo "==================================="
+          echo "📊 Диагностическая информация:"
+          echo "Flutter version: $(flutter --version | head -1)"
+          echo "Dart version: $(dart --version)"
+          echo "Java version: $(java -version 2>&1 | head -1)"
+          echo "Свободная память: $(free -h | grep Mem)"
+          echo "Свободное место: $(df -h . | tail -1)"
+          echo "==================================="
+
+          # Запускаем сборку с выводом всех ошибок
+          echo "Начинаем сборку APK..."
+          flutter build apk --debug --verbose 2>&1 | tee build.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
+
+          echo ""
+          echo "==================================="
+          echo "📦 Проверка результатов сборки..."
+          echo "==================================="
+
+          # Ищем собранный APK
+          APK_FOUND=""
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            APK_FOUND="build/app/outputs/flutter-apk/app-debug.apk"
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          elif find build -name "*.apk" 2>/dev/null | grep -q apk; then
+            APK_FOUND=$(find build -name "*.apk" | head -1)
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          else
+            echo "❌ APK НЕ НАЙДЕН!"
+            echo "Проверка всех build директорий:"
+            find . -type d -name "build" -o -name "outputs" 2>/dev/null || true
+            echo ""
+            echo "Поиск APK файлов:"
+            find . -name "*.apk" 2>/dev/null || echo "APK файлы не найдены"
+          fi
+
+          echo "==================================="
+
+          if [ $BUILD_EXIT_CODE -eq 0 ] && [ -n "$APK_FOUND" ]; then
             echo "✅ FULL APK успешно собран!"
           else
-            echo "❌ ОШИБКА СБОРКИ FULL APK (exit code: $BUILD_EXIT_CODE)"
-            exit $BUILD_EXIT_CODE
+            echo "❌ ОШИБКА СБОРКИ FULL APK"
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo "APK found: ${APK_FOUND:-NO}"
+            echo ""
+            echo "========================================="
+            echo "🔍 Последние 100 строк лога сборки:"
+            echo "========================================="
+            tail -100 build.log
+            echo "========================================="
+            echo ""
+            echo "🔍 Поиск Gradle ошибок:"
+            grep -i "FAILURE\|BUILD FAILED\|error:" build.log | tail -30 || echo "Gradle ошибки не найдены"
+            echo "========================================="
+            exit 1
           fi
 
       - name: 📊 Информация о FULL APK
         id: full_apk_info
         run: |
-          # Поиск FULL APK
-          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+          # Поиск FULL APK (flutter build apk создаёт в flutter-apk директории)
+          APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
           fi
           if [ -z "$APK_PATH" ]; then
-            APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
+            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
           fi
 
           if [ -z "$APK_PATH" ]; then
             echo "❌ FULL APK не найден"
+            echo "Проверены директории:"
+            echo "  - mobile-app/build/app/outputs/flutter-apk/"
+            echo "  - mobile-app/android/app/build/outputs/apk/debug/"
+            echo "  - mobile-app/android/app/build/outputs/apk/release/"
             exit 1
           fi
 
@@ -521,3 +629,4 @@ jobs:
             echo "❌ ОБЕ ВЕРСИИ НЕ СОБРАЛИСЬ"
             exit 1
           fi
+# Trigger build
