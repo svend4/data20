@@ -14,6 +14,7 @@ const { app, BrowserWindow, ipcMain, Menu, dialog, shell } = require('electron')
 const path = require('path');
 const Store = require('electron-store');
 const BackendLauncher = require('./backend-launcher');
+const AutoUpdater = require('./auto-updater');
 
 // Initialize electron-store for persistent settings
 const store = new Store();
@@ -21,6 +22,7 @@ const store = new Store();
 let mainWindow;
 let backendLauncher;
 let splashWindow;
+let updater;
 
 // Check if running in development
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -280,6 +282,21 @@ function createMenu() {
         },
         { type: 'separator' },
         {
+          label: 'Check for Updates',
+          click: () => {
+            if (updater) {
+              updater.checkForUpdatesAndNotify();
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Auto-Update',
+                message: 'Auto-update is not available in development mode.',
+              });
+            }
+          },
+        },
+        { type: 'separator' },
+        {
           label: 'About',
           click: () => {
             const info = backendLauncher.getInfo();
@@ -479,6 +496,28 @@ ipcMain.handle('store-delete', (event, key) => {
   return true;
 });
 
+// Auto-update handlers
+ipcMain.handle('check-for-updates', async () => {
+  if (updater) {
+    return await updater.checkForUpdates();
+  }
+  return false;
+});
+
+ipcMain.handle('get-update-status', () => {
+  if (updater) {
+    return updater.getStatus();
+  }
+  return { enabled: false };
+});
+
+ipcMain.handle('install-update', () => {
+  if (updater) {
+    return updater.quitAndInstall();
+  }
+  return false;
+});
+
 /**
  * App lifecycle
  */
@@ -491,6 +530,19 @@ app.whenReady().then(async () => {
   try {
     // Show splash screen
     createSplashWindow();
+
+    // Initialize auto-updater (only in production)
+    if (!isDev) {
+      console.log('🔄 Initializing auto-updater...');
+      updater = new AutoUpdater({
+        enabled: true,
+        checkOnStart: true,
+        notifyUser: true,
+        autoDownload: true,
+        autoInstallOnAppQuit: true,
+      });
+      console.log('✅ Auto-updater initialized');
+    }
 
     // Initialize backend launcher
     console.log('📦 Initializing backend launcher...');
@@ -508,6 +560,17 @@ app.whenReady().then(async () => {
     // Create main window
     console.log('🪟 Creating main window...');
     createWindow();
+
+    // Set main window reference for auto-updater
+    if (updater) {
+      updater.setMainWindow(mainWindow);
+
+      // Check for updates after 3 seconds
+      setTimeout(() => {
+        console.log('🔍 Checking for updates...');
+        updater.checkForUpdatesAndNotify();
+      }, 3000);
+    }
 
     console.log('✅ Application ready!');
 

@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7",
+    "electron-log": "^5.0.1",
     "axios": "^1.6.0"
   },
   "devDependencies": {
@@ -42,35 +44,102 @@
       "build/**/*",
       "package.json"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "data20",
+      "repo": "data20"
+    },
     "mac": {
       "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
       ],
       "icon": "build/icon.icns"
     },
+    "dmg": {
+      "background": "build/dmg-background.png",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 380,
+          "y": 280,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 110,
+          "y": 280,
+          "type": "file"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "publisherName": "Data20 Team",
+      "verifyUpdateCodeSignature": false
     },
     "linux": {
       "target": [
         "AppImage",
         "deb",
-        "rpm"
+        "rpm",
+        "snap"
       ],
       "category": "Development",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "desktop": {
+        "Name": "Data20 Knowledge Base",
+        "GenericName": "Knowledge Management",
+        "Comment": "Manage your data tools and workflows",
+        "Categories": "Development;Utility;",
+        "Keywords": "data;tools;knowledge;database;"
+      }
+    },
+    "snap": {
+      "confinement": "classic",
+      "grade": "stable"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "Data20 Knowledge Base",
+      "perMachine": false,
+      "runAfterFinish": true,
+      "differentialPackage": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
     }
   }
 }
