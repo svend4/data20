@@ -178,13 +178,36 @@ jobs:
 
           # Используем flutter build apk вместо gradlew
           # Debug APK подписывается автоматически и легко устанавливается
-          flutter build apk --debug --verbose
-          BUILD_EXIT_CODE=$?
+
+          # Показываем окружение для диагностики
+          echo "==================================="
+          echo "📊 Диагностическая информация:"
+          echo "Flutter version: $(flutter --version | head -1)"
+          echo "Dart version: $(dart --version)"
+          echo "Java version: $(java -version 2>&1 | head -1)"
+          echo "Свободная память: $(free -h | grep Mem)"
+          echo "Свободное место: $(df -h . | tail -1)"
+          echo "==================================="
+
+          # Запускаем сборку с выводом всех ошибок
+          echo "Начинаем сборку APK..."
+          flutter build apk --debug --verbose 2>&1 | tee build.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo "✅ LITE APK успешно собран!"
           else
             echo "❌ ОШИБКА СБОРКИ LITE APK (exit code: $BUILD_EXIT_CODE)"
+            echo ""
+            echo "========================================="
+            echo "🔍 Последние 50 строк лога сборки:"
+            echo "========================================="
+            tail -50 build.log
+            echo "========================================="
+            echo ""
+            echo "🔍 Поиск ошибок в логе:"
+            grep -i "error\|exception\|failed\|failure" build.log | tail -20 || echo "Конкретные ошибки не найдены"
+            echo "========================================="
             exit $BUILD_EXIT_CODE
           fi
 
@@ -406,13 +429,36 @@ jobs:
 
           # Используем flutter build apk вместо gradlew
           # Debug APK подписывается автоматически и легко устанавливается
-          flutter build apk --debug --verbose
-          BUILD_EXIT_CODE=$?
+
+          # Показываем окружение для диагностики
+          echo "==================================="
+          echo "📊 Диагностическая информация:"
+          echo "Flutter version: $(flutter --version | head -1)"
+          echo "Dart version: $(dart --version)"
+          echo "Java version: $(java -version 2>&1 | head -1)"
+          echo "Свободная память: $(free -h | grep Mem)"
+          echo "Свободное место: $(df -h . | tail -1)"
+          echo "==================================="
+
+          # Запускаем сборку с выводом всех ошибок
+          echo "Начинаем сборку APK..."
+          flutter build apk --debug --verbose 2>&1 | tee build.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
           if [ $BUILD_EXIT_CODE -eq 0 ]; then
             echo "✅ FULL APK успешно собран!"
           else
             echo "❌ ОШИБКА СБОРКИ FULL APK (exit code: $BUILD_EXIT_CODE)"
+            echo ""
+            echo "========================================="
+            echo "🔍 Последние 50 строк лога сборки:"
+            echo "========================================="
+            tail -50 build.log
+            echo "========================================="
+            echo ""
+            echo "🔍 Поиск ошибок в логе:"
+            grep -i "error\|exception\|failed\|failure" build.log | tail -20 || echo "Конкретные ошибки не найдены"
+            echo "========================================="
             exit $BUILD_EXIT_CODE
           fi
 
