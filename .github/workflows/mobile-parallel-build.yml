@@ -194,21 +194,49 @@ jobs:
           flutter build apk --debug --verbose 2>&1 | tee build.log
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
-          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+          echo ""
+          echo "==================================="
+          echo "📦 Проверка результатов сборки..."
+          echo "==================================="
+
+          # Ищем собранный APK
+          APK_FOUND=""
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            APK_FOUND="build/app/outputs/flutter-apk/app-debug.apk"
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          elif find build -name "*.apk" 2>/dev/null | grep -q apk; then
+            APK_FOUND=$(find build -name "*.apk" | head -1)
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          else
+            echo "❌ APK НЕ НАЙДЕН!"
+            echo "Проверка всех build директорий:"
+            find . -type d -name "build" -o -name "outputs" 2>/dev/null || true
+            echo ""
+            echo "Поиск APK файлов:"
+            find . -name "*.apk" 2>/dev/null || echo "APK файлы не найдены"
+          fi
+
+          echo "==================================="
+
+          if [ $BUILD_EXIT_CODE -eq 0 ] && [ -n "$APK_FOUND" ]; then
             echo "✅ LITE APK успешно собран!"
           else
-            echo "❌ ОШИБКА СБОРКИ LITE APK (exit code: $BUILD_EXIT_CODE)"
+            echo "❌ ОШИБКА СБОРКИ LITE APK"
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo "APK found: ${APK_FOUND:-NO}"
             echo ""
             echo "========================================="
-            echo "🔍 Последние 50 строк лога сборки:"
+            echo "🔍 Последние 100 строк лога сборки:"
             echo "========================================="
-            tail -50 build.log
+            tail -100 build.log
             echo "========================================="
             echo ""
-            echo "🔍 Поиск ошибок в логе:"
-            grep -i "error\|exception\|failed\|failure" build.log | tail -20 || echo "Конкретные ошибки не найдены"
+            echo "🔍 Поиск Gradle ошибок:"
+            grep -i "FAILURE\|BUILD FAILED\|error:" build.log | tail -30 || echo "Gradle ошибки не найдены"
             echo "========================================="
-            exit $BUILD_EXIT_CODE
+            exit 1
           fi
 
       - name: 📊 Информация о LITE APK
@@ -445,21 +473,49 @@ jobs:
           flutter build apk --debug --verbose 2>&1 | tee build.log
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
-          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+          echo ""
+          echo "==================================="
+          echo "📦 Проверка результатов сборки..."
+          echo "==================================="
+
+          # Ищем собранный APK
+          APK_FOUND=""
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            APK_FOUND="build/app/outputs/flutter-apk/app-debug.apk"
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          elif find build -name "*.apk" 2>/dev/null | grep -q apk; then
+            APK_FOUND=$(find build -name "*.apk" | head -1)
+            echo "✅ APK найден: $APK_FOUND"
+            ls -lh "$APK_FOUND"
+          else
+            echo "❌ APK НЕ НАЙДЕН!"
+            echo "Проверка всех build директорий:"
+            find . -type d -name "build" -o -name "outputs" 2>/dev/null || true
+            echo ""
+            echo "Поиск APK файлов:"
+            find . -name "*.apk" 2>/dev/null || echo "APK файлы не найдены"
+          fi
+
+          echo "==================================="
+
+          if [ $BUILD_EXIT_CODE -eq 0 ] && [ -n "$APK_FOUND" ]; then
             echo "✅ FULL APK успешно собран!"
           else
-            echo "❌ ОШИБКА СБОРКИ FULL APK (exit code: $BUILD_EXIT_CODE)"
+            echo "❌ ОШИБКА СБОРКИ FULL APK"
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo "APK found: ${APK_FOUND:-NO}"
             echo ""
             echo "========================================="
-            echo "🔍 Последние 50 строк лога сборки:"
+            echo "🔍 Последние 100 строк лога сборки:"
             echo "========================================="
-            tail -50 build.log
+            tail -100 build.log
             echo "========================================="
             echo ""
-            echo "🔍 Поиск ошибок в логе:"
-            grep -i "error\|exception\|failed\|failure" build.log | tail -20 || echo "Конкретные ошибки не найдены"
+            echo "🔍 Поиск Gradle ошибок:"
+            grep -i "FAILURE\|BUILD FAILED\|error:" build.log | tail -30 || echo "Gradle ошибки не найдены"
             echo "========================================="
-            exit $BUILD_EXIT_CODE
+            exit 1
           fi
 
       - name: 📊 Информация о FULL APK
