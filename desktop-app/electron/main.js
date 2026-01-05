@@ -17,6 +17,7 @@ const BackendLauncher = require('./backend-launcher');
 const AutoUpdater = require('./auto-updater');
 const TrayManager = require('./tray-manager');
 const PlatformIntegrations = require('./platform-integrations');
+const PerformanceOptimizer = require('./performance-optimizer');
 
 // Initialize electron-store for persistent settings
 const store = new Store();
@@ -27,6 +28,7 @@ let splashWindow;
 let updater;
 let trayManager;
 let platformIntegrations;
+let performanceOptimizer;
 
 // Check if running in development
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -34,6 +36,14 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 // Backend configuration
 const BACKEND_PORT = store.get('backend.port', 8001);
 const BACKEND_HOST = store.get('backend.host', '127.0.0.1');
+
+// Initialize performance optimizer early
+performanceOptimizer = new PerformanceOptimizer({
+  enabled: true,
+  memoryThreshold: 200, // MB
+  gcInterval: 60000, // 60 seconds
+  monitorInterval: 30000, // 30 seconds
+});
 
 /**
  * Create splash screen window
@@ -285,6 +295,39 @@ function createMenu() {
           },
         },
         { type: 'separator' },
+        {
+          label: 'Performance Report',
+          click: () => {
+            if (performanceOptimizer) {
+              const report = performanceOptimizer.generateReport();
+
+              const recommendations = report.recommendations
+                .map(r => `• ${r.message}`)
+                .join('\n');
+
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Performance Report',
+                message: 'Application Performance',
+                detail: [
+                  'Summary:',
+                  `  Startup Time: ${report.summary.startupTime} ${report.targets.startup.met}`,
+                  `  Memory Usage: ${report.summary.memoryUsed} ${report.targets.memory.met}`,
+                  `  Peak Memory: ${report.summary.peakMemory}`,
+                  `  Uptime: ${report.summary.uptime}`,
+                  `  GC Runs: ${report.summary.gcRuns}`,
+                  '',
+                  'Targets:',
+                  `  Startup: ${report.targets.startup.actual} / ${report.targets.startup.target}`,
+                  `  Memory: ${report.targets.memory.actual} / ${report.targets.memory.target}`,
+                  '',
+                  'Recommendations:',
+                  recommendations,
+                ].join('\n'),
+              });
+            }
+          },
+        },
         {
           label: 'Check for Updates',
           click: () => {
@@ -548,6 +591,35 @@ ipcMain.handle('platform-set-progress', (event, progress) => {
   return false;
 });
 
+// Performance optimization handlers
+ipcMain.handle('performance-get-metrics', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.getMetrics();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-get-report', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.generateReport();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-force-gc', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.forceGC();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-get-memory', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.getMemoryUsage();
+  }
+  return process.memoryUsage();
+});
+
 /**
  * App lifecycle
  */
@@ -661,6 +733,13 @@ app.on('before-quit', async () => {
   if (trayManager) {
     console.log('   Destroying system tray...');
     trayManager.destroy();
+  }
+
+  if (performanceOptimizer) {
+    console.log('   Generating final performance report...');
+    const report = performanceOptimizer.generateReport();
+    console.log('   Performance Summary:', report.summary);
+    performanceOptimizer.destroy();
   }
 
   console.log('✅ Shutdown complete');

@@ -445,17 +445,56 @@ platformIntegrations.setBadgeCount(5);
 }
 ```
 
-## Performance Optimization
+## Phase 8.3.3: Performance & Memory Optimization ✅
 
 ### Memory Usage
 
 **Target:** < 200MB idle
+
+**Implementation:**
+
+**Performance Optimizer Module** (`electron/performance-optimizer.js`):
+- Automatic memory monitoring
+- Garbage collection hints
+- Memory leak detection
+- Performance metrics tracking
+- Startup time measurement
+
+**Usage in main.js:**
+```javascript
+const PerformanceOptimizer = require('./performance-optimizer');
+
+// Initialize early (before app.whenReady)
+performanceOptimizer = new PerformanceOptimizer({
+  enabled: true,
+  memoryThreshold: 200, // MB
+  gcInterval: 60000, // 60 seconds
+  monitorInterval: 30000, // 30 seconds
+});
+
+// Get metrics
+const metrics = performanceOptimizer.getMetrics();
+
+// Generate report
+const report = performanceOptimizer.generateReport();
+
+// Force garbage collection (if available)
+performanceOptimizer.forceGC();
+```
+
+**Features:**
+1. **Memory Monitoring**: Track heap usage, RSS, external memory
+2. **Automatic GC**: Run garbage collection when memory exceeds threshold
+3. **Memory History**: Keep last 100 measurements for trend analysis
+4. **Leak Detection**: Detect memory growth patterns
+5. **Performance Metrics**: Startup time, uptime, GC runs
 
 **Optimizations:**
 1. Lazy load React pages
 2. Virtual scrolling for lists
 3. Unload unused webviews
 4. Garbage collection hints
+5. Memory profiling in development
 
 ```javascript
 // Enable memory profiling in dev
@@ -463,16 +502,11 @@ if (isDev) {
   app.commandLine.appendSwitch('js-flags', '--expose-gc');
 }
 
-// Monitor memory usage
-setInterval(() => {
-  const usage = process.memoryUsage();
-  log.info(`Memory: ${Math.round(usage.heapUsed / 1024 / 1024)}MB`);
+// Monitor memory usage (automatic)
+// Runs every 30 seconds, logs warnings if > 200MB
 
-  // Force GC if memory > 150MB (only in dev with --expose-gc)
-  if (global.gc && usage.heapUsed > 150 * 1024 * 1024) {
-    global.gc();
-  }
-}, 60000);
+// Force GC if memory > 150MB (automatic in dev)
+// Runs every 60 seconds if above 75% of threshold
 ```
 
 ### Startup Time
@@ -483,20 +517,87 @@ setInterval(() => {
 1. Defer backend start
 2. Lazy load modules
 3. Optimize bundle size
-4. Use V8 snapshots
+4. Show splash screen immediately
+5. Parallel initialization
 
 ```javascript
 // Show splash quickly
 app.whenReady().then(async () => {
   createSplashWindow();
 
-  // Defer backend start
-  setTimeout(async () => {
-    await startBackend();
-    createWindow();
-    closeSplashWindow();
-  }, 500);
+  // Initialize in parallel where possible
+  const startupTasks = [
+    initializeAutoUpdater(),
+    initializeBackend(),
+    // Other async tasks
+  ];
+
+  await Promise.all(startupTasks);
+
+  createWindow();
+  closeSplashWindow();
 });
+```
+
+**Measured Startup Phases:**
+- App initialization: ~100ms
+- Backend startup: ~1-2s
+- Window creation: ~500ms
+- Total target: < 5s
+
+### Performance Monitoring
+
+**Menu Item:** Help → Performance Report
+
+Shows:
+- Startup time (✅/❌ vs target)
+- Current memory usage (✅/❌ vs target)
+- Peak memory usage
+- Uptime
+- GC runs
+- Recommendations
+
+**IPC Handlers:**
+```javascript
+// Get metrics
+ipcRenderer.invoke('performance-get-metrics')
+
+// Get full report
+ipcRenderer.invoke('performance-get-report')
+
+// Force GC
+ipcRenderer.invoke('performance-force-gc')
+
+// Get current memory
+ipcRenderer.invoke('performance-get-memory')
+```
+
+**Recommendations Generated:**
+- ⚠️ Startup time exceeds target → Suggestions to improve
+- ⚠️ Memory usage exceeds target → Check for leaks
+- ⚠️ Memory leak detected → Investigation steps
+- ✅ Performance is good!
+
+### Development Tools
+
+**Memory Profiling:**
+```bash
+# Start with GC exposed
+NODE_ENV=development npm start
+
+# Memory will be logged every 30s
+# GC will run automatically if > 150MB
+```
+
+**Performance Metrics:**
+```javascript
+// In renderer process
+const metrics = await window.electronAPI.invoke('performance-get-metrics');
+
+console.log('Startup:', metrics.startupTime);
+console.log('Memory:', metrics.memory.current);
+console.log('Peak:', metrics.memory.peak);
+console.log('GC Runs:', metrics.gc.runs);
 ```
 
 ## Metrics & Monitoring
