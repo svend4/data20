@@ -4,7 +4,6 @@ Phase 5.1.1: SQLAlchemy models for persistence
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, JSON, Text, Enum as SQLEnum, ForeignKey, Boolean, Float
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -40,7 +39,7 @@ class User(Base):
     """User account"""
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(120), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
@@ -67,8 +66,8 @@ class APIKey(Base):
     """API keys for programmatic access"""
     __tablename__ = "api_keys"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
 
     key_hash = Column(String(255), unique=True, nullable=False, index=True)
     name = Column(String(100), nullable=False)
@@ -94,8 +93,8 @@ class Job(Base):
     """Tool execution job"""
     __tablename__ = "jobs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # Nullable до Phase 5.2 (Auth)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)  # Nullable до Phase 5.2 (Auth)
 
     # Tool info
     tool_name = Column(String(100), nullable=False, index=True)
@@ -109,6 +108,7 @@ class Job(Base):
 
     # Timing
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     queued_at = Column(DateTime)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
@@ -116,6 +116,8 @@ class Job(Base):
     # Results
     return_code = Column(Integer)
     duration = Column(Float)  # seconds
+    result = Column(JSON, default=None)  # For mobile: direct result storage
+    error = Column(Text, default=None)  # For mobile: direct error storage
 
     # Celery task info
     celery_task_id = Column(String(255), index=True)
@@ -123,7 +125,7 @@ class Job(Base):
 
     # Relationships
     user = relationship("User", back_populates="jobs")
-    result = relationship("JobResult", back_populates="job", uselist=False, cascade="all, delete-orphan")
+    result_detail = relationship("JobResult", back_populates="job", uselist=False, cascade="all, delete-orphan")
     logs = relationship("JobLog", back_populates="job", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -134,8 +136,8 @@ class JobResult(Base):
     """Job execution results"""
     __tablename__ = "job_results"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), unique=True, nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    job_id = Column(String(36), ForeignKey("jobs.id"), unique=True, nullable=False)
 
     # Output
     stdout = Column(Text)
@@ -156,7 +158,7 @@ class JobResult(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
-    job = relationship("Job", back_populates="result")
+    job = relationship("Job", back_populates="result_detail")
 
     def __repr__(self):
         return f"<JobResult for {self.job_id}>"
@@ -166,8 +168,8 @@ class JobLog(Base):
     """Job execution logs"""
     __tablename__ = "job_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    job_id = Column(String(36), ForeignKey("jobs.id"), nullable=False)
 
     # Log entry
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
@@ -193,8 +195,8 @@ class ParameterTemplate(Base):
     """Saved parameter templates"""
     __tablename__ = "parameter_templates"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
 
     tool_name = Column(String(100), nullable=False, index=True)
     name = Column(String(100), nullable=False)
@@ -218,8 +220,8 @@ class Workflow(Base):
     """Multi-step workflows"""
     __tablename__ = "workflows"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
 
     name = Column(String(100), nullable=False)
     description = Column(Text)
@@ -248,9 +250,9 @@ class WorkflowRun(Base):
     """Workflow execution instance"""
     __tablename__ = "workflow_runs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflows.id"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    workflow_id = Column(String(36), ForeignKey("workflows.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
 
     status = Column(SQLEnum(JobStatus), default=JobStatus.PENDING, nullable=False)
 
@@ -279,7 +281,7 @@ class ToolStats(Base):
     """Aggregated tool usage statistics"""
     __tablename__ = "tool_stats"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
     tool_name = Column(String(100), nullable=False, unique=True, index=True)
 
@@ -311,7 +313,7 @@ class SystemMetrics(Base):
     """System-wide metrics snapshots"""
     __tablename__ = "system_metrics"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
