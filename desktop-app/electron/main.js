@@ -15,6 +15,8 @@ const path = require('path');
 const Store = require('electron-store');
 const BackendLauncher = require('./backend-launcher');
 const AutoUpdater = require('./auto-updater');
+const TrayManager = require('./tray-manager');
+const PlatformIntegrations = require('./platform-integrations');
 
 // Initialize electron-store for persistent settings
 const store = new Store();
@@ -23,6 +25,8 @@ let mainWindow;
 let backendLauncher;
 let splashWindow;
 let updater;
+let trayManager;
+let platformIntegrations;
 
 // Check if running in development
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -518,6 +522,32 @@ ipcMain.handle('install-update', () => {
   return false;
 });
 
+// Tray and platform integration handlers
+ipcMain.handle('tray-show-balloon', (event, title, content) => {
+  if (trayManager) {
+    trayManager.showBalloon(title, content);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('platform-set-badge', (event, text) => {
+  if (platformIntegrations) {
+    platformIntegrations.setDockBadge(text);
+    platformIntegrations.setBadgeCount(parseInt(text) || 0);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('platform-set-progress', (event, progress) => {
+  if (platformIntegrations) {
+    platformIntegrations.setProgressBar(progress);
+    return true;
+  }
+  return false;
+});
+
 /**
  * App lifecycle
  */
@@ -560,6 +590,24 @@ app.whenReady().then(async () => {
     // Create main window
     console.log('🪟 Creating main window...');
     createWindow();
+
+    // Initialize system tray
+    console.log('🔔 Initializing system tray...');
+    trayManager = new TrayManager({
+      mainWindow: mainWindow,
+      backendLauncher: backendLauncher,
+      minimizeToTray: store.get('tray.minimizeToTray', true),
+    });
+    console.log('✅ System tray initialized');
+
+    // Initialize platform integrations
+    console.log('🖥️  Initializing platform integrations...');
+    platformIntegrations = new PlatformIntegrations({
+      mainWindow: mainWindow,
+      backendLauncher: backendLauncher,
+      createWindow: createWindow,
+    });
+    console.log('✅ Platform integrations initialized');
 
     // Set main window reference for auto-updater
     if (updater) {
@@ -610,8 +658,33 @@ app.on('before-quit', async () => {
     await backendLauncher.stop();
   }
 
+  if (trayManager) {
+    console.log('   Destroying system tray...');
+    trayManager.destroy();
+  }
+
   console.log('✅ Shutdown complete');
 });
+
+// Handle second instance (for Windows Jump List)
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+
+    // Handle Windows Jump List arguments
+    if (platformIntegrations) {
+      platformIntegrations.handleJumpListArgs(commandLine);
+    }
+  });
+}
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {

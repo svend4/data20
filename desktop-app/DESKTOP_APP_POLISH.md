@@ -154,7 +154,7 @@ provider: generic
 url: http://localhost:8080/updates
 ```
 
-## Phase 8.3.2: Native Platform Integrations
+## Phase 8.3.2: Native Platform Integrations ✅
 
 ### System Tray (All Platforms)
 
@@ -163,96 +163,165 @@ url: http://localhost:8080/updates
 - Quick actions menu
 - Status indicator
 - Tray icon with context menu
+- Cross-platform support
 
 **Implementation:**
+
+**Tray Manager Module** (`electron/tray-manager.js`):
+- Platform-specific icon handling
+- Context menu with quick actions
+- Backend status check
+- Minimize to tray functionality
+- Balloon notifications (Windows/Linux)
+
+**Usage in main.js:**
 ```javascript
-const { Tray, Menu } = require('electron');
-let tray = null;
+const TrayManager = require('./tray-manager');
 
-function createTray() {
-  tray = new Tray(path.join(__dirname, '../resources/tray-icon.png'));
+// Initialize tray manager
+trayManager = new TrayManager({
+  mainWindow: mainWindow,
+  backendLauncher: backendLauncher,
+  minimizeToTray: true,
+});
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Show App',
-      click: () => {
-        mainWindow.show();
-      }
-    },
-    {
-      label: 'Check Backend',
-      click: () => {
-        // Check backend status
-      }
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit',
-      click: () => {
-        app.quit();
-      }
-    }
-  ]);
+// Update context menu dynamically
+trayManager.updateContextMenu();
 
-  tray.setToolTip('Data20 Knowledge Base');
-  tray.setContextMenu(contextMenu);
+// Show balloon notification
+trayManager.showBalloon('Title', 'Content');
 
-  // Show window on tray click
-  tray.on('click', () => {
-    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
-  });
-}
+// Cleanup
+app.on('before-quit', () => {
+  trayManager.destroy();
+});
 ```
 
-### macOS Dock Menu
+**Features by Platform:**
 
+| Feature | Windows | macOS | Linux |
+|---------|---------|-------|-------|
+| Tray icon | ✅ | ✅ | ✅ |
+| Context menu | ✅ | ✅ | ✅ |
+| Click to show/hide | ✅ | ✅ | ✅ |
+| Balloon notifications | ✅ | ❌ | ✅ |
+| Minimize to tray | ✅ | ✅ | ✅ |
+
+### macOS Dock Menu ✅
+
+**Features:**
+- New Window action
+- Backend status check
+- Backend restart
+- Show all windows
+
+**Implementation:**
+
+**Platform Integrations Module** (`electron/platform-integrations.js`):
 ```javascript
-if (process.platform === 'darwin') {
-  const dockMenu = Menu.buildFromTemplate([
-    {
-      label: 'New Window',
-      click: () => { createWindow(); }
-    },
-    {
-      label: 'Restart Backend',
-      click: async () => {
-        await backendLauncher.restart();
-      }
-    }
-  ]);
+const PlatformIntegrations = require('./platform-integrations');
 
-  app.dock.setMenu(dockMenu);
-}
+// Initialize platform integrations
+platformIntegrations = new PlatformIntegrations({
+  mainWindow: mainWindow,
+  backendLauncher: backendLauncher,
+  createWindow: createWindow,
+});
+
+// Set dock badge (notification count)
+platformIntegrations.setDockBadge('5');
+
+// Bounce dock icon
+platformIntegrations.bounceDock('informational');
+
+// Show/hide dock icon
+platformIntegrations.setDockVisible(true);
 ```
 
-### Windows Jump List
+**Dock Menu Items:**
+- **New Window**: Opens a new application window
+- **Check Status**: Shows backend server status
+- **Restart Backend**: Restarts the backend server
+- **Show All Windows**: Brings all windows to front
 
+### Windows Jump List ✅
+
+**Features:**
+- Quick action tasks
+- Recent items (future)
+- Command-line argument handling
+- Single instance lock
+
+**Implementation:**
+
+**Jump List Tasks:**
 ```javascript
-if (process.platform === 'win32') {
-  app.setUserTasks([
-    {
-      program: process.execPath,
-      arguments: '--new-window',
-      iconPath: process.execPath,
-      iconIndex: 0,
-      title: 'New Window',
-      description: 'Create a new window'
-    },
-    {
-      program: process.execPath,
-      arguments: '--restart-backend',
-      iconPath: process.execPath,
-      iconIndex: 0,
-      title: 'Restart Backend',
-      description: 'Restart the backend server'
-    }
-  ]);
-}
+// Automatically configured by platform-integrations.js
+const tasks = [
+  {
+    type: 'task',
+    title: 'New Window',
+    description: 'Open a new window',
+    program: process.execPath,
+    args: '--new-window',
+  },
+  {
+    type: 'task',
+    title: 'Check Backend',
+    description: 'Check backend server status',
+    program: process.execPath,
+    args: '--check-backend',
+  },
+  {
+    type: 'task',
+    title: 'Restart Backend',
+    description: 'Restart the backend server',
+    program: process.execPath,
+    args: '--restart-backend',
+  },
+];
+
+app.setUserTasks(tasks);
 ```
 
-### Linux Desktop Integration
+**Command-Line Argument Handling:**
+```javascript
+// In main.js - handle second instance for Jump List
+app.on('second-instance', (event, commandLine, workingDirectory) => {
+  // Focus main window
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
 
-**Desktop File** (`.desktop`):
+  // Handle Jump List arguments
+  platformIntegrations.handleJumpListArgs(commandLine);
+});
+```
+
+**Additional Windows Features:**
+```javascript
+// Set progress bar
+platformIntegrations.setProgressBar(0.5); // 50%
+
+// Flash taskbar
+platformIntegrations.flashFrame(true);
+
+// Set overlay icon (notification badge)
+platformIntegrations.setOverlayIcon(icon, 'New messages');
+```
+
+### Linux Desktop Integration ✅
+
+**Features:**
+- Desktop file integration
+- App user model ID
+- Badge count (on supported DEs)
+- System tray support
+
+**Implementation:**
+
+**Desktop File** (`.desktop`) - Auto-generated by electron-builder:
 ```desktop
 [Desktop Entry]
 Name=Data20 Knowledge Base
@@ -264,7 +333,24 @@ Type=Application
 Categories=Development;Utility;
 Keywords=data;tools;knowledge;database;
 StartupWMClass=Data20 Knowledge Base
+MimeType=application/x-data20;
 ```
+
+**Platform Integrations:**
+```javascript
+// Set app user model ID
+app.setAppUserModelId('com.data20.knowledgebase');
+
+// Set badge count (for supported desktop environments)
+platformIntegrations.setBadgeCount(5);
+```
+
+**Supported Desktop Environments:**
+- GNOME: Badge count, system tray
+- KDE Plasma: Badge count, system tray, progress bar
+- XFCE: System tray
+- Unity: Badge count, system tray
+- Others: Basic system tray support
 
 ## Phase 8.3.3: Improved Installers
 
