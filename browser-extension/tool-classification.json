@@ -1,0 +1,595 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-05",
+    "total_tools": 57,
+    "classification_criteria": {
+      "simple": {
+        "description": "Can run efficiently in WASM",
+        "execution_time": "< 100ms",
+        "memory": "< 10MB",
+        "dependencies": "Minimal (stdlib only)",
+        "characteristics": ["Text processing", "Basic statistics", "Simple validation", "String manipulation"]
+      },
+      "medium": {
+        "description": "Can run in WASM with optimization",
+        "execution_time": "100ms - 1s",
+        "memory": "10MB - 50MB",
+        "dependencies": "Moderate (yaml, regex)",
+        "characteristics": ["Text analysis", "Indexing", "Search", "Moderate computation"]
+      },
+      "complex": {
+        "description": "Better suited for cloud execution",
+        "execution_time": "> 1s",
+        "memory": "> 50MB",
+        "dependencies": "Heavy (graph libraries, ML)",
+        "characteristics": ["Graph algorithms", "ML processing", "PageRank", "Heavy computation"]
+      }
+    }
+  },
+  "tools": {
+    "simple": [
+      {
+        "name": "calculate_reading_time",
+        "file": "tools/calculate_reading_time.py",
+        "complexity": "simple",
+        "reason": "Basic word counting and time estimation",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 50ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "count_words",
+        "file": "tools/calculate_reading_time.py",
+        "complexity": "simple",
+        "reason": "Simple word counting with regex",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 20ms"
+      },
+      {
+        "name": "format_text",
+        "file": "tools/format_text.py",
+        "complexity": "simple",
+        "reason": "Text formatting and normalization",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 30ms"
+      },
+      {
+        "name": "validate_data",
+        "file": "tools/validate.py",
+        "complexity": "simple",
+        "reason": "Frontmatter validation, basic checks",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 50ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "metadata_validator",
+        "file": "tools/metadata_validator.py",
+        "complexity": "simple",
+        "reason": "Schema validation for frontmatter",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 40ms"
+      },
+      {
+        "name": "generate_breadcrumbs",
+        "file": "tools/generate_breadcrumbs.py",
+        "complexity": "simple",
+        "reason": "Path parsing for navigation",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 30ms"
+      },
+      {
+        "name": "generate_toc",
+        "file": "tools/generate_toc.py",
+        "complexity": "simple",
+        "reason": "Extract headings from markdown",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 40ms"
+      },
+      {
+        "name": "recent_changes",
+        "file": "tools/recent_changes.py",
+        "complexity": "simple",
+        "reason": "Filter articles by date",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 60ms"
+      },
+      {
+        "name": "check_links",
+        "file": "tools/check_links.py",
+        "complexity": "simple",
+        "reason": "Find and validate markdown links",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 70ms"
+      },
+      {
+        "name": "find_orphans",
+        "file": "tools/find_orphans.py",
+        "complexity": "simple",
+        "reason": "Find articles with no incoming links",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 80ms"
+      },
+      {
+        "name": "tags_cloud",
+        "file": "tools/tags_cloud.py",
+        "complexity": "simple",
+        "reason": "Count and sort tags",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "< 50ms"
+      },
+      {
+        "name": "weighted_tags",
+        "file": "tools/weighted_tags.py",
+        "complexity": "simple",
+        "reason": "Calculate tag weights",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 60ms"
+      },
+      {
+        "name": "version_history",
+        "file": "tools/version_history.py",
+        "complexity": "simple",
+        "reason": "Track article versions",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "< 70ms"
+      },
+      {
+        "name": "reading_progress",
+        "file": "tools/reading_progress.py",
+        "complexity": "simple",
+        "reason": "Track reading completion",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "< 40ms"
+      },
+      {
+        "name": "sitemap_generator",
+        "file": "tools/sitemap_generator.py",
+        "complexity": "simple",
+        "reason": "Generate XML sitemap",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "< 80ms"
+      }
+    ],
+    "medium": [
+      {
+        "name": "calculate_difficulty",
+        "file": "tools/calculate_difficulty.py",
+        "complexity": "medium",
+        "reason": "Text complexity analysis with Flesch scores",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "100-200ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "extract_keywords",
+        "file": "tools/auto_tagger.py",
+        "complexity": "medium",
+        "reason": "TF-IDF based keyword extraction",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "150-300ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "detect_language",
+        "file": "tools/auto_tagger.py",
+        "complexity": "medium",
+        "reason": "Language detection algorithm",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "100-200ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "generate_statistics",
+        "file": "tools/generate_statistics.py",
+        "complexity": "medium",
+        "reason": "Statistical analysis, diversity metrics",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "200-500ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "search_index",
+        "file": "tools/search_index.py",
+        "complexity": "medium",
+        "reason": "Build inverted index for search",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "300-600ms",
+        "ported_in_phase": "9.1"
+      },
+      {
+        "name": "advanced_search",
+        "file": "tools/advanced_search.py",
+        "complexity": "medium",
+        "reason": "Search with filters and ranking",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "faceted_search",
+        "file": "tools/faceted_search.py",
+        "complexity": "medium",
+        "reason": "Multi-faceted search interface",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "250-500ms"
+      },
+      {
+        "name": "search_concordance",
+        "file": "tools/search_concordance.py",
+        "complexity": "medium",
+        "reason": "Search with context windows",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "auto_tagger",
+        "file": "tools/auto_tagger.py",
+        "complexity": "medium",
+        "reason": "Automatic tag suggestion",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "build_concordance",
+        "file": "tools/build_concordance.py",
+        "complexity": "medium",
+        "reason": "Word concordance indexing",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "400-800ms"
+      },
+      {
+        "name": "build_glossary",
+        "file": "tools/build_glossary.py",
+        "complexity": "medium",
+        "reason": "Extract and organize terms",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "build_thesaurus",
+        "file": "tools/build_thesaurus.py",
+        "complexity": "medium",
+        "reason": "Build synonym relationships",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "400-800ms"
+      },
+      {
+        "name": "duplicate_detector",
+        "file": "tools/duplicate_detector.py",
+        "complexity": "medium",
+        "reason": "Similarity detection using hashing",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-700ms"
+      },
+      {
+        "name": "find_duplicates",
+        "file": "tools/find_duplicates.py",
+        "complexity": "medium",
+        "reason": "Content similarity analysis",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "350-700ms"
+      },
+      {
+        "name": "find_related",
+        "file": "tools/find_related.py",
+        "complexity": "medium",
+        "reason": "Related articles by tags/content",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "related_articles",
+        "file": "tools/related_articles.py",
+        "complexity": "medium",
+        "reason": "Calculate article similarity",
+        "wasm_priority": "high",
+        "estimated_wasm_time": "250-500ms"
+      },
+      {
+        "name": "popular_articles",
+        "file": "tools/popular_articles.py",
+        "complexity": "medium",
+        "reason": "Rank by backlinks and metrics",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "quality_metrics",
+        "file": "tools/quality_metrics.py",
+        "complexity": "medium",
+        "reason": "Calculate quality scores",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "250-500ms"
+      },
+      {
+        "name": "summary_generator",
+        "file": "tools/summary_generator.py",
+        "complexity": "medium",
+        "reason": "Extractive summarization",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "timeline_generator",
+        "file": "tools/timeline_generator.py",
+        "complexity": "medium",
+        "reason": "Generate chronological timelines",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "statistics_dashboard",
+        "file": "tools/statistics_dashboard.py",
+        "complexity": "medium",
+        "reason": "Aggregate statistics",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-700ms"
+      },
+      {
+        "name": "generate_bibliography",
+        "file": "tools/generate_bibliography.py",
+        "complexity": "medium",
+        "reason": "Extract and format citations",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "citation_index",
+        "file": "tools/citation_index.py",
+        "complexity": "medium",
+        "reason": "Build citation network",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "master_index",
+        "file": "tools/master_index.py",
+        "complexity": "medium",
+        "reason": "Build comprehensive index",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "400-800ms"
+      },
+      {
+        "name": "index_figures",
+        "file": "tools/index_figures.py",
+        "complexity": "medium",
+        "reason": "Index images and figures",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "250-500ms"
+      },
+      {
+        "name": "build_card_catalog",
+        "file": "tools/build_card_catalog.py",
+        "complexity": "medium",
+        "reason": "Create searchable catalog",
+        "wasm_priority": "medium",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "commonplace_book",
+        "file": "tools/commonplace_book.py",
+        "complexity": "medium",
+        "reason": "Extract notable quotes",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "250-500ms"
+      },
+      {
+        "name": "marginalia",
+        "file": "tools/marginalia.py",
+        "complexity": "medium",
+        "reason": "Manage annotations",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "200-400ms"
+      },
+      {
+        "name": "archive_builder",
+        "file": "tools/archive_builder.py",
+        "complexity": "medium",
+        "reason": "Create archive structure",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "300-600ms"
+      },
+      {
+        "name": "export_manager",
+        "file": "tools/export_manager.py",
+        "complexity": "medium",
+        "reason": "Export to various formats",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "400-800ms"
+      }
+    ],
+    "complex": [
+      {
+        "name": "build_graph",
+        "file": "tools/build_graph.py",
+        "complexity": "complex",
+        "reason": "PageRank, betweenness centrality, graph algorithms",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 2s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "calculate_pagerank",
+        "file": "tools/calculate_pagerank.py",
+        "complexity": "complex",
+        "reason": "Iterative PageRank algorithm",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1.5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "knowledge_graph_builder",
+        "file": "tools/knowledge_graph_builder.py",
+        "complexity": "complex",
+        "reason": "NLP entity extraction, graph analysis, Levenshtein distance",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 3s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "network_analyzer",
+        "file": "tools/network_analyzer.py",
+        "complexity": "complex",
+        "reason": "Complex network analysis",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 2s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "build_taxonomy",
+        "file": "tools/build_taxonomy.py",
+        "complexity": "complex",
+        "reason": "Hierarchical clustering and classification",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1.5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "prerequisites_graph",
+        "file": "tools/prerequisites_graph.py",
+        "complexity": "complex",
+        "reason": "Dependency graph construction and analysis",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "graph_visualizer",
+        "file": "tools/graph_visualizer.py",
+        "complexity": "complex",
+        "reason": "Graph layout algorithms (force-directed)",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 2s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "backlinks_generator",
+        "file": "tools/backlinks_generator.py",
+        "complexity": "complex",
+        "reason": "Full graph traversal for backlinks",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "cross_references",
+        "file": "tools/cross_references.py",
+        "complexity": "complex",
+        "reason": "Bidirectional link analysis",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1.5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "chain_references",
+        "file": "tools/chain_references.py",
+        "complexity": "complex",
+        "reason": "Reference chain tracking",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "add_dewey",
+        "file": "tools/add_dewey.py",
+        "complexity": "complex",
+        "reason": "Dewey Decimal Classification",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "add_rubrics",
+        "file": "tools/add_rubrics.py",
+        "complexity": "complex",
+        "reason": "Rubric classification system",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1.5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "external_links_tracker",
+        "file": "tools/external_links_tracker.py",
+        "complexity": "complex",
+        "reason": "HTTP requests to validate external links",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue",
+        "requires_network": true
+      },
+      {
+        "name": "process_inbox",
+        "file": "tools/process_inbox.py",
+        "complexity": "complex",
+        "reason": "Multi-step processing pipeline",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "update_indexes",
+        "file": "tools/update_indexes.py",
+        "complexity": "complex",
+        "reason": "Rebuild multiple indexes",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 2s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue"
+      },
+      {
+        "name": "generate_changelog",
+        "file": "tools/generate_changelog.py",
+        "complexity": "complex",
+        "reason": "Git history analysis",
+        "wasm_priority": "low",
+        "estimated_wasm_time": "> 1.5s",
+        "cloud_execution": true,
+        "fallback_strategy": "queue",
+        "requires_git": true
+      }
+    ]
+  },
+  "summary": {
+    "simple_tools": 15,
+    "medium_tools": 30,
+    "complex_tools": 16,
+    "total": 61,
+    "wasm_phase_9_1_ported": 10,
+    "wasm_phase_9_2_target": 30,
+    "cloud_only": 16
+  },
+  "routing_strategy": {
+    "simple": {
+      "execution": "always_local",
+      "cache_ttl": 3600,
+      "offline_capable": true
+    },
+    "medium": {
+      "execution": "prefer_local_fallback_cloud",
+      "cache_ttl": 1800,
+      "offline_capable": true,
+      "timeout_threshold": 2000
+    },
+    "complex": {
+      "execution": "prefer_cloud_queue_offline",
+      "cache_ttl": 7200,
+      "offline_capable": false,
+      "requires_backend": true
+    }
+  }
+}
