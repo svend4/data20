@@ -16,16 +16,42 @@
 
 set -e  # Exit on error
 
-echo "========================================="
-echo "Building Android APK with Embedded Python"
-echo "========================================="
-echo ""
-
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+# Clear screen for better visibility
+clear
+
+echo ""
+echo -e "${MAGENTA}╔════════════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${MAGENTA}║                                                                    ║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}███████╗██╗   ██╗██╗     ██╗         ██╗   ██╗███████╗██████╗ ███████╗${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}██╔════╝██║   ██║██║     ██║         ██║   ██║██╔════╝██╔══██╗██╔════╝${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}█████╗  ██║   ██║██║     ██║         ██║   ██║█████╗  ██████╔╝███████╗${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}██╔══╝  ██║   ██║██║     ██║         ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}██║     ╚██████╔╝███████╗███████╗     ╚████╔╝ ███████╗██║  ██║███████║${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║${NC}  ${BOLD}${RED}╚═╝      ╚═════╝ ╚══════╝╚══════╝      ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝${NC}  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║                                                                    ║${NC}"
+echo -e "${MAGENTA}║${NC}          ${BOLD}${YELLOW}📱 Data20 Mobile - ПОЛНАЯ ВЕРСИЯ 🔧${NC}                  ${MAGENTA}║${NC}"
+echo -e "${MAGENTA}║                                                                    ║${NC}"
+echo -e "${MAGENTA}╚════════════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${BOLD}${YELLOW}🔧 Особенности ПОЛНОЙ версии:${NC}"
+echo -e "   ${YELLOW}📦${NC} FastAPI + SQLAlchemy + 14 PyPI пакетов"
+echo -e "   ${YELLOW}🛠️${NC}  50+ инструментов в tools/"
+echo -e "   ${YELLOW}⚙️${NC}  Сложные модели (11 ORM классов)"
+echo -e "   ${YELLOW}💾${NC} Размер APK: ${BOLD}~150 МБ${NC}"
+echo ""
+echo -e "${CYAN}ℹ️  Это ПОЛНАЯ версия для desktop/server!${NC}"
+echo -e "${CYAN}   Для облегчённой Android версии: ../mobile-app-lite/build-android-embedded.sh${NC}"
+echo ""
 
 # Configuration
 BUILD_TYPE="${1:-release}"  # debug or release
