@@ -2,6 +2,7 @@
 """
 Tool Registry - Автоматическое обнаружение и каталогизация инструментов
 Phase 4.2: Динамическое обнаружение всех Python инструментов
+Phase 8.2.2: Variant-aware tool loading
 """
 
 import ast
@@ -12,6 +13,21 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
 import re
+
+# Import variant configuration
+try:
+    from variant_config import (
+        AppVariant,
+        DependencyLevel,
+        get_available_tools,
+        is_tool_available,
+        detect_variant,
+        TOOL_DEPENDENCIES,
+    )
+    VARIANT_SUPPORT = True
+except ImportError:
+    VARIANT_SUPPORT = False
+    print("⚠️ Variant configuration not available, running in full mode")
 
 
 class ToolCategory(str, Enum):
@@ -74,14 +90,36 @@ class ToolMetadata:
     color: str = "#667eea"
     tags: List[str] = field(default_factory=list)
 
+    # Variant support (Phase 8.2.2)
+    dependency_level: Optional[str] = None  # core, light, heavy
+    available_in_variants: List[str] = field(default_factory=list)  # lite, standard, full
+
 
 class ToolRegistry:
     """Реестр всех доступных инструментов"""
 
-    def __init__(self, tools_dir: Path = Path("tools")):
+    def __init__(self, tools_dir: Path = Path("tools"), variant: Optional[str] = None):
         self.tools_dir = Path(tools_dir)
         self.tools: Dict[str, ToolMetadata] = {}
         self.categories: Dict[ToolCategory, List[str]] = {cat: [] for cat in ToolCategory}
+
+        # Variant support (Phase 8.2.2)
+        self.variant = None
+        if VARIANT_SUPPORT:
+            if variant:
+                # Use provided variant
+                try:
+                    self.variant = AppVariant(variant.lower())
+                except ValueError:
+                    print(f"⚠️ Unknown variant '{variant}', using FULL")
+                    self.variant = AppVariant.FULL
+            else:
+                # Auto-detect variant
+                self.variant = detect_variant()
+
+            print(f"📱 Running in {self.variant.value.upper()} variant mode")
+        else:
+            print("📱 Running in FULL mode (no variant filtering)")
 
     def scan_tools(self) -> int:
         """Сканировать директорию tools/ и найти все инструменты"""
@@ -92,20 +130,38 @@ class ToolRegistry:
             return 0
 
         tool_files = sorted(self.tools_dir.glob("*.py"))
+        skipped_count = 0
 
         for tool_file in tool_files:
             if tool_file.name.startswith("_"):
                 continue
 
+            tool_name = tool_file.stem
+
+            # Check if tool is available in current variant (Phase 8.2.2)
+            if VARIANT_SUPPORT and self.variant:
+                if not is_tool_available(tool_name, self.variant):
+                    print(f"  ⊘ {tool_name} (not in {self.variant.value} variant)")
+                    skipped_count += 1
+                    continue
+
             try:
                 metadata = self._analyze_tool(tool_file)
                 self.tools[metadata.name] = metadata
                 self.categories[metadata.category].append(metadata.name)
-                print(f"  ✓ {metadata.name} ({metadata.category.value})")
+
+                # Add variant info to display
+                variant_info = ""
+                if metadata.dependency_level:
+                    variant_info = f", {metadata.dependency_level}"
+
+                print(f"  ✓ {metadata.name} ({metadata.category.value}{variant_info})")
             except Exception as e:
                 print(f"  ⚠ {tool_file.name}: {e}")
 
-        print(f"\n✅ Найдено {len(self.tools)} инструментов")
+        if skipped_count > 0:
+            print(f"\n⊘ Пропущено {skipped_count} инструментов (не в {self.variant.value} варианте)")
+        print(f"✅ Загружено {len(self.tools)} инструментов")
         return len(self.tools)
 
     def _analyze_tool(self, file_path: Path) -> ToolMetadata:
@@ -137,6 +193,22 @@ class ToolRegistry:
         # Извлечь теги
         tags = self._extract_tags(name, docstring)
 
+        # Определить уровень зависимостей и доступность по вариантам (Phase 8.2.2)
+        dependency_level = None
+        available_in_variants = []
+
+        if VARIANT_SUPPORT and name in TOOL_DEPENDENCIES:
+            dep_level = TOOL_DEPENDENCIES[name]
+            dependency_level = dep_level.value
+
+            # Determine which variants include this tool
+            if dep_level == DependencyLevel.CORE:
+                available_in_variants = ["lite", "standard", "full"]
+            elif dep_level == DependencyLevel.LIGHT:
+                available_in_variants = ["standard", "full"]
+            elif dep_level == DependencyLevel.HEAVY:
+                available_in_variants = ["full"]
+
         # Создать метаданные
         metadata = ToolMetadata(
             name=name,
@@ -151,7 +223,9 @@ class ToolRegistry:
             color=color,
             tags=tags,
             complexity=self._estimate_complexity(source),
-            estimated_time=self._estimate_time(name, source)
+            estimated_time=self._estimate_time(name, source),
+            dependency_level=dependency_level,
+            available_in_variants=available_in_variants,
         )
 
         return metadata
@@ -430,7 +504,7 @@ class ToolRegistry:
 
     def to_json(self) -> Dict[str, Any]:
         """Экспортировать реестр в JSON"""
-        return {
+        result = {
             "total_tools": len(self.tools),
             "categories": {
                 cat.value: len(tools)
@@ -459,11 +533,23 @@ class ToolRegistry:
                     "color": tool.color,
                     "tags": tool.tags,
                     "complexity": tool.complexity,
-                    "estimated_time": tool.estimated_time
+                    "estimated_time": tool.estimated_time,
+                    "dependency_level": tool.dependency_level,
+                    "available_in_variants": tool.available_in_variants,
                 }
                 for name, tool in self.tools.items()
             }
         }
+
+        # Add variant information (Phase 8.2.2)
+        if VARIANT_SUPPORT and self.variant:
+            result["variant"] = self.variant.value
+            result["variant_info"] = {
+                "name": self.variant.value,
+                "tool_count": len(self.tools),
+            }
+
+        return result
 
 
 # CLI для тестирования

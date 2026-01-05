@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../models/tool.dart';
+import '../config/app_variant.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -163,9 +164,140 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildVariantBanner() {
+    final variant = AppVariantConfig.variant;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Color(variant.color).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Color(variant.color).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            variant.icon,
+            style: const TextStyle(fontSize: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${variant.displayName} Edition',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(variant.color),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  variant.description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (variant.canUpgrade)
+            IconButton(
+              icon: const Icon(Icons.arrow_upward),
+              color: Color(variant.color),
+              tooltip: variant.upgradeMessage,
+              onPressed: () {
+                _showUpgradeDialog();
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpgradeDialog() {
+    final variant = AppVariantConfig.variant;
+    final nextVariant = variant.nextVariant;
+
+    if (nextVariant == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Text(nextVariant.icon),
+            const SizedBox(width: 8),
+            Text('Upgrade to ${nextVariant.displayName}'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(nextVariant.description),
+            const SizedBox(height: 16),
+            _buildUpgradeFeature('Tools', '${variant.toolCount}', '${nextVariant.toolCount}'),
+            const SizedBox(height: 8),
+            _buildUpgradeFeature('Size', variant.appSize, nextVariant.appSize),
+            const SizedBox(height: 16),
+            const Text(
+              'Download the upgraded version from:',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '• Google Play Store\n• Official website',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Open Play Store or website
+              Navigator.pop(context);
+            },
+            child: const Text('Learn More'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpgradeFeature(String label, String current, String next) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            Text(current, style: TextStyle(color: Colors.grey[600])),
+            const Icon(Icons.arrow_forward, size: 16),
+            Text(next, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildContent() {
     return Column(
       children: [
+        // Variant banner
+        _buildVariantBanner(),
+
         // Search bar
         Padding(
           padding: const EdgeInsets.all(16.0),

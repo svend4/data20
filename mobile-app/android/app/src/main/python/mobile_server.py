@@ -114,13 +114,25 @@ async def startup():
     # Initialize database
     init_mobile_database()
 
-    # Initialize tool registry
+    # Initialize tool registry (Phase 8.2.2: with variant support)
     tools_dir = Path(__file__).parent.parent / "tools"
     if not tools_dir.exists():
         tools_dir = Path(__file__).parent / "tools"
 
-    tool_registry = ToolRegistry(tools_dir=tools_dir)
-    print(f"✅ Loaded {len(tool_registry.tools)} tools")
+    # Detect app variant from environment (set by Gradle BuildConfig)
+    app_variant = os.getenv('APP_VARIANT', None)
+
+    tool_registry = ToolRegistry(tools_dir=tools_dir, variant=app_variant)
+    tool_count = len(tool_registry.tools)
+
+    print(f"✅ Loaded {tool_count} tools")
+
+    # Log variant information
+    if hasattr(tool_registry, 'variant') and tool_registry.variant:
+        print(f"   Variant: {tool_registry.variant.value.upper()}")
+
+    # Scan tools
+    tool_registry.scan_tools()
 
     # Initialize tool runner
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
