@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../models/tool.dart';
 import '../config/app_variant.dart';
 import '../widgets/performance_indicator.dart';
+import '../widgets/battery_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -301,6 +302,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Phase 8.2.3: Performance indicator
         const PerformanceIndicator(),
+
+        // Phase 8.2.4: Battery indicator
+        const BatteryIndicator(),
 
         // Search bar
         Padding(

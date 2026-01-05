@@ -45,6 +45,16 @@ from performance_optimizer import (
     get_performance_report,
 )
 
+# Phase 8.2.4: Battery optimization
+from battery_optimizer import (
+    activity_tracker,
+    power_manager,
+    battery_monitor,
+    get_battery_stats,
+    BatteryConfig,
+    BackendState,
+)
+
 # ========================
 # Pydantic Models
 # ========================
@@ -107,6 +117,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Phase 8.2.4: Activity tracking middleware
+@app.middleware("http")
+async def track_activity_middleware(request, call_next):
+    """Track all requests for battery optimization"""
+    import time
+
+    # Record activity
+    activity_tracker.record_activity()
+
+    # Measure request time
+    start_time = time.time()
+    response = await call_next(request)
+    cpu_time = time.time() - start_time
+
+    # Estimate network bytes (rough estimate from response size)
+    network_bytes = int(response.headers.get("content-length", 0))
+
+    # Record for battery monitoring
+    battery_monitor.record_request(cpu_time, network_bytes)
+
+    return response
 
 # Global instances
 tool_registry = None
@@ -178,6 +210,17 @@ async def startup():
     else:
         print(f"   ⚠️ Startup time ({startup_duration:.2f}s) exceeds target (3s)")
 
+    # Phase 8.2.4: Load battery configuration
+    BatteryConfig.from_env()
+
+    # Phase 8.2.4: Start battery monitoring
+    if BatteryConfig.AUTO_STOP_ENABLED:
+        import asyncio
+        asyncio.create_task(power_manager.start_monitoring())
+        print(f"🔋 Battery optimization enabled (auto-stop: {BatteryConfig.IDLE_TIMEOUT_SECONDS}s)")
+    else:
+        print("🔋 Battery optimization disabled")
+
 @app.on_event("shutdown")
 async def shutdown():
     """Cleanup on shutdown"""
@@ -191,6 +234,7 @@ async def shutdown():
 async def health():
     """Health check endpoint"""
     perf_report = get_performance_report() if metrics else None
+    battery_stats = get_battery_stats()
 
     return {
         "status": "ok",
@@ -204,7 +248,14 @@ async def health():
             "cache_hit_rate": f"{metrics.get_cache_hit_rate():.1f}%" if metrics else None,
             "tools_loaded": metrics.tools_loaded if metrics else 0,
             "tools_preloaded": metrics.tools_preloaded if metrics else 0,
-        } if perf_report else None
+        } if perf_report else None,
+        "battery": {
+            "state": battery_stats["power_management"]["state"],
+            "idle_time": battery_stats["activity"]["idle_time"],
+            "auto_stop_enabled": battery_stats["power_management"]["auto_stop_enabled"],
+            "estimated_drain": battery_stats["battery_estimate"]["estimated_drain"]["per_hour"],
+            "target_met": battery_stats["battery_estimate"]["target_met"],
+        } if battery_stats else None
     }
 
 @app.get("/")
@@ -223,6 +274,26 @@ async def root():
 async def get_metrics(current_user: User = Depends(get_current_active_user)):
     """Get detailed performance metrics"""
     return get_performance_report()
+
+# Phase 8.2.4: Battery statistics endpoint
+@app.get("/battery")
+async def get_battery(current_user: User = Depends(get_current_active_user)):
+    """Get battery usage statistics"""
+    return get_battery_stats()
+
+# Phase 8.2.4: Power management control
+@app.post("/power/wake")
+async def wake_backend(current_user: User = Depends(get_current_active_user)):
+    """Wake backend from sleep"""
+    activity_tracker.record_activity()
+    power_manager.change_state(BackendState.ACTIVE)
+    return {"status": "active", "message": "Backend awakened"}
+
+@app.post("/power/sleep")
+async def sleep_backend(current_user: User = Depends(get_current_active_user)):
+    """Put backend to sleep"""
+    power_manager.change_state(BackendState.SLEEPING)
+    return {"status": "sleeping", "message": "Backend sleeping"}
 
 # ========================
 # Authentication
