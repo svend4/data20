@@ -527,3 +527,4 @@ jobs:
             echo "❌ ОБЕ ВЕРСИИ НЕ СОБРАЛИСЬ"
             exit 1
           fi
+# Trigger build
