@@ -25,92 +25,53 @@ logger = logging.getLogger(__name__)
 # AUTH UTILITIES - Embedded to avoid FastAPI import
 # ============================================================================
 
-# JWT settings
-SECRET_KEY = "mobile-secret-key-change-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
-
-def _hash_password_pbkdf2(password: str, salt: bytes = None) -> str:
-    """Hash password using PBKDF2-HMAC-SHA256"""
-    if salt is None:
-        salt = os.urandom(32)
-    pwd_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-    return salt.hex() + ':' + pwd_hash.hex()
-
-def _verify_password_pbkdf2(plain_password: str, stored_hash: str) -> bool:
-    """Verify password against PBKDF2 hash"""
-    try:
-        salt_hex, hash_hex = stored_hash.split(':')
-        salt = bytes.fromhex(salt_hex)
-        expected_hash = bytes.fromhex(hash_hex)
-        pwd_hash = hashlib.pbkdf2_hmac('sha256', plain_password.encode('utf-8'), salt, 100000)
-        return hmac.compare_digest(pwd_hash, expected_hash)
-    except Exception:
-        return False
-
 def get_password_hash(password: str) -> str:
-    """Hash password using PBKDF2"""
-    try:
-        logger.info("🔐 Hashing password with PBKDF2...")
-        result = _hash_password_pbkdf2(password)
-        logger.info("✅ Password hash created successfully")
-        return result
-    except Exception as e:
-        logger.error(f"❌ Password hashing failed: {e}", exc_info=True)
-        raise
+    """Hash password using simple SHA256 (fast on Android)"""
+    # Simple SHA256 with salt - much faster than PBKDF2
+    import secrets
+    salt = secrets.token_hex(16)  # 16 bytes = 32 hex chars
+    pwd_hash = hashlib.sha256((salt + password).encode()).hexdigest()
+    return f"{salt}:{pwd_hash}"
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash"""
-    return _verify_password_pbkdf2(plain_password, hashed_password)
+    try:
+        salt, stored_hash = hashed_password.split(':')
+        pwd_hash = hashlib.sha256((salt + plain_password).encode()).hexdigest()
+        return hmac.compare_digest(pwd_hash, stored_hash)
+    except Exception:
+        return False
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create simple token WITHOUT JWT library (pure Python)"""
-    try:
-        logger.info("📦 Creating simple token (no JWT)...")
+    # Create simple token: base64(user_id:username:role:timestamp)
+    import base64
+    import time
 
-        # Create simple token: base64(user_id:username:role:timestamp)
-        import base64
-        import time
+    user_id = data.get('sub', '')
+    username = data.get('username', '')
+    role = data.get('role', 'user')
+    timestamp = int(time.time())
 
-        user_id = data.get('sub', '')
-        username = data.get('username', '')
-        role = data.get('role', 'user')
-        timestamp = int(time.time())
-
-        # Simple token format
-        token_data = f"{user_id}:{username}:{role}:{timestamp}"
-        token = base64.b64encode(token_data.encode()).decode()
-
-        logger.info("✅ Simple token created (no external libs)")
-        return token
-    except Exception as e:
-        logger.error(f"❌ Token creation failed: {e}", exc_info=True)
-        raise
+    # Simple token format
+    token_data = f"{user_id}:{username}:{role}:{timestamp}"
+    token = base64.b64encode(token_data.encode()).decode()
+    return token
 
 def create_tokens_for_user(user) -> dict:
     """Create access and refresh tokens for user"""
-    try:
-        logger.info("🔑 Creating access token...")
-        access_token = create_access_token(
-            data={"sub": user.id, "username": user.username, "role": user.role.value}
-        )
-        logger.info("✅ Access token created")
-
-        logger.info("🔑 Creating refresh token...")
-        refresh_token = create_access_token(
-            data={"sub": user.id, "username": user.username},
-            expires_delta=timedelta(days=30)
-        )
-        logger.info("✅ Refresh token created")
-
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer"
-        }
-    except Exception as e:
-        logger.error(f"❌ Token creation failed: {e}", exc_info=True)
-        raise
+    access_token = create_access_token(
+        data={"sub": user.id, "username": user.username, "role": user.role.value}
+    )
+    refresh_token = create_access_token(
+        data={"sub": user.id, "username": user.username},
+        expires_delta=timedelta(days=30)
+    )
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
 
 # Global variables
 app = None
