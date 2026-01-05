@@ -1,0 +1,197 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    // Chaquopy plugin for Python support
+    id 'com.chaquo.python'
+}
+
+// Load Flutter SDK path from local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+// Set Flutter source directory explicitly (parent of android directory)
+// This is needed because flutter.gradle can't auto-detect with Chaquopy config
+def flutterProjectRoot = rootProject.projectDir.parentFile
+
+// Configure Flutter properties before applying flutter.gradle
+// Path is relative to this file (mobile-app/android/app/build.gradle)
+// '../..' goes up to mobile-app/ directory where pubspec.yaml is located
+project.ext {
+    flutter = [
+        source: '../..',           // mobile-app/ (Flutter project root)
+        target: 'lib/main.dart'
+    ]
+}
+
+// Apply Flutter gradle script
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+// Load keystore properties for signing
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace 'com.data20.mobile_app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.data20.mobile_app"
+        minSdk 24  // Chaquopy requires minimum API 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // Python configuration
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+
+        // Enable multidex for large app
+        multiDexEnabled true
+
+        // Manifest placeholders for Flutter
+        manifestPlaceholders = [
+            applicationName: "io.flutter.app.FlutterApplication"
+        ]
+    }
+
+    // Signing configuration for release builds
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Sign with release keystore if available
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+            
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Keep Python modules
+            proguardFiles 'proguard-chaquopy.pro'
+        }
+
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries true
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    sourceSets {
+        main {
+            // Python source directory
+            python.srcDirs = ['src/main/python']
+        }
+    }
+}
+
+// Chaquopy Python configuration
+chaquopy {
+    defaultConfig {
+        // Python version
+        version "3.9"
+
+        // Build Python from source (slower but more compatible)
+        // buildPython "/usr/bin/python3"  // Закомментировано для CI/CD - используются предкомпилированные пакеты
+
+        // Python pip packages - ULTRA MINIMAL for mobile
+        pip {
+            // ============================================================
+            // LITE VERSION: NO external packages needed!
+            // ============================================================
+            //
+            // backend_main.py uses ONLY Python standard library:
+            // ✅ sqlite3 (built-in) - database
+            // ✅ hashlib (built-in) - SHA256 password hashing
+            // ✅ hmac (built-in) - secure comparison
+            // ✅ base64 (built-in) - simple tokens
+            // ✅ uuid (built-in) - ID generation
+            // ✅ http.server (built-in) - ThreadingHTTPServer
+            // ✅ json (built-in) - JSON parsing
+            // ✅ os, sys, logging, datetime, pathlib (built-in)
+            //
+            // REMOVED HEAVY DEPENDENCIES (saves ~40-50 MB APK size):
+            // ❌ fastapi, uvicorn, pydantic (~10-15 MB)
+            // ❌ sqlalchemy, alembic (~7-10 MB)
+            // ❌ PyJWT (~1-2 MB)
+            // ❌ structlog, prometheus-client (~2 MB)
+            // ❌ httpx, requests (~5-8 MB)
+            // ❌ python-multipart, python-dotenv (~1 MB)
+            // ❌ beautifulsoup4, markdown, PyYAML (~5-10 MB)
+            //
+            // Total savings: ~40-50 MB in APK!
+
+        }
+
+        // Python source directories to include
+        pyc {
+            src false  // Don't include .pyc files to reduce size
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+
+    // Kotlin coroutines for async operations
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Multidex support
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
