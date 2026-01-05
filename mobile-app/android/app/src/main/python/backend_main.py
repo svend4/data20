@@ -27,9 +27,8 @@ logger = logging.getLogger(__name__)
 
 def get_password_hash(password: str) -> str:
     """Hash password using simple SHA256 (fast on Android)"""
-    # Simple SHA256 with salt - much faster than PBKDF2
-    import secrets
-    salt = secrets.token_hex(16)  # 16 bytes = 32 hex chars
+    # Simple SHA256 with salt - use os.urandom (works everywhere)
+    salt = os.urandom(16).hex()  # 16 bytes = 32 hex chars
     pwd_hash = hashlib.sha256((salt + password).encode()).hexdigest()
     return f"{salt}:{pwd_hash}"
 
