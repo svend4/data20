@@ -240,6 +240,7 @@
       <button class="tab active" data-tab="tools">Tools</button>
       <button class="tab" data-tab="articles">Articles</button>
       <button class="tab" data-tab="queue">Queue</button>
+      <button class="tab" data-tab="metrics">Metrics</button>
       <button class="tab" data-tab="stats">Stats</button>
     </div>
 
@@ -307,6 +308,74 @@
       <button class="btn" id="retry-failed">Retry Failed Jobs</button>
       <button class="btn" id="clear-completed">Clear Completed</button>
       <button class="btn" id="clear-failed">Clear Failed</button>
+    </div>
+
+    <!-- Metrics Tab -->
+    <div class="tab-content" id="metrics-tab">
+      <div style="font-size: 13px; margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 8px;">📊 Performance Summary</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Total Executions:</span>
+          <span id="metrics-total-exec" style="font-weight: 600;">0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Avg Time:</span>
+          <span id="metrics-avg-time" style="font-weight: 600;">0ms</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Cache Hit Rate:</span>
+          <span id="metrics-cache-rate" style="font-weight: 600;">0%</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Error Rate:</span>
+          <span id="metrics-error-rate" style="font-weight: 600;">0%</span>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 8px;">🚀 Routing Distribution</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Local:</span>
+          <span id="metrics-local-pct" style="font-weight: 600;">0% (0ms avg)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Cloud:</span>
+          <span id="metrics-cloud-pct" style="font-weight: 600;">0% (0ms avg)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Cache Hits:</span>
+          <span id="metrics-cache-hits" style="font-weight: 600;">0</span>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 8px;">💾 Resources</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Memory (current):</span>
+          <span id="metrics-mem-current" style="font-weight: 600;">0 MB</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Memory (peak):</span>
+          <span id="metrics-mem-peak" style="font-weight: 600;">0 MB</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Pyodide Load:</span>
+          <span id="metrics-pyodide-load" style="font-weight: 600;">0ms</span>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px; max-height: 150px; overflow-y: auto;">
+        <div style="font-weight: 600; margin-bottom: 8px;">🔧 Top Tools</div>
+        <div id="metrics-top-tools" style="font-size: 11px;">
+          <div style="opacity: 0.7;">No data yet</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn" id="export-json">Export JSON</button>
+        <button class="btn" id="export-csv">Export CSV</button>
+      </div>
+      <button class="btn" id="reset-metrics">Reset Metrics</button>
     </div>
 
     <!-- Stats Tab -->

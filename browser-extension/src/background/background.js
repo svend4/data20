@@ -3,6 +3,7 @@
  * Phase 9.1: Browser Extension + WASM Backend
  * Phase 9.2.3: Integrated Smart Router
  * Phase 9.2.4: Offline Queue Management
+ * Phase 9.2.5: Performance Monitor & Analytics
  *
  * Manages:
  * - Pyodide initialization
@@ -12,12 +13,14 @@
  * - Message handling
  * - Intelligent routing (local/cloud)
  * - Offline job queue with auto-sync
+ * - Performance monitoring & analytics
  */
 
 import { PyodideManager } from './pyodide-manager.js';
 import { ToolRegistry } from './tool-registry.js';
 import { SmartRouter } from './smart-router.js';
 import { OfflineQueue } from './offline-queue.js';
+import { PerformanceMonitor } from '../utils/performance-monitor.js';
 import { StorageManager } from '../utils/storage.js';
 
 // Global state
@@ -25,6 +28,7 @@ let pyodideManager = null;
 let toolRegistry = null;
 let smartRouter = null;
 let offlineQueue = null;
+let performanceMonitor = null;
 let isInitialized = false;
 
 /**
@@ -37,11 +41,20 @@ async function initialize() {
     // Initialize storage
     await StorageManager.initialize();
 
+    // Initialize performance monitor
+    console.log('📊 Initializing Performance Monitor...');
+    performanceMonitor = new PerformanceMonitor(StorageManager);
+    await performanceMonitor.initialize();
+    console.log('✅ Performance Monitor ready');
+
     // Initialize Pyodide
     console.log('📦 Loading Pyodide...');
+    const pyodideStartTime = performance.now();
     pyodideManager = new PyodideManager();
     await pyodideManager.initialize();
-    console.log('✅ Pyodide loaded successfully');
+    const pyodideLoadTime = performance.now() - pyodideStartTime;
+    performanceMonitor.setPyodideLoadTime(Math.round(pyodideLoadTime));
+    console.log(`✅ Pyodide loaded successfully in ${pyodideLoadTime.toFixed(2)}ms`);
 
     // Initialize tool registry
     console.log('🔧 Loading tools...');
@@ -59,6 +72,10 @@ async function initialize() {
     offlineQueue = new OfflineQueue(smartRouter, StorageManager);
     await offlineQueue.initialize();
     console.log('✅ Offline Queue ready');
+
+    // Update performance monitor session info
+    const articles = await StorageManager.getArticles();
+    performanceMonitor.updateSessionInfo(toolRegistry.getToolCount(), articles.length);
 
     // Setup context menus
     setupContextMenus();
@@ -224,16 +241,36 @@ function setupMessageListeners() {
               throw new Error('Extension not initialized');
             }
 
-            const result = await smartRouter.executeTool(
-              message.toolName,
-              message.parameters
-            );
+            try {
+              const result = await smartRouter.executeTool(
+                message.toolName,
+                message.parameters
+              );
 
-            sendResponse({
-              success: true,
-              result: result.result,
-              execution: result.execution
-            });
+              // Record execution in performance monitor
+              if (performanceMonitor && result.execution) {
+                const complexity = smartRouter.getToolComplexity(message.toolName);
+                performanceMonitor.recordToolExecution(
+                  message.toolName,
+                  complexity,
+                  result.execution.location,
+                  result.execution.time || 0,
+                  true
+                );
+              }
+
+              sendResponse({
+                success: true,
+                result: result.result,
+                execution: result.execution
+              });
+            } catch (execError) {
+              // Record error in performance monitor
+              if (performanceMonitor) {
+                performanceMonitor.recordError(execError, message.toolName);
+              }
+              throw execError;
+            }
             break;
 
           case 'GET_TOOLS':
@@ -401,6 +438,54 @@ function setupMessageListeners() {
             sendResponse({
               success: true,
               message: 'Queue configuration updated'
+            });
+            break;
+
+          case 'GET_PERFORMANCE_METRICS':
+            if (!isInitialized || !performanceMonitor) {
+              throw new Error('Performance monitor not initialized');
+            }
+
+            const perfMetrics = performanceMonitor.getMetrics();
+            sendResponse({
+              success: true,
+              metrics: perfMetrics
+            });
+            break;
+
+          case 'RESET_PERFORMANCE_METRICS':
+            if (!isInitialized || !performanceMonitor) {
+              throw new Error('Performance monitor not initialized');
+            }
+
+            performanceMonitor.resetMetrics();
+            sendResponse({
+              success: true,
+              message: 'Performance metrics reset'
+            });
+            break;
+
+          case 'EXPORT_METRICS_JSON':
+            if (!isInitialized || !performanceMonitor) {
+              throw new Error('Performance monitor not initialized');
+            }
+
+            performanceMonitor.exportAsJSON();
+            sendResponse({
+              success: true,
+              message: 'Metrics exported as JSON'
+            });
+            break;
+
+          case 'EXPORT_METRICS_CSV':
+            if (!isInitialized || !performanceMonitor) {
+              throw new Error('Performance monitor not initialized');
+            }
+
+            performanceMonitor.exportAsCSV();
+            sendResponse({
+              success: true,
+              message: 'Metrics exported as CSV'
             });
             break;
 

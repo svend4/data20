@@ -10,8 +10,10 @@ import { StorageManager } from '../utils/storage.js';
 let tools = [];
 let articles = [];
 let queueStats = null;
+let performanceMetrics = null;
 let currentTab = 'tools';
 let queueUpdateInterval = null;
+let metricsUpdateInterval = null;
 
 /**
  * Initialize popup
@@ -39,6 +41,9 @@ async function initialize() {
 
   // Start queue updates
   startQueueUpdates();
+
+  // Start metrics updates
+  startMetricsUpdates();
 }
 
 /**
@@ -46,6 +51,7 @@ async function initialize() {
  */
 window.addEventListener('beforeunload', () => {
   stopQueueUpdates();
+  stopMetricsUpdates();
 });
 
 /**
@@ -412,6 +418,49 @@ function setupEventListeners() {
       console.error('Failed to clear failed:', error);
     }
   });
+
+  // Metrics management buttons
+  const exportJsonBtn = document.getElementById('export-json');
+  exportJsonBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'EXPORT_METRICS_JSON' });
+
+      if (response.success) {
+        alert('Metrics exported as JSON');
+      }
+    } catch (error) {
+      console.error('Failed to export metrics:', error);
+    }
+  });
+
+  const exportCsvBtn = document.getElementById('export-csv');
+  exportCsvBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'EXPORT_METRICS_CSV' });
+
+      if (response.success) {
+        alert('Metrics exported as CSV');
+      }
+    } catch (error) {
+      console.error('Failed to export metrics:', error);
+    }
+  });
+
+  const resetMetricsBtn = document.getElementById('reset-metrics');
+  resetMetricsBtn.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to reset all performance metrics?')) {
+      try {
+        const response = await chrome.runtime.sendMessage({ type: 'RESET_PERFORMANCE_METRICS' });
+
+        if (response.success) {
+          alert('Performance metrics reset');
+          await updatePerformanceMetrics();
+        }
+      } catch (error) {
+        console.error('Failed to reset metrics:', error);
+      }
+    }
+  });
 }
 
 /**
@@ -484,6 +533,85 @@ function stopQueueUpdates() {
   if (queueUpdateInterval) {
     clearInterval(queueUpdateInterval);
     queueUpdateInterval = null;
+  }
+}
+
+/**
+ * Update performance metrics
+ */
+async function updatePerformanceMetrics() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_PERFORMANCE_METRICS' });
+
+    if (response.success) {
+      performanceMetrics = response.metrics;
+
+      // Summary section
+      document.getElementById('metrics-total-exec').textContent = performanceMetrics.summary.totalExecutions;
+      document.getElementById('metrics-avg-time').textContent = `${performanceMetrics.summary.avgExecutionTime}ms`;
+      document.getElementById('metrics-cache-rate').textContent = `${performanceMetrics.summary.cacheHitRate}%`;
+      document.getElementById('metrics-error-rate').textContent = `${performanceMetrics.summary.errorRate}%`;
+
+      // Routing section
+      document.getElementById('metrics-local-pct').textContent =
+        `${performanceMetrics.routing.local.percentage}% (${performanceMetrics.routing.local.avgTime}ms avg)`;
+      document.getElementById('metrics-cloud-pct').textContent =
+        `${performanceMetrics.routing.cloud.percentage}% (${performanceMetrics.routing.cloud.avgTime}ms avg)`;
+      document.getElementById('metrics-cache-hits').textContent = performanceMetrics.routing.cache.hits;
+
+      // Resources section
+      document.getElementById('metrics-mem-current').textContent = `${performanceMetrics.resources.memory.current} MB`;
+      document.getElementById('metrics-mem-peak').textContent = `${performanceMetrics.resources.memory.peak} MB`;
+      document.getElementById('metrics-pyodide-load').textContent = `${performanceMetrics.resources.pyodideLoadTime}ms`;
+
+      // Top tools
+      const topToolsEl = document.getElementById('metrics-top-tools');
+      if (performanceMetrics.tools.topTools && performanceMetrics.tools.topTools.length > 0) {
+        topToolsEl.innerHTML = '';
+
+        for (const tool of performanceMetrics.tools.topTools.slice(0, 5)) {
+          const toolDiv = document.createElement('div');
+          toolDiv.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 4px; padding: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 4px;';
+
+          toolDiv.innerHTML = `
+            <span style="flex: 1;">${formatToolName(tool.name)}</span>
+            <span style="font-weight: 600;">${tool.count}x</span>
+            <span style="margin-left: 8px; opacity: 0.8;">${Math.round(tool.avgTime)}ms</span>
+          `;
+
+          topToolsEl.appendChild(toolDiv);
+        }
+      } else {
+        topToolsEl.innerHTML = '<div style="opacity: 0.7;">No data yet</div>';
+      }
+    }
+  } catch (error) {
+    console.error('Failed to update performance metrics:', error);
+  }
+}
+
+/**
+ * Start periodic metrics updates
+ */
+function startMetricsUpdates() {
+  // Initial update
+  updatePerformanceMetrics();
+
+  // Update every 5 seconds
+  metricsUpdateInterval = setInterval(() => {
+    if (currentTab === 'metrics') {
+      updatePerformanceMetrics();
+    }
+  }, 5000);
+}
+
+/**
+ * Stop metrics updates
+ */
+function stopMetricsUpdates() {
+  if (metricsUpdateInterval) {
+    clearInterval(metricsUpdateInterval);
+    metricsUpdateInterval = null;
   }
 }
 
