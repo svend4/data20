@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data20 Extension - Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .setting-item {
+      margin-bottom: 20px;
+    }
+
+    .setting-item label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .setting-item input[type="text"],
+    .setting-item select {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .setting-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+      margin-right: 10px;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .status-message {
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(76, 175, 80, 0.3);
+      border-radius: 8px;
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .info-box {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Data20 Extension Settings</h1>
+    <p class="subtitle">Configure your browser extension</p>
+
+    <!-- General Settings -->
+    <div class="section">
+      <h2>General</h2>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enableExtension" checked>
+          Enable extension
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="showFloatingButton" checked>
+          Show floating button on pages
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enableContextMenus" checked>
+          Enable context menus
+        </label>
+      </div>
+    </div>
+
+    <!-- Tool Settings -->
+    <div class="section">
+      <h2>Tools</h2>
+
+      <div class="setting-item">
+        <label>Default reading speed (words per minute)</label>
+        <input type="text" id="readingSpeed" value="200" placeholder="200">
+      </div>
+
+      <div class="setting-item">
+        <label>Maximum keywords to extract</label>
+        <input type="text" id="maxKeywords" value="10" placeholder="10">
+      </div>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="autoAnalyze">
+          Automatically analyze pages on load
+        </label>
+      </div>
+    </div>
+
+    <!-- Storage Settings -->
+    <div class="section">
+      <h2>Storage</h2>
+
+      <div class="setting-item">
+        <label>Maximum articles to store</label>
+        <input type="text" id="maxArticles" value="1000" placeholder="1000">
+      </div>
+
+      <div class="setting-item">
+        <label>Cache lifetime (hours)</label>
+        <input type="text" id="cacheLifetime" value="24" placeholder="24">
+      </div>
+
+      <div class="info-box">
+        Current storage usage: <span id="storageUsage">0</span> MB
+      </div>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="section">
+      <h2>Advanced</h2>
+
+      <div class="setting-item">
+        <label>Pyodide CDN URL</label>
+        <input type="text" id="pyodideCDN" value="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/" placeholder="CDN URL">
+      </div>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enableLogging">
+          Enable debug logging
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <label class="checkbox-label">
+          <input type="checkbox" id="preloadTools">
+          Preload tools on startup
+        </label>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="section">
+      <h2>Actions</h2>
+
+      <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+      <button class="btn" id="resetSettings">Reset to Defaults</button>
+      <button class="btn" id="clearStorage">Clear All Data</button>
+
+      <div class="status-message" id="statusMessage">
+        Settings saved successfully!
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="section">
+      <h2>About</h2>
+      <div class="info-box">
+        <strong>Data20 Browser Extension</strong><br>
+        Version: 1.0.0<br>
+        Pyodide: 0.25.0<br>
+        Tools: 10+<br><br>
+
+        100% offline browser extension with Python/WebAssembly tools<br>
+        <br>
+        <a href="https://github.com/data20/data20" style="color: #fff;">GitHub</a> •
+        <a href="https://github.com/data20/data20/issues" style="color: #fff;">Report Issue</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load settings
+    async function loadSettings() {
+      const settings = await chrome.storage.sync.get({
+        enableExtension: true,
+        showFloatingButton: true,
+        enableContextMenus: true,
+        readingSpeed: 200,
+        maxKeywords: 10,
+        autoAnalyze: false,
+        maxArticles: 1000,
+        cacheLifetime: 24,
+        pyodideCDN: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
+        enableLogging: false,
+        preloadTools: false
+      });
+
+      // Set values
+      document.getElementById('enableExtension').checked = settings.enableExtension;
+      document.getElementById('showFloatingButton').checked = settings.showFloatingButton;
+      document.getElementById('enableContextMenus').checked = settings.enableContextMenus;
+      document.getElementById('readingSpeed').value = settings.readingSpeed;
+      document.getElementById('maxKeywords').value = settings.maxKeywords;
+      document.getElementById('autoAnalyze').checked = settings.autoAnalyze;
+      document.getElementById('maxArticles').value = settings.maxArticles;
+      document.getElementById('cacheLifetime').value = settings.cacheLifetime;
+      document.getElementById('pyodideCDN').value = settings.pyodideCDN;
+      document.getElementById('enableLogging').checked = settings.enableLogging;
+      document.getElementById('preloadTools').checked = settings.preloadTools;
+    }
+
+    // Save settings
+    async function saveSettings() {
+      const settings = {
+        enableExtension: document.getElementById('enableExtension').checked,
+        showFloatingButton: document.getElementById('showFloatingButton').checked,
+        enableContextMenus: document.getElementById('enableContextMenus').checked,
+        readingSpeed: parseInt(document.getElementById('readingSpeed').value),
+        maxKeywords: parseInt(document.getElementById('maxKeywords').value),
+        autoAnalyze: document.getElementById('autoAnalyze').checked,
+        maxArticles: parseInt(document.getElementById('maxArticles').value),
+        cacheLifetime: parseInt(document.getElementById('cacheLifetime').value),
+        pyodideCDN: document.getElementById('pyodideCDN').value,
+        enableLogging: document.getElementById('enableLogging').checked,
+        preloadTools: document.getElementById('preloadTools').checked
+      };
+
+      await chrome.storage.sync.set(settings);
+
+      // Show success message
+      const statusMessage = document.getElementById('statusMessage');
+      statusMessage.classList.add('show');
+      setTimeout(() => {
+        statusMessage.classList.remove('show');
+      }, 3000);
+    }
+
+    // Reset settings
+    async function resetSettings() {
+      if (confirm('Reset all settings to defaults?')) {
+        await chrome.storage.sync.clear();
+        await loadSettings();
+      }
+    }
+
+    // Clear storage
+    async function clearStorage() {
+      if (confirm('Clear all stored data? This cannot be undone.')) {
+        // Send message to background to clear IndexedDB
+        chrome.runtime.sendMessage({ type: 'CLEAR_STORAGE' });
+        alert('All data cleared');
+      }
+    }
+
+    // Event listeners
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+    document.getElementById('resetSettings').addEventListener('click', resetSettings);
+    document.getElementById('clearStorage').addEventListener('click', clearStorage);
+
+    // Load settings on page load
+    loadSettings();
+  </script>
+</body>
+</html>

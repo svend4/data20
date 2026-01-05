@@ -1,0 +1,349 @@
+/**
+ * Popup UI Logic
+ * Phase 9.1.4: Extension UI
+ */
+
+import { StorageManager } from '../utils/storage.js';
+
+// State
+let tools = [];
+let articles = [];
+let currentTab = 'tools';
+
+/**
+ * Initialize popup
+ */
+async function initialize() {
+  console.log('Initializing popup...');
+
+  // Setup tabs
+  setupTabs();
+
+  // Setup event listeners
+  setupEventListeners();
+
+  // Check extension status
+  await checkStatus();
+
+  // Load tools
+  await loadTools();
+
+  // Load articles
+  await loadArticles();
+
+  // Update stats
+  await updateStats();
+}
+
+/**
+ * Check extension status
+ */
+async function checkStatus() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+
+    const statusEl = document.getElementById('status');
+
+    if (response.initialized) {
+      statusEl.textContent = `Ready • ${response.toolCount} tools loaded`;
+      statusEl.classList.remove('loading');
+    } else {
+      statusEl.textContent = 'Initializing...';
+      statusEl.classList.add('loading');
+
+      // Retry after 2 seconds
+      setTimeout(checkStatus, 2000);
+    }
+  } catch (error) {
+    console.error('Failed to check status:', error);
+  }
+}
+
+/**
+ * Load tools from background
+ */
+async function loadTools() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_TOOLS' });
+
+    if (response.success) {
+      tools = response.tools;
+      renderTools(tools);
+    }
+  } catch (error) {
+    console.error('Failed to load tools:', error);
+    showError('Failed to load tools');
+  }
+}
+
+/**
+ * Render tools list
+ */
+function renderTools(toolsToRender) {
+  const toolList = document.getElementById('tool-list');
+
+  if (!toolsToRender || toolsToRender.length === 0) {
+    toolList.innerHTML = '<div class="loading">No tools available</div>';
+    return;
+  }
+
+  toolList.innerHTML = '';
+
+  for (const tool of toolsToRender) {
+    const toolItem = document.createElement('div');
+    toolItem.className = 'tool-item';
+    toolItem.innerHTML = `
+      <div class="name">${formatToolName(tool.name)}</div>
+      <div class="category">${tool.category}</div>
+    `;
+
+    toolItem.addEventListener('click', () => {
+      openToolDialog(tool);
+    });
+
+    toolList.appendChild(toolItem);
+  }
+}
+
+/**
+ * Format tool name for display
+ */
+function formatToolName(name) {
+  return name
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Open tool execution dialog
+ */
+function openToolDialog(tool) {
+  // For now, just show a simple prompt
+  // In production, would open a modal dialog
+
+  const input = prompt(`Execute ${formatToolName(tool.name)}:\n\nEnter text to analyze:`);
+
+  if (input) {
+    executeTool(tool.name, { text: input });
+  }
+}
+
+/**
+ * Execute tool
+ */
+async function executeTool(toolName, parameters) {
+  try {
+    const statusEl = document.getElementById('status');
+    statusEl.textContent = 'Executing tool...';
+    statusEl.classList.add('loading');
+
+    const response = await chrome.runtime.sendMessage({
+      type: 'EXECUTE_TOOL',
+      toolName: toolName,
+      parameters: parameters
+    });
+
+    statusEl.classList.remove('loading');
+
+    if (response.success) {
+      showResult(toolName, response.result);
+      statusEl.textContent = 'Ready';
+    } else {
+      showError(response.error);
+      statusEl.textContent = 'Error';
+    }
+  } catch (error) {
+    console.error('Tool execution failed:', error);
+    showError(error.message);
+  }
+}
+
+/**
+ * Show result
+ */
+function showResult(toolName, result) {
+  // Format result as string
+  const resultStr = JSON.stringify(result, null, 2);
+
+  alert(`${formatToolName(toolName)} Result:\n\n${resultStr}`);
+}
+
+/**
+ * Show error
+ */
+function showError(message) {
+  alert(`Error: ${message}`);
+}
+
+/**
+ * Load articles from storage
+ */
+async function loadArticles() {
+  try {
+    // Initialize storage
+    await StorageManager.initialize();
+
+    articles = await StorageManager.getArticles();
+    renderArticles(articles);
+  } catch (error) {
+    console.error('Failed to load articles:', error);
+  }
+}
+
+/**
+ * Render articles list
+ */
+function renderArticles(articlesToRender) {
+  const articlesList = document.getElementById('articles-list');
+
+  if (!articlesToRender || articlesToRender.length === 0) {
+    articlesList.innerHTML = '<div class="loading">No articles saved yet</div>';
+    return;
+  }
+
+  articlesList.innerHTML = '';
+
+  for (const article of articlesToRender) {
+    const articleItem = document.createElement('div');
+    articleItem.className = 'article-item';
+
+    const timestamp = new Date(article.timestamp).toLocaleDateString();
+
+    articleItem.innerHTML = `
+      <div class="title">${article.content.substring(0, 50)}...</div>
+      <div class="meta">${timestamp} • ${article.url}</div>
+    `;
+
+    articleItem.addEventListener('click', () => {
+      viewArticle(article);
+    });
+
+    articlesList.appendChild(articleItem);
+  }
+}
+
+/**
+ * View article
+ */
+function viewArticle(article) {
+  const content = `
+Content: ${article.content}
+
+URL: ${article.url}
+Saved: ${new Date(article.timestamp).toLocaleString()}
+Tags: ${article.tags.join(', ')}
+  `.trim();
+
+  alert(content);
+}
+
+/**
+ * Update stats
+ */
+async function updateStats() {
+  // Tool count
+  document.getElementById('tool-count').textContent = tools.length;
+
+  // Article count
+  document.getElementById('article-count').textContent = articles.length;
+
+  // Memory usage (approximate)
+  if (performance.memory) {
+    const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+    document.getElementById('memory-usage').textContent = memoryMB;
+  }
+
+  // Pyodide version
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+    document.getElementById('pyodide-version').textContent = '0.25.0';
+  } catch (error) {
+    console.error('Failed to get version:', error);
+  }
+}
+
+/**
+ * Setup tabs
+ */
+function setupTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
+
+      // Add active class to clicked tab
+      tab.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+
+      currentTab = tabName;
+    });
+  });
+}
+
+/**
+ * Setup event listeners
+ */
+function setupEventListeners() {
+  // Tool search
+  const toolSearch = document.getElementById('tool-search');
+  toolSearch.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = tools.filter(tool =>
+      tool.name.toLowerCase().includes(query) ||
+      tool.category.toLowerCase().includes(query)
+    );
+    renderTools(filtered);
+  });
+
+  // Article search
+  const articleSearch = document.getElementById('article-search');
+  articleSearch.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = articles.filter(article =>
+      article.content.toLowerCase().includes(query) ||
+      article.url.toLowerCase().includes(query)
+    );
+    renderArticles(filtered);
+  });
+
+  // Clear articles button
+  const clearBtn = document.getElementById('clear-articles');
+  clearBtn.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to clear all articles?')) {
+      // Clear from storage
+      for (const article of articles) {
+        await StorageManager.deleteArticle(article.id);
+      }
+
+      articles = [];
+      renderArticles(articles);
+      updateStats();
+    }
+  });
+
+  // Options button
+  const optionsBtn = document.getElementById('options-btn');
+  optionsBtn.addEventListener('click', () => {
+    chrome.runtime.openOptionsPage();
+  });
+}
+
+/**
+ * Listen for messages from background
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'INITIALIZATION_COMPLETE') {
+    checkStatus();
+    loadTools();
+  }
+});
+
+// Initialize when popup opens
+document.addEventListener('DOMContentLoaded', initialize);

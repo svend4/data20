@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data20 Knowledge Base</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .header {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .header .status {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .header .status.loading {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tab {
+      padding: 10px 15px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab.active {
+      color: #fff;
+      border-bottom-color: #fff;
+    }
+
+    .tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tool-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .tool-item {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tool-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .tool-item .name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .tool-item .category {
+      font-size: 11px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .search-box::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .articles-list {
+      display: grid;
+      gap: 10px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .article-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .article-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .article-item .title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .article-item .meta {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.7;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Data20 Knowledge Base</h1>
+    <div class="status" id="status">Initializing...</div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="tools">Tools</button>
+      <button class="tab" data-tab="articles">Articles</button>
+      <button class="tab" data-tab="stats">Stats</button>
+    </div>
+
+    <!-- Tools Tab -->
+    <div class="tab-content active" id="tools-tab">
+      <input type="text" class="search-box" id="tool-search" placeholder="Search tools...">
+      <div class="tool-list" id="tool-list">
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading tools...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Articles Tab -->
+    <div class="tab-content" id="articles-tab">
+      <input type="text" class="search-box" id="article-search" placeholder="Search articles...">
+      <div class="articles-list" id="articles-list">
+        <div class="loading">
+          <div>No articles saved yet</div>
+        </div>
+      </div>
+      <button class="btn" id="clear-articles">Clear All Articles</button>
+    </div>
+
+    <!-- Stats Tab -->
+    <div class="tab-content" id="stats-tab">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="value" id="tool-count">0</div>
+          <div class="label">Tools Loaded</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="article-count">0</div>
+          <div class="label">Articles Saved</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="memory-usage">0</div>
+          <div class="label">Memory (MB)</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="pyodide-version">-</div>
+          <div class="label">Pyodide</div>
+        </div>
+      </div>
+      <button class="btn" id="options-btn">Open Settings</button>
+    </div>
+  </div>
+
+  <script src="../src/popup/popup.js" type="module"></script>
+</body>
+</html>
