@@ -2,6 +2,7 @@
  * Background Service Worker
  * Phase 9.1: Browser Extension + WASM Backend
  * Phase 9.2.3: Integrated Smart Router
+ * Phase 9.2.4: Offline Queue Management
  *
  * Manages:
  * - Pyodide initialization
@@ -10,17 +11,20 @@
  * - Context menus
  * - Message handling
  * - Intelligent routing (local/cloud)
+ * - Offline job queue with auto-sync
  */
 
 import { PyodideManager } from './pyodide-manager.js';
 import { ToolRegistry } from './tool-registry.js';
 import { SmartRouter } from './smart-router.js';
+import { OfflineQueue } from './offline-queue.js';
 import { StorageManager } from '../utils/storage.js';
 
 // Global state
 let pyodideManager = null;
 let toolRegistry = null;
 let smartRouter = null;
+let offlineQueue = null;
 let isInitialized = false;
 
 /**
@@ -49,6 +53,12 @@ async function initialize() {
     console.log('🧭 Initializing Smart Router...');
     smartRouter = new SmartRouter(toolRegistry, StorageManager);
     console.log('✅ Smart Router ready');
+
+    // Initialize offline queue
+    console.log('📬 Initializing Offline Queue...');
+    offlineQueue = new OfflineQueue(smartRouter, StorageManager);
+    await offlineQueue.initialize();
+    console.log('✅ Offline Queue ready');
 
     // Setup context menus
     setupContextMenus();
@@ -295,6 +305,105 @@ function setupMessageListeners() {
             });
             break;
 
+          case 'GET_QUEUE_STATS':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            const queueStats = await offlineQueue.getStats();
+            sendResponse({
+              success: true,
+              stats: queueStats
+            });
+            break;
+
+          case 'TRIGGER_QUEUE_SYNC':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            await offlineQueue.triggerSync();
+            sendResponse({
+              success: true,
+              message: 'Queue sync triggered'
+            });
+            break;
+
+          case 'CLEAR_COMPLETED_JOBS':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            const completedCount = await offlineQueue.clearCompletedJobs();
+            sendResponse({
+              success: true,
+              count: completedCount,
+              message: `Cleared ${completedCount} completed jobs`
+            });
+            break;
+
+          case 'CLEAR_FAILED_JOBS':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            const failedCount = await offlineQueue.clearFailedJobs();
+            sendResponse({
+              success: true,
+              count: failedCount,
+              message: `Cleared ${failedCount} failed jobs`
+            });
+            break;
+
+          case 'RETRY_JOB':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            await offlineQueue.retryJob(message.jobId);
+            sendResponse({
+              success: true,
+              message: `Job ${message.jobId} queued for retry`
+            });
+            break;
+
+          case 'RETRY_ALL_FAILED':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            const retriedCount = await offlineQueue.retryAllFailed();
+            sendResponse({
+              success: true,
+              count: retriedCount,
+              message: `${retriedCount} failed jobs queued for retry`
+            });
+            break;
+
+          case 'GET_QUEUE_CONFIG':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            const queueConfig = offlineQueue.getConfig();
+            sendResponse({
+              success: true,
+              config: queueConfig
+            });
+            break;
+
+          case 'UPDATE_QUEUE_CONFIG':
+            if (!isInitialized || !offlineQueue) {
+              throw new Error('Queue not initialized');
+            }
+
+            offlineQueue.updateConfig(message.config);
+            sendResponse({
+              success: true,
+              message: 'Queue configuration updated'
+            });
+            break;
+
           default:
             sendResponse({
               success: false,
@@ -397,6 +506,24 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 /**
+ * Handle background sync (when connection is restored)
+ */
+self.addEventListener('sync', (event) => {
+  console.log('[Background] Sync event received:', event.tag);
+
+  if (event.tag === 'sync-queue') {
+    event.waitUntil(
+      (async () => {
+        if (offlineQueue) {
+          console.log('[Background] Processing queue via background sync');
+          await offlineQueue.processQueue();
+        }
+      })()
+    );
+  }
+});
+
+/**
  * Start initialization
  */
 initialize().catch(error => {
@@ -404,4 +531,4 @@ initialize().catch(error => {
 });
 
 // Export for testing
-export { initialize, toolRegistry, pyodideManager };
+export { initialize, toolRegistry, pyodideManager, offlineQueue };

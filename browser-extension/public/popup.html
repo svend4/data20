@@ -239,6 +239,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="tools">Tools</button>
       <button class="tab" data-tab="articles">Articles</button>
+      <button class="tab" data-tab="queue">Queue</button>
       <button class="tab" data-tab="stats">Stats</button>
     </div>
 
@@ -262,6 +263,50 @@
         </div>
       </div>
       <button class="btn" id="clear-articles">Clear All Articles</button>
+    </div>
+
+    <!-- Queue Tab -->
+    <div class="tab-content" id="queue-tab">
+      <div class="stats" style="margin-bottom: 15px;">
+        <div class="stat-card">
+          <div class="value" id="queue-queued">0</div>
+          <div class="label">Queued</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="queue-completed">0</div>
+          <div class="label">Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="queue-processing">0</div>
+          <div class="label">Processing</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="queue-failed">0</div>
+          <div class="label">Failed</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 15px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+        <div style="font-size: 12px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Network:</span>
+            <span id="queue-network" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Success Rate:</span>
+            <span id="queue-success-rate" style="font-weight: 600;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Last Sync:</span>
+            <span id="queue-last-sync" style="font-weight: 600;">-</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="trigger-sync">Sync Queue Now</button>
+      <button class="btn" id="retry-failed">Retry Failed Jobs</button>
+      <button class="btn" id="clear-completed">Clear Completed</button>
+      <button class="btn" id="clear-failed">Clear Failed</button>
     </div>
 
     <!-- Stats Tab -->

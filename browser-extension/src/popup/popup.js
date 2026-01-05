@@ -1,6 +1,7 @@
 /**
  * Popup UI Logic
  * Phase 9.1.4: Extension UI
+ * Phase 9.2.4: Queue Management UI
  */
 
 import { StorageManager } from '../utils/storage.js';
@@ -8,7 +9,9 @@ import { StorageManager } from '../utils/storage.js';
 // State
 let tools = [];
 let articles = [];
+let queueStats = null;
 let currentTab = 'tools';
+let queueUpdateInterval = null;
 
 /**
  * Initialize popup
@@ -33,7 +36,17 @@ async function initialize() {
 
   // Update stats
   await updateStats();
+
+  // Start queue updates
+  startQueueUpdates();
 }
+
+/**
+ * Cleanup on popup close
+ */
+window.addEventListener('beforeunload', () => {
+  stopQueueUpdates();
+});
 
 /**
  * Check extension status
@@ -333,6 +346,145 @@ function setupEventListeners() {
   optionsBtn.addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
   });
+
+  // Queue management buttons
+  const triggerSyncBtn = document.getElementById('trigger-sync');
+  triggerSyncBtn.addEventListener('click', async () => {
+    try {
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = 'Syncing queue...';
+      statusEl.classList.add('loading');
+
+      const response = await chrome.runtime.sendMessage({ type: 'TRIGGER_QUEUE_SYNC' });
+
+      if (response.success) {
+        statusEl.textContent = 'Queue synced';
+        await updateQueueStats();
+      }
+
+      setTimeout(() => {
+        statusEl.textContent = 'Ready';
+        statusEl.classList.remove('loading');
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to trigger sync:', error);
+    }
+  });
+
+  const retryFailedBtn = document.getElementById('retry-failed');
+  retryFailedBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'RETRY_ALL_FAILED' });
+
+      if (response.success) {
+        alert(`${response.count} failed jobs queued for retry`);
+        await updateQueueStats();
+      }
+    } catch (error) {
+      console.error('Failed to retry jobs:', error);
+    }
+  });
+
+  const clearCompletedBtn = document.getElementById('clear-completed');
+  clearCompletedBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'CLEAR_COMPLETED_JOBS' });
+
+      if (response.success) {
+        alert(response.message);
+        await updateQueueStats();
+      }
+    } catch (error) {
+      console.error('Failed to clear completed:', error);
+    }
+  });
+
+  const clearFailedBtn = document.getElementById('clear-failed');
+  clearFailedBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'CLEAR_FAILED_JOBS' });
+
+      if (response.success) {
+        alert(response.message);
+        await updateQueueStats();
+      }
+    } catch (error) {
+      console.error('Failed to clear failed:', error);
+    }
+  });
+}
+
+/**
+ * Update queue statistics
+ */
+async function updateQueueStats() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_QUEUE_STATS' });
+
+    if (response.success) {
+      queueStats = response.stats;
+
+      // Update queue stats cards
+      document.getElementById('queue-queued').textContent = queueStats.queue.queued || 0;
+      document.getElementById('queue-completed').textContent = queueStats.queue.completed || 0;
+      document.getElementById('queue-processing').textContent = queueStats.queue.processing || 0;
+      document.getElementById('queue-failed').textContent = queueStats.queue.failed || 0;
+
+      // Update network status
+      const networkEl = document.getElementById('queue-network');
+      networkEl.textContent = queueStats.network.online ? 'Online ✓' : 'Offline';
+      networkEl.style.color = queueStats.network.online ? '#4ade80' : '#f87171';
+
+      // Update success rate
+      document.getElementById('queue-success-rate').textContent =
+        queueStats.lifetime.successRate ? `${queueStats.lifetime.successRate}%` : '-';
+
+      // Update last sync
+      const lastSyncEl = document.getElementById('queue-last-sync');
+      if (queueStats.sync.lastSuccess) {
+        const lastSync = new Date(queueStats.sync.lastSuccess);
+        const now = new Date();
+        const diffMinutes = Math.floor((now - lastSync) / 60000);
+
+        if (diffMinutes < 1) {
+          lastSyncEl.textContent = 'Just now';
+        } else if (diffMinutes < 60) {
+          lastSyncEl.textContent = `${diffMinutes}m ago`;
+        } else {
+          lastSyncEl.textContent = lastSync.toLocaleTimeString();
+        }
+      } else {
+        lastSyncEl.textContent = 'Never';
+      }
+    }
+  } catch (error) {
+    console.error('Failed to update queue stats:', error);
+  }
+}
+
+/**
+ * Start periodic queue updates
+ */
+function startQueueUpdates() {
+  // Initial update
+  updateQueueStats();
+
+  // Update every 5 seconds
+  queueUpdateInterval = setInterval(() => {
+    if (currentTab === 'queue') {
+      updateQueueStats();
+    }
+  }, 5000);
+}
+
+/**
+ * Stop queue updates
+ */
+function stopQueueUpdates() {
+  if (queueUpdateInterval) {
+    clearInterval(queueUpdateInterval);
+    queueUpdateInterval = null;
+  }
 }
 
 /**
