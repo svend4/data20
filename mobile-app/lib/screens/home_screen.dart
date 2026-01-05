@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../models/tool.dart';
 import '../config/app_variant.dart';
+import '../widgets/performance_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -297,6 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         // Variant banner
         _buildVariantBanner(),
+
+        // Phase 8.2.3: Performance indicator
+        const PerformanceIndicator(),
 
         // Search bar
         Padding(

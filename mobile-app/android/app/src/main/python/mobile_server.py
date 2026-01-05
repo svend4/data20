@@ -33,6 +33,18 @@ from mobile_database import get_db, init_mobile_database, engine
 from mobile_tool_registry import ToolRegistry
 from mobile_tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 
+# Phase 8.2.3: Performance optimization
+from performance_optimizer import (
+    LazyToolLoader,
+    ToolPreloader,
+    metrics,
+    tool_registry_cache,
+    tool_result_cache,
+    timing_decorator,
+    create_cache_key,
+    get_performance_report,
+)
+
 # ========================
 # Pydantic Models
 # ========================
@@ -100,6 +112,10 @@ app.add_middleware(
 tool_registry = None
 tool_runner = None
 
+# Phase 8.2.3: Performance optimization instances
+lazy_loader = None
+tool_preloader = None
+
 # ========================
 # Startup/Shutdown
 # ========================
@@ -107,8 +123,9 @@ tool_runner = None
 @app.on_event("startup")
 async def startup():
     """Initialize on startup"""
-    global tool_registry, tool_runner
+    global tool_registry, tool_runner, lazy_loader, tool_preloader
 
+    startup_start = datetime.now()
     print("🚀 Starting mobile backend...")
 
     # Initialize database
@@ -122,10 +139,20 @@ async def startup():
     # Detect app variant from environment (set by Gradle BuildConfig)
     app_variant = os.getenv('APP_VARIANT', None)
 
+    # Phase 8.2.3: Initialize lazy loader
+    lazy_loader = LazyToolLoader(tools_dir=tools_dir)
+    print(f"📊 Found {lazy_loader.get_available_count()} available tools")
+
+    # Phase 8.2.3: Initialize preloader
+    tool_preloader = ToolPreloader(lazy_loader)
+    preload_count = 10 if app_variant in ['lite', 'standard'] else 15
+    tool_preloader.preload_top_tools(preload_count)
+    print(f"⚡ Preloaded {preload_count} most used tools")
+
     tool_registry = ToolRegistry(tools_dir=tools_dir, variant=app_variant)
     tool_count = len(tool_registry.tools)
 
-    print(f"✅ Loaded {tool_count} tools")
+    print(f"✅ Registered {tool_count} tools")
 
     # Log variant information
     if hasattr(tool_registry, 'variant') and tool_registry.variant:
@@ -141,7 +168,15 @@ async def startup():
         upload_dir=Path(upload_dir)
     )
 
-    print("✅ Mobile backend started successfully")
+    # Record startup time
+    startup_duration = (datetime.now() - startup_start).total_seconds()
+    metrics.record_startup(startup_duration)
+
+    print(f"✅ Mobile backend started in {startup_duration:.2f}s")
+    if startup_duration < 3.0:
+        print("   🎯 Startup time target achieved (< 3s)")
+    else:
+        print(f"   ⚠️ Startup time ({startup_duration:.2f}s) exceeds target (3s)")
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -155,12 +190,21 @@ async def shutdown():
 @app.get("/health")
 async def health():
     """Health check endpoint"""
+    perf_report = get_performance_report() if metrics else None
+
     return {
         "status": "ok",
         "environment": "mobile",
         "database": os.getenv('DATA20_DATABASE_PATH', 'unknown'),
         "version": "1.0.0",
-        "tools_count": len(tool_registry.tools) if tool_registry else 0
+        "tools_count": len(tool_registry.tools) if tool_registry else 0,
+        "performance": {
+            "startup_time": f"{metrics.startup_time:.2f}s" if metrics and metrics.startup_time else None,
+            "startup_target_met": metrics.startup_time < 3.0 if metrics and metrics.startup_time else False,
+            "cache_hit_rate": f"{metrics.get_cache_hit_rate():.1f}%" if metrics else None,
+            "tools_loaded": metrics.tools_loaded if metrics else 0,
+            "tools_preloaded": metrics.tools_preloaded if metrics else 0,
+        } if perf_report else None
     }
 
 @app.get("/")
@@ -170,8 +214,15 @@ async def root():
         "message": "Data20 Mobile Backend",
         "status": "running",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "metrics": "/metrics"
     }
+
+# Phase 8.2.3: Performance metrics endpoint
+@app.get("/metrics")
+async def get_metrics(current_user: User = Depends(get_current_active_user)):
+    """Get detailed performance metrics"""
+    return get_performance_report()
 
 # ========================
 # Authentication
@@ -233,12 +284,19 @@ async def get_tools(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get list of available tools"""
+    # Phase 8.2.3: Check cache first
+    cache_key = f"tools_list:{category or 'all'}"
+    cached_result = tool_registry_cache.get(cache_key)
+
+    if cached_result:
+        return cached_result
+
     tools = tool_registry.get_all_tools()
 
     if category:
         tools = [t for t in tools if t.category == category]
 
-    return {
+    result = {
         "tools": [
             {
                 "name": t.name,
@@ -255,12 +313,19 @@ async def get_tools(
                     for p in t.parameters
                 ],
                 "icon": t.icon,
-                "color": t.color
+                "color": t.color,
+                "dependency_level": t.dependency_level,
+                "available_in_variants": t.available_in_variants,
             }
             for t in tools
         ],
         "total": len(tools)
     }
+
+    # Cache the result
+    tool_registry_cache.set(cache_key, result)
+
+    return result
 
 @app.get("/tools/{tool_name}")
 async def get_tool(
