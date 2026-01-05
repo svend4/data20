@@ -16,22 +16,42 @@
 
 set -e  # Exit on error
 
-echo "========================================="
-echo "Building Android APK (LITE VERSION)"
-echo "========================================="
-echo ""
-echo "🚀 LITE VERSION features:"
-echo "   ✅ Only Python stdlib (NO PyPI packages)"
-echo "   ✅ Only backend_main.py (15 KB)"
-echo "   ✅ Expected size: ~80-90 MB (vs ~150 MB full version)"
-echo ""
-
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+# Clear screen for better visibility
+clear
+
+echo ""
+echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║                                                                    ║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}██╗     ██╗████████╗███████╗    ██╗   ██╗███████╗██████╗ ███████╗${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}██║     ██║╚══██╔══╝██╔════╝    ██║   ██║██╔════╝██╔══██╗██╔════╝${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}██║     ██║   ██║   █████╗      ██║   ██║█████╗  ██████╔╝███████╗${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}██║     ██║   ██║   ██╔══╝      ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}███████╗██║   ██║   ███████╗     ╚████╔╝ ███████╗██║  ██║███████║${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║${NC}  ${BOLD}${GREEN}╚══════╝╚═╝   ╚═╝   ╚══════╝      ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝${NC}  ${CYAN}║${NC}"
+echo -e "${CYAN}║                                                                    ║${NC}"
+echo -e "${CYAN}║${NC}          ${BOLD}${BLUE}📱 Data20 Mobile - ОБЛЕГЧЁННАЯ ВЕРСИЯ 🚀${NC}              ${CYAN}║${NC}"
+echo -e "${CYAN}║                                                                    ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${BOLD}${GREEN}✨ Особенности LITE версии:${NC}"
+echo -e "   ${GREEN}✅${NC} Только Python stdlib (${BOLD}БЕЗ${NC} PyPI пакетов)"
+echo -e "   ${GREEN}✅${NC} Только backend_main.py (${BOLD}15 KB${NC})"
+echo -e "   ${GREEN}✅${NC} Размер APK: ${BOLD}~80-90 МБ${NC} (против ~150 МБ полной)"
+echo -e "   ${GREEN}✅${NC} Быстрый старт: ${BOLD}< 5 секунд${NC}"
+echo ""
+echo -e "${YELLOW}⚠️  Это ОБЛЕГЧЁННАЯ версия для Android!${NC}"
+echo -e "${YELLOW}   Для полной версии используйте: ../mobile-app/build-android-embedded.sh${NC}"
+echo ""
 
 # Configuration
 BUILD_TYPE="${1:-release}"  # debug or release
