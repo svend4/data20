@@ -64,25 +64,27 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return _verify_password_pbkdf2(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Create JWT access token"""
+    """Create simple token WITHOUT JWT library (pure Python)"""
     try:
-        logger.info("📦 Importing jwt library...")
-        import jwt  # Import only when needed
-        logger.info("✅ jwt library imported")
+        logger.info("📦 Creating simple token (no JWT)...")
 
-        to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        to_encode.update({"exp": expire, "type": "access"})
+        # Create simple token: base64(user_id:username:role:timestamp)
+        import base64
+        import time
 
-        logger.info("📦 Encoding JWT token...")
-        token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-        logger.info("✅ JWT token encoded")
+        user_id = data.get('sub', '')
+        username = data.get('username', '')
+        role = data.get('role', 'user')
+        timestamp = int(time.time())
+
+        # Simple token format
+        token_data = f"{user_id}:{username}:{role}:{timestamp}"
+        token = base64.b64encode(token_data.encode()).decode()
+
+        logger.info("✅ Simple token created (no external libs)")
         return token
     except Exception as e:
-        logger.error(f"❌ JWT token encoding failed: {e}", exc_info=True)
+        logger.error(f"❌ Token creation failed: {e}", exc_info=True)
         raise
 
 def create_tokens_for_user(user) -> dict:
