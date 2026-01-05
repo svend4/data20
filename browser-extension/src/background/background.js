@@ -1,22 +1,26 @@
 /**
  * Background Service Worker
  * Phase 9.1: Browser Extension + WASM Backend
+ * Phase 9.2.3: Integrated Smart Router
  *
  * Manages:
  * - Pyodide initialization
  * - Python runtime
- * - Tool execution
+ * - Tool execution (via Smart Router)
  * - Context menus
  * - Message handling
+ * - Intelligent routing (local/cloud)
  */
 
 import { PyodideManager } from './pyodide-manager.js';
 import { ToolRegistry } from './tool-registry.js';
+import { SmartRouter } from './smart-router.js';
 import { StorageManager } from '../utils/storage.js';
 
 // Global state
 let pyodideManager = null;
 let toolRegistry = null;
+let smartRouter = null;
 let isInitialized = false;
 
 /**
@@ -40,6 +44,11 @@ async function initialize() {
     toolRegistry = new ToolRegistry(pyodideManager);
     await toolRegistry.loadTools();
     console.log(`✅ Loaded ${toolRegistry.getToolCount()} tools`);
+
+    // Initialize smart router
+    console.log('🧭 Initializing Smart Router...');
+    smartRouter = new SmartRouter(toolRegistry, StorageManager);
+    console.log('✅ Smart Router ready');
 
     // Setup context menus
     setupContextMenus();
@@ -144,24 +153,24 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
     switch (info.menuItemId) {
       case 'data20-reading-time':
-        result = await toolRegistry.executeTool('calculate_reading_time', {
+        result = await smartRouter.executeTool('calculate_reading_time', {
           text: selectedText
         });
-        showNotification('Reading Time', `${result.reading_time_minutes} minutes`);
+        showNotification('Reading Time', `${result.result.reading_time_minutes} minutes (${result.execution.location})`);
         break;
 
       case 'data20-extract-keywords':
-        result = await toolRegistry.executeTool('extract_keywords', {
+        result = await smartRouter.executeTool('extract_keywords', {
           text: selectedText
         });
-        showNotification('Keywords', result.keywords.join(', '));
+        showNotification('Keywords', result.result.keywords.join(', '));
         break;
 
       case 'data20-count-words':
-        result = await toolRegistry.executeTool('count_words', {
+        result = await smartRouter.executeTool('count_words', {
           text: selectedText
         });
-        showNotification('Word Count', `${result.total_words} words`);
+        showNotification('Word Count', `${result.result.total_words} words`);
         break;
 
       case 'data20-save-selection':
@@ -205,14 +214,15 @@ function setupMessageListeners() {
               throw new Error('Extension not initialized');
             }
 
-            const result = await toolRegistry.executeTool(
+            const result = await smartRouter.executeTool(
               message.toolName,
               message.parameters
             );
 
             sendResponse({
               success: true,
-              result: result
+              result: result.result,
+              execution: result.execution
             });
             break;
 
@@ -237,6 +247,54 @@ function setupMessageListeners() {
             });
             break;
 
+          case 'GET_ROUTER_METRICS':
+            if (!isInitialized || !smartRouter) {
+              throw new Error('Router not initialized');
+            }
+
+            const metrics = smartRouter.getMetrics();
+            sendResponse({
+              success: true,
+              metrics: metrics
+            });
+            break;
+
+          case 'GET_ROUTER_CONFIG':
+            if (!isInitialized || !smartRouter) {
+              throw new Error('Router not initialized');
+            }
+
+            const config = smartRouter.getConfig();
+            sendResponse({
+              success: true,
+              config: config
+            });
+            break;
+
+          case 'UPDATE_ROUTER_CONFIG':
+            if (!isInitialized || !smartRouter) {
+              throw new Error('Router not initialized');
+            }
+
+            smartRouter.updateConfig(message.config);
+            sendResponse({
+              success: true,
+              message: 'Configuration updated'
+            });
+            break;
+
+          case 'RESET_ROUTER_METRICS':
+            if (!isInitialized || !smartRouter) {
+              throw new Error('Router not initialized');
+            }
+
+            smartRouter.resetMetrics();
+            sendResponse({
+              success: true,
+              message: 'Metrics reset'
+            });
+            break;
+
           default:
             sendResponse({
               success: false,
@@ -258,30 +316,34 @@ function setupMessageListeners() {
 }
 
 /**
- * Analyze page content
+ * Analyze page content (using Smart Router)
  */
 async function analyzePageContent(content) {
   const results = {};
 
   // Calculate reading time
-  results.readingTime = await toolRegistry.executeTool('calculate_reading_time', {
+  const readingTimeResult = await smartRouter.executeTool('calculate_reading_time', {
     text: content.text
   });
+  results.readingTime = readingTimeResult.result;
 
   // Extract keywords
-  results.keywords = await toolRegistry.executeTool('extract_keywords', {
+  const keywordsResult = await smartRouter.executeTool('extract_keywords', {
     text: content.text
   });
+  results.keywords = keywordsResult.result;
 
   // Count words
-  results.wordCount = await toolRegistry.executeTool('count_words', {
+  const wordCountResult = await smartRouter.executeTool('count_words', {
     text: content.text
   });
+  results.wordCount = wordCountResult.result;
 
   // Detect language
-  results.language = await toolRegistry.executeTool('detect_language', {
+  const languageResult = await smartRouter.executeTool('detect_language', {
     text: content.text
   });
+  results.language = languageResult.result;
 
   return results;
 }

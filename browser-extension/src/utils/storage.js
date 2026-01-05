@@ -4,12 +4,13 @@
  */
 
 const DB_NAME = 'data20_extension';
-const DB_VERSION = 1;
+const DB_VERSION = 2;  // Incremented for Phase 9.2.3 - added queue store
 const STORES = {
   articles: 'articles',
   tools: 'tools',
   settings: 'settings',
-  cache: 'cache'
+  cache: 'cache',
+  queue: 'queue'
 };
 
 export class StorageManager {
@@ -54,6 +55,15 @@ export class StorageManager {
             keyPath: 'key'
           });
           cacheStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains(STORES.queue)) {
+          const queueStore = db.createObjectStore(STORES.queue, {
+            keyPath: 'id'
+          });
+          queueStore.createIndex('status', 'status', { unique: false });
+          queueStore.createIndex('priority', 'priority', { unique: false });
+          queueStore.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
     });
@@ -128,6 +138,32 @@ export class StorageManager {
   }
 
   /**
+   * Get cached result (alias for getCachedResult)
+   */
+  static async getCached(key) {
+    const entry = await this._get(STORES.cache, key);
+
+    if (!entry) {
+      return null;
+    }
+
+    // Check if expired
+    if (entry.expiresAt < Date.now()) {
+      await this._delete(STORES.cache, key);
+      return null;
+    }
+
+    return entry;
+  }
+
+  /**
+   * Remove cached entry
+   */
+  static async removeCached(key) {
+    return this._delete(STORES.cache, key);
+  }
+
+  /**
    * Clear expired cache
    */
   static async clearExpiredCache() {
@@ -139,6 +175,70 @@ export class StorageManager {
         await this._delete(STORES.cache, entry.key);
       }
     }
+  }
+
+  /**
+   * Add job to queue
+   */
+  static async addToQueue(job) {
+    return this._add(STORES.queue, job);
+  }
+
+  /**
+   * Get all queued jobs
+   */
+  static async getQueuedJobs(status = 'queued') {
+    return new Promise((resolve, reject) => {
+      const store = this._getObjectStore(STORES.queue);
+      const index = store.index('status');
+      const request = index.getAll(status);
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  /**
+   * Update queue job
+   */
+  static async updateQueueJob(id, updates) {
+    const job = await this._get(STORES.queue, id);
+    if (!job) {
+      throw new Error(`Job ${id} not found`);
+    }
+
+    const updatedJob = { ...job, ...updates };
+    return this._put(STORES.queue, updatedJob);
+  }
+
+  /**
+   * Remove job from queue
+   */
+  static async removeFromQueue(id) {
+    return this._delete(STORES.queue, id);
+  }
+
+  /**
+   * Get queue stats
+   */
+  static async getQueueStats() {
+    const allJobs = await this._getAll(STORES.queue);
+
+    const stats = {
+      total: allJobs.length,
+      queued: 0,
+      processing: 0,
+      completed: 0,
+      failed: 0
+    };
+
+    for (const job of allJobs) {
+      if (stats.hasOwnProperty(job.status)) {
+        stats[job.status]++;
+      }
+    }
+
+    return stats;
   }
 
   // Internal methods
