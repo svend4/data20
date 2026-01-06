@@ -5,6 +5,54 @@ plugins {
     id 'com.chaquo.python'
 }
 
+// Load Flutter SDK path from local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+// Set Flutter source directory explicitly (parent of android directory)
+// This is needed because flutter.gradle can't auto-detect with Chaquopy config
+def flutterProjectRoot = rootProject.projectDir.parentFile
+
+// Configure Flutter properties before applying flutter.gradle
+// Path is relative to this file (mobile-app/android/app/build.gradle)
+// '../..' goes up to mobile-app/ directory where pubspec.yaml is located
+project.ext {
+    flutter = [
+        source: '../..',           // mobile-app/ (Flutter project root)
+        target: 'lib/main.dart'
+    ]
+}
+
+// Apply Flutter gradle script
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+// Load keystore properties for signing
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.data20.mobile_app'
     compileSdk 34
@@ -23,10 +71,32 @@ android {
 
         // Enable multidex for large app
         multiDexEnabled true
+
+        // Manifest placeholders for Flutter
+        manifestPlaceholders = [
+            applicationName: "io.flutter.app.FlutterApplication"
+        ]
+    }
+
+    // Signing configuration for release builds
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword keystoreProperties['storePassword']
+            }
+        }
     }
 
     buildTypes {
         release {
+            // Sign with release keystore if available
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+            
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -44,6 +114,11 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries true
     }
 
     kotlinOptions {
@@ -65,23 +140,31 @@ chaquopy {
         version "3.9"
 
         // Build Python from source (slower but more compatible)
-        buildPython "/usr/bin/python3"
+        // buildPython "/usr/bin/python3"  // Закомментировано для CI/CD - используются предкомпилированные пакеты
 
         // Python pip packages
         pip {
             // Core backend dependencies
+            // Using pydantic v1 instead of v2 to avoid Rust/maturin build requirements
+            // pydantic v1 is pure Python and includes settings functionality
             install "fastapi==0.104.1"
             install "uvicorn==0.24.0"
-            install "pydantic==2.5.0"
-            install "pydantic-settings==2.1.0"
+            install "pydantic==1.10.13"  // v1: pure Python, no Rust required
+            // pydantic-settings removed: included in pydantic v1
 
             // Database
             install "sqlalchemy==2.0.23"
             install "alembic==1.12.1"
 
             // Authentication
-            install "python-jose[cryptography]==3.3.0"
-            install "passlib[bcrypt]==1.7.4"
+            // IMPORTANT: Removed packages with native/Rust dependencies that fail on Android:
+            // - python-jose (depends on cryptography which requires Rust)
+            // - cryptography (requires Rust/cargo to build)
+            // - passlib (depends on bcrypt which has C extensions)
+            // - bcrypt (has C extensions)
+            //
+            // For JWT authentication, the code should use PyJWT (pure Python):
+            install "PyJWT==2.8.0"  // Pure Python JWT library
             install "python-multipart==0.0.6"
 
             // Logging and monitoring
@@ -92,14 +175,20 @@ chaquopy {
             install "python-dotenv==1.0.0"
             install "httpx==0.25.2"
 
-            // Data processing (lightweight versions)
-            install "pandas==2.1.3"
-            install "numpy==1.26.2"
-            install "openpyxl==3.1.2"
-            install "lxml==4.9.3"
+            // Data processing - REMOVED for Android build:
+            // These packages have native C/Fortran dependencies and are not used in mobile app:
+            // - pandas (requires numpy, has C extensions)
+            // - numpy (requires BLAS/LAPACK, Fortran compiler)
+            // - Pillow (requires libjpeg, zlib, etc.)
+            // - openpyxl (Excel support, not needed for mobile)
+            //
+            // If data processing is needed, it should be done server-side
+            // install "pandas==2.1.3"
+            // install "numpy==1.26.2"
+            // install "openpyxl==3.1.2"
+            // install "Pillow==10.1.0"
 
             // Tools dependencies
-            install "Pillow==10.1.0"
             install "requests==2.31.0"
             install "beautifulsoup4==4.12.2"
             install "markdown==3.5.1"
@@ -109,14 +198,6 @@ chaquopy {
         // Python source directories to include
         pyc {
             src false  // Don't include .pyc files to reduce size
-        }
-    }
-
-    // Production-specific configuration
-    productFlavors {
-        production {
-            dimension "environment"
-            version "3.9"
         }
     }
 }

@@ -165,8 +165,10 @@ async def startup():
 
     # Initialize tool registry (Phase 8.2.2: with variant support)
     tools_dir = Path(__file__).parent.parent / "tools"
+    # Initialize tool registry (without scanning yet)
+    tools_dir = Path(__file__).parent / "tools"
     if not tools_dir.exists():
-        tools_dir = Path(__file__).parent / "tools"
+        tools_dir = Path(__file__).parent.parent / "tools"
 
     # Detect app variant from environment (set by Gradle BuildConfig)
     app_variant = os.getenv('APP_VARIANT', None)
@@ -192,12 +194,13 @@ async def startup():
 
     # Scan tools
     tool_registry.scan_tools()
+    tool_registry = ToolRegistry(tools_dir=tools_dir)
 
     # Initialize tool runner
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
     tool_runner = ToolRunner(
         tools_dir=tools_dir,
-        upload_dir=Path(upload_dir)
+        output_dir=Path(upload_dir)
     )
 
     # Record startup time
@@ -220,6 +223,8 @@ async def startup():
         print(f"🔋 Battery optimization enabled (auto-stop: {BatteryConfig.IDLE_TIMEOUT_SECONDS}s)")
     else:
         print("🔋 Battery optimization disabled")
+    print("✅ Mobile backend started successfully")
+    print("📦 Tool loading will happen in background on first /tools request")
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -361,6 +366,11 @@ async def get_tools(
 
     if cached_result:
         return cached_result
+    # Lazy load tools on first request
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on first request...")
+        tools_count = tool_registry.scan_tools()
+        print(f"✅ Loaded {tools_count} tools")
 
     tools = tool_registry.get_all_tools()
 
@@ -404,6 +414,11 @@ async def get_tool(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get tool details"""
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on demand...")
+        tool_registry.scan_tools()
+
     tool = tool_registry.get_tool(tool_name)
 
     if not tool:
@@ -444,6 +459,11 @@ async def execute_tool(
 ):
     """Execute tool (synchronous on mobile)"""
 
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools for execution...")
+        tool_registry.scan_tools()
+
     # Validate tool exists
     tool = tool_registry.get_tool(request.tool_name)
     if not tool:
@@ -463,15 +483,18 @@ async def execute_tool(
 
     # Execute tool synchronously (no Celery on mobile)
     try:
-        result = tool_runner.run_tool(
+        result = await tool_runner.run_tool(
             tool_name=request.tool_name,
-            parameters=request.parameters,
-            input_file=request.input_file
+            parameters=request.parameters
         )
 
         # Update job with result
         job.status = JobStatus.COMPLETED
-        job.result = result
+        job.result = {
+            "output": result.output,
+            "output_files": result.output_files,
+            "duration": result.duration
+        }
         job.completed_at = datetime.utcnow()
 
         db.commit()
@@ -483,7 +506,7 @@ async def execute_tool(
             status=job.status.value,
             created_at=job.created_at.isoformat(),
             updated_at=job.updated_at.isoformat(),
-            result=result
+            result=job.result
         )
 
     except Exception as e:

@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => context.push('/jobs'),
             tooltip: 'История задач',
           ),
-          PopupMenuButton(
+          PopupMenuButton<void>(
             icon: CircleAvatar(
               child: Text(
                 user?.username[0].toUpperCase() ?? '?',
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             itemBuilder: (context) => [
-              PopupMenuItem(
+              PopupMenuItem<void>(
                 child: ListTile(
                   leading: const Icon(Icons.person),
                   title: Text(user?.username ?? ''),
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 enabled: false,
               ),
               const PopupMenuDivider(),
-              PopupMenuItem(
+              PopupMenuItem<void>(
                 child: const ListTile(
                   leading: Icon(Icons.logout),
                   title: Text('Выход'),

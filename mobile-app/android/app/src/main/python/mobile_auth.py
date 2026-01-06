@@ -6,8 +6,9 @@ JWT authentication for mobile devices
 
 from datetime import datetime, timedelta
 from typing import Optional
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+import jwt  # PyJWT - pure Python JWT library
+import hashlib
+import hmac
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -15,8 +16,29 @@ from sqlalchemy.orm import Session
 from mobile_models import User, UserRole
 from mobile_database import get_db
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing using PBKDF2 (pure Python, secure)
+def _hash_password_pbkdf2(password: str, salt: bytes = None) -> str:
+    """Hash password using PBKDF2-HMAC-SHA256"""
+    if salt is None:
+        import os
+        salt = os.urandom(32)
+
+    # 100,000 iterations for PBKDF2
+    pwd_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+    # Store salt + hash as hex string
+    return salt.hex() + ':' + pwd_hash.hex()
+
+def _verify_password_pbkdf2(plain_password: str, stored_hash: str) -> bool:
+    """Verify password against PBKDF2 hash"""
+    try:
+        salt_hex, hash_hex = stored_hash.split(':')
+        salt = bytes.fromhex(salt_hex)
+        expected_hash = bytes.fromhex(hash_hex)
+
+        pwd_hash = hashlib.pbkdf2_hmac('sha256', plain_password.encode('utf-8'), salt, 100000)
+        return hmac.compare_digest(pwd_hash, expected_hash)
+    except Exception:
+        return False
 
 # JWT settings
 SECRET_KEY = "mobile-secret-key-change-in-production"  # TODO: Generate unique per installation
@@ -29,11 +51,11 @@ security = HTTPBearer()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    return _verify_password_pbkdf2(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    """Hash password"""
-    return pwd_context.hash(password)
+    """Hash password using PBKDF2"""
+    return _hash_password_pbkdf2(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create JWT access token"""
@@ -92,7 +114,7 @@ def decode_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

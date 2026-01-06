@@ -1,0 +1,20 @@
+# ============================================================
+# LITE VERSION: NO Python packages needed!
+# ============================================================
+#
+# This LITE version uses ONLY Python standard library.
+# All dependencies are built into Python 3.9 - no pip install needed!
+#
+# Backend uses:
+# - sqlite3 (built-in) - lightweight database
+# - hashlib (built-in) - SHA256 password hashing
+# - hmac (built-in) - secure password comparison
+# - base64 (built-in) - simple auth tokens
+# - uuid (built-in) - ID generation
+# - http.server (built-in) - HTTP server
+# - json, os, sys, logging, datetime (built-in)
+#
+# Result: ~80-90 MB APK (vs ~150 MB in FULL version)
+# ============================================================
+
+# NO packages needed - this file intentionally left minimal

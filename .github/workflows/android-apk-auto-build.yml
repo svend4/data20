@@ -1,0 +1,424 @@
+name: 🤖 Автоматическая сборка Android APK
+
+on:
+  # Автоматическая сборка при push в основные ветки
+  push:
+    branches:
+      - main
+      - master
+      - 'claude/**'
+    paths:
+      - 'mobile-app/**'
+      - '.github/workflows/android-apk-auto-build.yml'
+
+  # Сборка при создании release
+  release:
+    types: [created, published]
+
+  # Ручной запуск из GitHub UI
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Версия APK (например, 1.0.0)'
+        required: false
+        default: 'dev'
+      upload_to_release:
+        description: 'Загрузить в последний release?'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  JAVA_VERSION: '17'
+  PYTHON_VERSION: '3.9'
+
+jobs:
+  build-apk:
+    name: 📦 Сборка APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout кода
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Установка Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: 🐍 Установка Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🦋 Установка Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📋 Информация о окружении
+        continue-on-error: true
+        run: |
+          echo "==================================="
+          echo "📱 Информация о сборке"
+          echo "==================================="
+          java -version 2>&1 | head -n 1 || echo "Java version check failed"
+          flutter --version 2>&1 | head -n 1 || echo "Flutter version check failed"
+          python3 --version || echo "Python version check failed"
+          git branch --show-current || echo "Git branch check failed"
+          git rev-parse --short HEAD || echo "Git commit check failed"
+          echo "==================================="
+
+      - name: 📦 Копирование Python tools
+        run: |
+          cd mobile-app
+          chmod +x copy-tools-to-python.sh
+          ./copy-tools-to-python.sh
+          echo "✅ Python tools скопированы"
+
+      - name: 📝 Создание local.properties для Android
+        run: |
+          echo "==================================="
+          echo "📝 Создание local.properties"
+          echo "==================================="
+          
+          # Определение пути к Flutter SDK (более надежный способ)
+          if [ -n "$FLUTTER_HOME" ]; then
+            FLUTTER_ROOT="$FLUTTER_HOME"
+          elif command -v flutter &> /dev/null; then
+            # Извлечение корневой директории Flutter из пути к бинарнику:
+            # /path/to/flutter/bin/flutter -> /path/to/flutter/bin -> /path/to/flutter
+            FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          else
+            FLUTTER_ROOT=""
+          fi
+          
+          # Проверка что Flutter SDK найден
+          if [ -z "$FLUTTER_ROOT" ]; then
+            echo "❌ ОШИБКА: Flutter SDK не найден"
+            exit 1
+          fi
+          
+          echo "Flutter SDK найден: $FLUTTER_ROOT"
+          
+          # Создание local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" > mobile-app/android/local.properties
+          
+          # Проверка создания файла
+          if [ ! -f mobile-app/android/local.properties ]; then
+            echo "❌ ОШИБКА: Не удалось создать local.properties"
+            exit 1
+          fi
+          
+          # Вывод содержимого для проверки
+          echo "✅ local.properties создан успешно"
+          echo "Содержимое файла:"
+          cat mobile-app/android/local.properties
+          echo "==================================="
+
+      - name: 📚 Установка Flutter зависимостей
+        run: |
+          cd mobile-app
+          echo "==================================="
+          echo "📚 Установка Flutter зависимостей"
+          echo "==================================="
+          
+          # Запуск flutter pub get с verbose выводом
+          flutter pub get --verbose
+          PUB_EXIT_CODE=$?
+          
+          # Проверка успешности установки
+          if [ $PUB_EXIT_CODE -ne 0 ]; then
+            echo "❌ ОШИБКА: Не удалось установить зависимости (exit code: $PUB_EXIT_CODE)"
+            exit $PUB_EXIT_CODE
+          fi
+          
+          # Проверка что pubspec.lock создан
+          if [ ! -f pubspec.lock ]; then
+            echo "❌ ОШИБКА: pubspec.lock не был создан"
+            exit 1
+          fi
+          
+          echo "✅ Flutter зависимости установлены успешно"
+          echo "==================================="
+
+      - name: 🔍 Проверка Flutter проекта
+        continue-on-error: true
+        run: |
+          cd mobile-app
+          echo "==================================="
+          echo "🔍 Проверка Flutter проекта"
+          echo "==================================="
+          
+          # Запуск flutter doctor для диагностики
+          echo "Flutter Doctor:"
+          flutter doctor -v
+          
+          echo ""
+          echo "Flutter Analyze:"
+          flutter analyze --no-fatal-infos
+          
+          echo "==================================="
+          echo "✅ Проверка завершена (не блокирует сборку)"
+          echo "==================================="
+
+      # Настройка подписи APK (если доступны ключи)
+      - name: 🔐 Декодирование keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          echo "🔐 Настройка подписи release APK..."
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mobile-app/android/data20-release-key.jks
+          echo "✅ Keystore декодирован"
+
+      - name: 🔑 Создание key.properties
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          cat > mobile-app/android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=data20-release-key.jks
+          EOF
+          echo "✅ key.properties создан"
+
+      # Сборка APK
+      - name: 🏗️ Сборка Release APK
+        id: build_apk
+        run: |
+          cd mobile-app
+          echo "==================================="
+          echo "🏗️ Начинаем сборку Release APK"
+          echo "==================================="
+          
+          # Предварительные проверки критических файлов
+          echo "📋 Предварительные проверки:"
+          
+          # Массив файлов для проверки (путь:описание)
+          declare -a CHECK_FILES=(
+            "pubspec.yaml:pubspec.yaml"
+            "android/app/build.gradle:android/app/build.gradle"
+            "android/local.properties:android/local.properties"
+            "android/settings.gradle:android/settings.gradle"
+          )
+          
+          # Проверка каждого файла
+          for file_check in "${CHECK_FILES[@]}"; do
+            file_path="${file_check%%:*}"
+            file_desc="${file_check##*:}"
+            echo "- Проверка наличия $file_desc"
+            if [ ! -f "$file_path" ]; then
+              echo "❌ ОШИБКА: $file_desc не найден"
+              exit 1
+            fi
+            echo "  ✅ $file_desc найден"
+          done
+          
+          echo ""
+          echo "==================================="
+          echo "🚀 Запуск сборки APK через Gradle"
+          echo "==================================="
+
+          # Используем прямую сборку через Gradle
+          # flutter.gradle уже подключен в build.gradle и включит все плагины
+          echo "📝 Генерация Flutter plugin registrant..."
+          flutter pub get
+
+          echo "🔨 Сборка Debug APK через ./gradlew assembleDebug..."
+          echo "ℹ️ Debug APK автоматически подписывается и легко устанавливается"
+          cd android
+          ./gradlew assembleDebug --stacktrace
+          BUILD_EXIT_CODE=$?
+          cd ..
+
+          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+            echo ""
+            echo "==================================="
+            echo "✅ APK успешно собран!"
+            echo "==================================="
+          else
+            echo ""
+            echo "==================================="
+            echo "❌ ОШИБКА СБОРКИ APK"
+            echo "==================================="
+            echo "Exit code: $BUILD_EXIT_CODE"
+            echo ""
+            echo "📋 Возможные причины ошибки:"
+            echo "1. Проблемы с Gradle конфигурацией"
+            echo "2. Отсутствие необходимых зависимостей"
+            echo "3. Ошибки в коде Dart/Flutter"
+            echo "4. Проблемы с Android SDK"
+            echo "5. Нехватка памяти или ресурсов (OutOfMemoryError)"
+            echo ""
+            echo "🔍 Для диагностики проверьте:"
+            echo "- Логи выше для детальной информации об ошибке"
+            echo "- Поиск 'FAILURE' или 'ERROR' в выводе Gradle"
+            echo "- Проверьте память: OutOfMemoryError или heap space ошибки"
+            echo "- Файлы Gradle (build.gradle, settings.gradle)"
+            echo "- Версии зависимостей в pubspec.yaml"
+            echo "- Проверьте gradle daemon: ищите 'daemon stopped' или 'startup failed'"
+            echo ""
+            echo "==================================="
+            exit $BUILD_EXIT_CODE
+          fi
+
+      - name: 📊 Информация о APK
+        id: apk_info
+        run: |
+          # Поиск APK в обоих возможных местах (Debug и Release)
+          APK_PATH=$(find mobile-app/android/app/build/outputs/apk/debug -name "*.apk" 2>/dev/null | head -1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find mobile-app/android/app/build/outputs/apk/release -name "*.apk" 2>/dev/null | head -1)
+          fi
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find mobile-app/build/app/outputs/flutter-apk -name "*.apk" 2>/dev/null | head -1)
+          fi
+
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ ОШИБКА: APK файл не найден ни в одной из ожидаемых директорий"
+            echo "Проверены директории:"
+            echo "  - mobile-app/android/app/build/outputs/apk/debug/"
+            echo "  - mobile-app/android/app/build/outputs/apk/release/"
+            echo "  - mobile-app/build/app/outputs/flutter-apk/"
+            exit 1
+          fi
+
+          APK_NAME=$(basename "$APK_PATH")
+          APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
+
+          # Определяем версию
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.event.inputs.version }}" != "" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+
+          NEW_APK_NAME="data20-mobile-${VERSION}.apk"
+          NEW_APK_PATH="mobile-app/build/app/outputs/flutter-apk/${NEW_APK_NAME}"
+
+          # Создаём директорию для APK если её нет
+          mkdir -p "$(dirname "$NEW_APK_PATH")"
+
+          # Копируем APK в стандартное место
+          cp "$APK_PATH" "$NEW_APK_PATH"
+
+          echo "path=$NEW_APK_PATH" >> $GITHUB_OUTPUT
+          echo "name=$NEW_APK_NAME" >> $GITHUB_OUTPUT
+          echo "size=$APK_SIZE" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          echo "=================================="
+          echo "📱 APK готов!"
+          echo "=================================="
+          echo "Имя: $NEW_APK_NAME"
+          echo "Размер: $APK_SIZE"
+          echo "Путь: $NEW_APK_PATH"
+          echo "Версия: $VERSION"
+          echo "=================================="
+
+      # Загрузка APK как артефакт (всегда)
+      - name: ⬆️ Загрузка APK как артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk_info.outputs.name }}
+          path: ${{ steps.apk_info.outputs.path }}
+          retention-days: 90
+          if-no-files-found: error
+
+      # Загрузка в release (если это release событие)
+      - name: 📤 Загрузка APK в Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.apk_info.outputs.path }}
+          tag_name: ${{ github.event.release.tag_name }}
+          name: "Data20 Mobile v${{ steps.apk_info.outputs.version }}"
+          body: |
+            ## 📱 Data20 Mobile App - Android
+
+            ### 📥 Установка
+
+            1. Скачайте APK: `${{ steps.apk_info.outputs.name }}`
+            2. Включите "Установка из неизвестных источников" в настройках Android
+            3. Откройте APK файл для установки
+            4. Запустите приложение
+
+            ### ✨ Возможности
+
+            - ✅ 100% Оффлайн работа
+            - ✅ Встроенный Python Backend
+            - ✅ 57+ инструментов обработки данных
+            - ✅ SQLite база данных
+            - ✅ JWT аутентификация
+            - ✅ Material Design 3 UI
+
+            ### 📋 Требования
+
+            - Android 7.0 (API 24) или выше
+            - ~150MB свободного места
+            - ~300MB RAM
+
+            ### 🔐 Учетные данные по умолчанию
+
+            - Логин: `admin`
+            - Пароль: `admin`
+
+            **⚠️ Измените пароль после первого входа!**
+
+            ### 📦 Размер APK
+
+            - Размер: ${{ steps.apk_info.outputs.size }}
+            - Включает: Python 3.9 runtime + FastAPI + Все инструменты
+
+            ### 🚀 Первый запуск
+
+            - Первый старт занимает ~5-7 секунд (инициализация Python)
+            - Backend запускается на `127.0.0.1:8001`
+            - Проверьте статус backend в настройках приложения
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Загрузка в последний release (если вручную указано)
+      - name: 📤 Загрузка APK в последний Release
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release == 'true'
+        run: |
+          echo "📤 Загрузка APK в последний release..."
+          gh release upload $(gh release list --limit 1 | cut -f3) \
+            "${{ steps.apk_info.outputs.path }}" \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ✅ Итоги сборки
+        run: |
+          echo ""
+          echo "========================================="
+          echo "✅ Сборка APK завершена успешно!"
+          echo "========================================="
+          echo ""
+          echo "📱 APK: ${{ steps.apk_info.outputs.name }}"
+          echo "📦 Размер: ${{ steps.apk_info.outputs.size }}"
+          echo "🏷️ Версия: ${{ steps.apk_info.outputs.version }}"
+          echo ""
+          echo "📥 Скачать можно из:"
+          if [ "${{ github.event_name }}" == "release" ]; then
+            echo "  🔗 Release: ${{ github.event.release.html_url }}"
+          else
+            echo "  🔗 Artifacts: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          echo ""
+          echo "========================================="
