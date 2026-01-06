@@ -84,19 +84,40 @@
 
 **Покрытие**: Цель 85%+ (awaiting npm test run)
 
-#### 1.3 Performance Monitor Tests
-**Файл**: `tests/performance-monitor.test.js`
+#### 1.3 Performance Monitor Tests ✅ COMPLETED
+**Файл**: `__tests__/unit/performance-monitor.test.js`
+**Статус**: ✅ Implemented (519 lines, 60+ test cases)
+**Дата**: 2026-01-06
 
-```javascript
-// Тесты для:
-- recordToolExecution()
-- getMetrics()
-- Memory sampling
-- Export functions
-- Reset functionality
-```
+**Test Suites** (13 групп):
+1. **Constructor** - Initialization and config (5 tests)
+2. **initialize()** - Setup and persistence loading (3 tests)
+3. **recordToolExecution()** - Comprehensive metrics tracking (15 tests)
+4. **recordCache()** - Cache hit/miss tracking (3 tests)
+5. **recordError()** - Error categorization and limiting (7 tests)
+6. **sampleMemory()** - Memory sampling with limits (6 tests)
+7. **startMemorySampling()** - Sampling lifecycle start (3 tests)
+8. **stopMemorySampling()** - Sampling lifecycle stop (2 tests)
+9. **persistMetrics()** - Save to storage (3 tests)
+10. **loadHistoricalMetrics()** - Load from storage (3 tests)
+11. **getMetrics()** - Aggregated metrics (7 tests)
+12. **resetMetrics()** - Clear all metrics (5 tests)
+13. **Configuration** - Config management (3 tests)
 
-**Покрытие**: Цель 80%+
+**Проверяемая функциональность**:
+- ✅ Initialization with storageManager
+- ✅ recordToolExecution() - tracks tools, complexity, routing, errors
+- ✅ recordCache() - hits/misses tracking
+- ✅ recordError() - error categorization, recent errors buffer (50 max)
+- ✅ sampleMemory() - memory sampling, peak/avg calculation, 100 sample limit
+- ✅ Memory sampling lifecycle - start/stop intervals (60s periodic)
+- ✅ persistMetrics() - save to storage with session duration
+- ✅ loadHistoricalMetrics() - restore from storage
+- ✅ getMetrics() - aggregated metrics with derived calculations
+- ✅ resetMetrics() - clear all metrics, preserve config
+- ✅ Configuration management - intervals, limits
+
+**Покрытие**: Цель 80%+ (awaiting npm test run)
 
 #### 1.4 Tool Registry Tests
 **Файл**: `tests/tool-registry.test.js`
