@@ -406,12 +406,138 @@ _TBD - после тестирования в браузере_
 
 ---
 
-### Эксперимент #5: [Название]
-**Дата**: YYYY-MM-DD
-**Статус**: 🟡 Planned
+### Эксперимент #5: Export/Import Settings
+**Дата**: 2026-01-06
+**Статус**: ✅ Completed
+**Автор**: Claude
 
 **Цель**:
-...
+Реализовать систему экспорта и импорта настроек расширения с валидацией, backup и checksum для безопасного переноса конфигурации.
+
+**Изменённые файлы**:
+- `src/utils/settings-manager.js` (NEW) - SettingsManager класс (434 строк)
+- `src/popup/popup.js` - Интегрирован SettingsManager, добавлены event handlers
+- `public/popup.html` - Добавлены кнопки Export/Import в Stats tab
+
+**Реализованные возможности**:
+1. **Export функционал**:
+   - `exportSettings()` - экспорт всех настроек в JSON
+   - `exportToFile()` - скачивание JSON файла
+   - Timestamp в имени файла (ISO 8601)
+   - Metadata: version, timestamp, checksum
+   - Поддержка 7 категорий настроек
+
+2. **Import функционал**:
+   - `importSettings()` - импорт из JSON объекта
+   - `importFromFile()` - импорт из файла
+   - Validation перед импортом
+   - Автоматический backup перед импортом
+   - Merge или Replace режимы
+   - Checksum verification
+
+3. **Backup система**:
+   - `createBackup()` - автоматический backup
+   - `restoreBackup()` - восстановление из backup
+   - `listBackups()` - список всех backups
+   - `cleanupOldBackups()` - хранение последних 3
+   - Timestamp-based naming
+
+4. **Validation**:
+   - Version compatibility check
+   - Checksum integrity verification
+   - Required fields validation
+   - Data structure validation
+   - Custom hash algorithm (32-bit)
+
+5. **Дополнительные методы**:
+   - `resetToDefaults()` - сброс на дефолты
+   - `getSettingsSummary()` - статистика настроек
+   - Dual storage (chrome.storage + localStorage)
+
+**Технические детали**:
+- **Storage Keys** (7):
+  - user_theme_preference
+  - command_history
+  - notification_settings
+  - performance_metrics
+  - queue_settings
+  - articles
+  - user_preferences
+
+- **Export Format**:
+```json
+{
+  "version": "1.0.0",
+  "timestamp": "2026-01-06T12:34:56.789Z",
+  "settings": { /* all settings */ },
+  "checksum": "a1b2c3d4"
+}
+```
+
+- **Filename Format**: `data20-settings-YYYY-MM-DDTHH-MM-SS.json`
+- **Checksum**: Custom 32-bit hash algorithm
+- **Backups**: Max 3, auto-cleanup oldest
+- **Import**: Auto-reload extension after successful import
+
+**UI Integration**:
+- Stats tab: 2 buttons (📤 Export, 📥 Import)
+- Hidden file input for file selection
+- Success/error alerts with details
+- Auto-reload after import
+
+**Примеры использования**:
+```javascript
+// Export settings
+const data = await settingsManager.exportSettings();
+
+// Export to file (automatic download)
+await settingsManager.exportToFile();
+
+// Import from file
+const file = /* File object from input */;
+await settingsManager.importFromFile(file);
+
+// Create manual backup
+const backupKey = await settingsManager.createBackup();
+
+// List backups
+const backups = await settingsManager.listBackups();
+// [{key, timestamp, size}, ...]
+
+// Restore from backup
+await settingsManager.restoreBackup(backupKey);
+
+// Get summary
+const summary = await settingsManager.getSettingsSummary();
+// {version, totalKeys, categories, sizeEstimate}
+```
+
+**Скриншоты**:
+_Требуется тестирование в браузере для получения скриншотов_
+
+**Результаты**:
+- ✅ SettingsManager полностью реализован (434 строк)
+- ✅ Export в JSON файл с timestamp
+- ✅ Import с validation и checksum
+- ✅ Автоматический backup перед импортом
+- ✅ Backup management (list, restore, cleanup)
+- ✅ UI кнопки в Stats tab
+- ✅ Success/error handling
+- ⏳ Требуется тестирование в Chrome
+- ⏳ Требуется тестирование в Firefox
+
+**Следующие шаги**:
+1. Загрузить расширение в Chrome для тестирования
+2. Протестировать export functionality
+3. Протестировать import с validation
+4. Проверить backup/restore flow
+5. Протестировать checksum verification
+6. Проверить merge vs replace modes
+7. Сделать скриншоты
+8. Оценить по метрикам успеха
+
+**Выводы**:
+✅ **Stage 5 COMPLETED!** Все 5 этапов Phase 9.3 успешно реализованы в sandbox окружении. Система экспорта/импорта обеспечивает безопасный перенос настроек с полной валидацией и backup защитой.
 
 ---
 
