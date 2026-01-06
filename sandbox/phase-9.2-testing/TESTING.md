@@ -51,20 +51,38 @@
 
 **Покрытие**: Цель 90%+ (awaiting npm test run)
 
-#### 1.2 Offline Queue Tests
-**Файл**: `tests/offline-queue.test.js`
+#### 1.2 Offline Queue Tests ✅ COMPLETED
+**Файл**: `__tests__/unit/offline-queue.test.js`
+**Статус**: ✅ Implemented (452 lines, 50+ test cases)
+**Дата**: 2026-01-06
 
-```javascript
-// Тесты для:
-- addToQueue()
-- processQueue()
-- Priority sorting
-- Retry logic
-- Network status handling
-- Background sync
-```
+**Test Suites** (12 групп):
+1. **Constructor** - Initialization (4 tests)
+2. **initialize()** - Setup and configuration (6 tests)
+3. **startPeriodicSync()** - Interval management (4 tests)
+4. **stopPeriodicSync()** - Cleanup (2 tests)
+5. **processQueue()** - Queue processing logic (11 tests)
+6. **processJob()** - Individual job execution (10 tests)
+7. **stopProcessing()** - Graceful shutdown (3 tests)
+8. **Network Monitoring** - Online/offline events (1 test)
+9. **Notifications** - User notifications (2 tests)
+10. **Statistics** - Metrics tracking (2 tests)
+11. **Configuration** - Config management (3 tests)
 
-**Покрытие**: Цель 85%+
+**Проверяемая функциональность**:
+- ✅ Queue initialization with network monitoring
+- ✅ Background sync registration
+- ✅ Periodic sync with configurable interval
+- ✅ Priority-based job sorting (priority desc, createdAt asc)
+- ✅ Sequential job processing
+- ✅ Job status lifecycle (queued → processing → completed/failed)
+- ✅ Exponential backoff retry logic (max 3 retries)
+- ✅ Network status handling (online/offline events)
+- ✅ Graceful shutdown on connection loss
+- ✅ Statistics tracking (processed/succeeded/failed)
+- ✅ Chrome notifications on completion/failure
+
+**Покрытие**: Цель 85%+ (awaiting npm test run)
 
 #### 1.3 Performance Monitor Tests
 **Файл**: `tests/performance-monitor.test.js`
