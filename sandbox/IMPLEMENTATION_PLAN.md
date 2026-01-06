@@ -75,19 +75,19 @@
 
 ---
 
-### Этап 3: Command Palette (Ctrl+K) (Приоритет: 🟡 Medium)
+### Этап 3: Command Palette (Ctrl+K) (Приоритет: 🟡 Medium) ✅ COMPLETED
 
 **Цель**: Быстрый поиск и выполнение команд
 
 **Шаги**:
-1. ⏳ Создать UI для command palette
-2. ⏳ Добавить обработчик Ctrl+K
-3. ⏳ Реализовать fuzzy search
-4. ⏳ Добавить команды (tools, navigation, settings)
-5. ⏳ Добавить keyboard navigation (↑↓ Enter)
-6. ⏳ Добавить history последних команд
-7. ⏳ Тестировать shortcuts
-8. ⏳ Документировать в EXPERIMENTS.md
+1. ✅ Создать UI для command palette (modal + overlay)
+2. ✅ Добавить обработчик Ctrl+K / Cmd+K
+3. ✅ Реализовать fuzzy search (weighted scoring)
+4. ✅ Добавить команды - 17 команд (navigation, queue, metrics, settings, help)
+5. ✅ Добавить keyboard navigation (↑↓ Enter Escape)
+6. ✅ Добавить history последних команд (10 max, persistent)
+7. ⏳ Тестировать shortcuts (требуется browser testing)
+8. ✅ Документировать в EXPERIMENTS.md
 
 **Файлы для изменения** (в sandbox):
 - `public/popup.html` - modal для palette
