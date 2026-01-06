@@ -282,7 +282,131 @@ _TBD - после тестирования в браузере_
 
 ---
 
-### Эксперимент #4: [Название]
+### Эксперимент #4: Enhanced Desktop Notifications
+**Дата**: 2026-01-06
+**Статус**: 🔵 In Progress
+**Автор**: Claude
+
+**Цель**:
+Улучшить систему уведомлений с поддержкой action buttons, progress tracking и различных типов уведомлений.
+
+**Изменённые файлы**:
+- `src/utils/notification-manager.js` (NEW) - NotificationManager класс (548 строк)
+
+**Реализованные возможности**:
+1. **Типы уведомлений**:
+   - **Basic**: Простые уведомления (title + message)
+   - **Action**: С кнопками действий (до 2 кнопок в Chrome)
+   - **Progress**: С индикатором прогресса (0-100%)
+   - **Image**: С картинкой
+   - **List**: Список элементов (title + message для каждого)
+
+2. **API методы**:
+   - `showNotification()` - базовое уведомление
+   - `showActionNotification()` - с action buttons
+   - `showProgressNotification()` - с progress bar
+   - `updateProgress()` - обновление прогресса
+   - `showImageNotification()` - с изображением
+   - `showListNotification()` - список элементов
+   - `clearNotification()` - закрыть конкретное
+   - `clearAllNotifications()` - закрыть все
+
+3. **Event Handlers**:
+   - `onClicked` - клик по уведомлению
+   - `onButtonClicked` - клик по кнопке
+   - `onClosed` - закрытие уведомления
+   - Custom callbacks для каждого уведомления
+
+4. **Settings**:
+   - Enabled/disabled toggle
+   - Sound on/off (опциональный beep через Web Audio API)
+   - Priority level (-2 to 2, Chrome only)
+   - Persistent хранение в chrome.storage
+
+5. **Dual API Support**:
+   - Chrome Extension Notifications API (primary)
+   - Web Notifications API (fallback)
+   - Automatic detection и selection
+
+**Технические детали**:
+- **Архитектура**: Standalone class с Map для tracking
+- **Storage**: Persistent settings в chrome.storage.local
+- **Sound**: Web Audio API (oscillator 800Hz, 0.1s)
+- **Priority**: Chrome notifications support -2 to 2
+- **Buttons**: До 2 action buttons (Chrome limitation)
+- **Auto-cleanup**: Удаление из Map при закрытии
+
+**Примеры использования**:
+```javascript
+// Basic notification
+await notificationManager.showNotification({
+  title: 'Task Complete',
+  message: 'Your analysis is ready',
+  priority: 1
+});
+
+// Progress notification
+const id = await notificationManager.showProgressNotification({
+  id: 'sync-progress',
+  title: 'Syncing Queue',
+  message: 'Processing jobs...',
+  progress: 0
+});
+await notificationManager.updateProgress(id, 50);
+await notificationManager.updateProgress(id, 100, 'Complete!');
+
+// Action notification
+await notificationManager.showActionNotification({
+  title: 'Tool Execution Failed',
+  message: 'Error occurred during analysis',
+  buttons: [
+    { title: 'Retry', action: () => retryExecution() },
+    { title: 'View Logs', action: () => openLogs() }
+  ]
+});
+
+// List notification
+await notificationManager.showListNotification({
+  title: 'Queue Summary',
+  message: 'Recent activity:',
+  items: [
+    { title: 'Completed', message: '5 jobs' },
+    { title: 'Failed', message: '2 jobs' },
+    { title: 'Queued', message: '3 jobs' }
+  ]
+});
+```
+
+**Скриншоты**:
+_Требуется тестирование в браузере для получения скриншотов_
+
+**Результаты** (Preliminary):
+- ✅ NotificationManager полностью реализован (548 строк)
+- ✅ 5 типов уведомлений (basic, action, progress, image, list)
+- ✅ Dual API support (Chrome + Web)
+- ✅ Event handlers для clicks и closes
+- ✅ Settings persistence
+- ✅ Sound support (Web Audio API)
+- ⏳ Требуется тестирование в Chrome
+- ⏳ Требуется тестирование в Firefox
+- ⏳ Требуется тестирование на разных ОС (Windows/Mac/Linux)
+
+**Следующие шаги**:
+1. Интегрировать в background.js для примеров
+2. Загрузить расширение в Chrome для тестирования
+3. Протестировать все типы уведомлений
+4. Проверить action buttons functionality
+5. Протестировать progress updates
+6. Проверить на Windows/Mac/Linux
+7. Сделать скриншоты всех типов
+8. Оценить по метрикам успеха
+
+**Выводы**:
+_TBD - после тестирования в браузере_
+
+---
+
+### Эксперимент #5: [Название]
 **Дата**: YYYY-MM-DD
 **Статус**: 🟡 Planned
 
