@@ -114,6 +114,8 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
+    """Run ABSOLUTE MINIMUM HTTP server with file logging"""
+    global server, logs_path
     """
     Run ultra-lightweight HTTP server with lazy initialization
 
@@ -126,6 +128,26 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
 
     # Import ONLY standard library - NO custom modules!
     from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+    import time
+
+    # Log file path
+    log_file = f"{logs_path}/backend_requests.log" if logs_path else "/tmp/backend_requests.log"
+
+    def write_log(message):
+        """Write to log file"""
+        try:
+            with open(log_file, 'a') as f:
+                timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+                f.write(f"[{timestamp}] {message}\n")
+                f.flush()
+        except:
+            pass  # Ignore logging errors
+
+    write_log("🚀 Server starting...")
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass  # Disable console logging
     import json
 
     # Flag to track if DB is initialized
@@ -196,13 +218,21 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
             return {}
 
         def do_OPTIONS(self):
+            write_log(f"OPTIONS {self.path}")
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods', '*')
             self.send_header('Access-Control-Allow-Headers', '*')
             self.end_headers()
+            write_log(f"OPTIONS {self.path} - responded")
 
         def do_GET(self):
+            write_log(f"GET {self.path}")
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
             # Health check - NO imports, NO database, INSTANT response
             if '/health' in self.path:
                 self._send_json({"status": "ok", "version": "1.0.0"})
@@ -224,6 +254,29 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
                 self._send_json([])
 
             else:
+                self.wfile.write(b'{}')
+            write_log(f"GET {self.path} - responded")
+
+        def do_POST(self):
+            write_log(f"🔴 POST {self.path} - STARTED")
+            try:
+                self.send_response(200)
+                write_log(f"🔴 POST {self.path} - sent response 200")
+                self.send_header('Content-Type', 'application/json')
+                write_log(f"🔴 POST {self.path} - sent Content-Type header")
+                self.send_header('Access-Control-Allow-Origin', '*')
+                write_log(f"🔴 POST {self.path} - sent CORS header")
+                self.end_headers()
+                write_log(f"🔴 POST {self.path} - ended headers")
+                self.wfile.write(b'{"access_token":"test","refresh_token":"test","token_type":"bearer"}')
+                write_log(f"🟢 POST {self.path} - COMPLETED successfully")
+            except Exception as e:
+                write_log(f"💥 POST {self.path} - ERROR: {e}")
+                raise
+
+    write_log("✅ Server ready, starting serve_forever()")
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.serve_forever()
                 self._send_json({"message": "Data20 Mobile Backend", "status": "running"})
 
         def do_POST(self):
