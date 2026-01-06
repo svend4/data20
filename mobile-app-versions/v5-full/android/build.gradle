@@ -1,0 +1,41 @@
+// Top-level build file for Android project
+buildscript {
+    ext.kotlin_version = '1.9.10'
+
+    repositories {
+        google()
+        mavenCentral()
+        // Chaquopy Maven repository
+        maven { url "https://chaquo.com/maven" }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        // Chaquopy plugin for Python integration
+        classpath 'com.chaquo.python:gradle:14.0.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://chaquo.com/maven" }
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

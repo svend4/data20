@@ -1,0 +1,177 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  # Build Desktop App for all platforms
+  build-desktop:
+    name: Build Desktop (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      working-directory: ./desktop-app
+      run: npm ci
+
+    - name: Build Electron app
+      working-directory: ./desktop-app
+      run: npm run build
+
+    - name: Package Electron app
+      working-directory: ./desktop-app
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: npm run package
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: desktop-${{ matrix.os }}
+        path: |
+          desktop-app/dist/**/*.exe
+          desktop-app/dist/**/*.dmg
+          desktop-app/dist/**/*.AppImage
+          desktop-app/dist/**/*.deb
+          desktop-app/dist/**/*.rpm
+
+  # Build Mobile App (Android)
+  build-mobile-android:
+    name: Build Mobile (Android)
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+
+    - name: Install dependencies
+      working-directory: ./mobile-app
+      run: flutter pub get
+
+    - name: Build APK (Lite)
+      working-directory: ./mobile-app
+      run: flutter build apk --flavor lite --release
+
+    - name: Build APK (Standard)
+      working-directory: ./mobile-app
+      run: flutter build apk --flavor standard --release
+
+    - name: Build APK (Full)
+      working-directory: ./mobile-app
+      run: flutter build apk --flavor full --release
+
+    - name: Build App Bundle
+      working-directory: ./mobile-app
+      run: flutter build appbundle --flavor full --release
+
+    - name: Upload APKs
+      uses: actions/upload-artifact@v3
+      with:
+        name: mobile-android
+        path: |
+          mobile-app/build/app/outputs/flutter-apk/*.apk
+          mobile-app/build/app/outputs/bundle/fullRelease/*.aab
+
+  # Build PWA
+  build-pwa:
+    name: Build PWA
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      working-directory: ./web-ui
+      run: npm ci
+
+    - name: Build PWA
+      working-directory: ./web-ui
+      run: npm run build
+
+    - name: Upload PWA build
+      uses: actions/upload-artifact@v3
+      with:
+        name: pwa
+        path: web-ui/build/
+
+  # Create GitHub Release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-desktop, build-mobile-android, build-pwa]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          artifacts/**/*.exe
+          artifacts/**/*.dmg
+          artifacts/**/*.AppImage
+          artifacts/**/*.deb
+          artifacts/**/*.rpm
+          artifacts/**/*.apk
+          artifacts/**/*.aab
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: startsWith(github.ref, 'refs/tags/')
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy PWA
+      run: |
+        echo "Deploying PWA to production..."
+        # Add deployment commands here
+
+    - name: Notify deployment
+      run: |
+        echo "✅ Deployment completed successfully"

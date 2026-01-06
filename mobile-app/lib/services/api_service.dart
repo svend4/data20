@@ -170,12 +170,13 @@ class ApiService {
   // Tools
   Future<List<Tool>> getTools() async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/api/tools'),
+      Uri.parse('$_baseUrl/tools'),
       headers: _getHeaders(),
     );
 
-    final data = await _handleResponse(response) as List;
-    return data.map((json) => Tool.fromJson(json)).toList();
+    final data = await _handleResponse(response);
+    final toolsList = data['tools'] as List;
+    return toolsList.map((json) => Tool.fromJson(json)).toList();
   }
 
   Future<Tool> getTool(String toolName) async {
@@ -193,7 +194,7 @@ class ApiService {
     Map<String, dynamic> parameters,
   ) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/run'),
+      Uri.parse('$_baseUrl/jobs/execute'),
       headers: _getHeaders(),
       body: json.encode({
         'tool_name': toolName,
@@ -206,7 +207,7 @@ class ApiService {
 
   Future<List<Job>> getJobs() async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/api/jobs'),
+      Uri.parse('$_baseUrl/jobs'),
       headers: _getHeaders(),
     );
 
@@ -216,7 +217,7 @@ class ApiService {
 
   Future<Job> getJob(String jobId) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/api/jobs/$jobId'),
+      Uri.parse('$_baseUrl/jobs/$jobId'),
       headers: _getHeaders(),
     );
 
@@ -228,7 +229,7 @@ class ApiService {
   Future<bool> checkHealth() async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/api/tools'),
+        Uri.parse('$_baseUrl/health'),
         headers: _getHeaders(includeAuth: false),
       ).timeout(const Duration(seconds: 3));
 

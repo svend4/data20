@@ -419,3 +419,4 @@ Java 17+, Android SDK, Python 3.9+, Flutter SDK (или только брауз�
 **Начните с:** [INDEX.md](INDEX.md) → Выберите категорию → Читайте статьи → Добавляйте свои!
 
 **Вопросы?** Читайте [docs/METHODOLOGY.md](docs/METHODOLOGY.md)
+# Force workflow trigger

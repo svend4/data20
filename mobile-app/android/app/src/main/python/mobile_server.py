@@ -33,6 +33,28 @@ from mobile_database import get_db, init_mobile_database, engine
 from mobile_tool_registry import ToolRegistry
 from mobile_tool_runner import ToolRunner, JobStatus as RunnerJobStatus
 
+# Phase 8.2.3: Performance optimization
+from performance_optimizer import (
+    LazyToolLoader,
+    ToolPreloader,
+    metrics,
+    tool_registry_cache,
+    tool_result_cache,
+    timing_decorator,
+    create_cache_key,
+    get_performance_report,
+)
+
+# Phase 8.2.4: Battery optimization
+from battery_optimizer import (
+    activity_tracker,
+    power_manager,
+    battery_monitor,
+    get_battery_stats,
+    BatteryConfig,
+    BackendState,
+)
+
 # ========================
 # Pydantic Models
 # ========================
@@ -96,9 +118,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Phase 8.2.4: Activity tracking middleware
+@app.middleware("http")
+async def track_activity_middleware(request, call_next):
+    """Track all requests for battery optimization"""
+    import time
+
+    # Record activity
+    activity_tracker.record_activity()
+
+    # Measure request time
+    start_time = time.time()
+    response = await call_next(request)
+    cpu_time = time.time() - start_time
+
+    # Estimate network bytes (rough estimate from response size)
+    network_bytes = int(response.headers.get("content-length", 0))
+
+    # Record for battery monitoring
+    battery_monitor.record_request(cpu_time, network_bytes)
+
+    return response
+
 # Global instances
 tool_registry = None
 tool_runner = None
+
+# Phase 8.2.3: Performance optimization instances
+lazy_loader = None
+tool_preloader = None
 
 # ========================
 # Startup/Shutdown
@@ -107,29 +155,76 @@ tool_runner = None
 @app.on_event("startup")
 async def startup():
     """Initialize on startup"""
-    global tool_registry, tool_runner
+    global tool_registry, tool_runner, lazy_loader, tool_preloader
 
+    startup_start = datetime.now()
     print("🚀 Starting mobile backend...")
 
     # Initialize database
     init_mobile_database()
 
-    # Initialize tool registry
+    # Initialize tool registry (Phase 8.2.2: with variant support)
     tools_dir = Path(__file__).parent.parent / "tools"
+    # Initialize tool registry (without scanning yet)
+    tools_dir = Path(__file__).parent / "tools"
     if not tools_dir.exists():
-        tools_dir = Path(__file__).parent / "tools"
+        tools_dir = Path(__file__).parent.parent / "tools"
 
+    # Detect app variant from environment (set by Gradle BuildConfig)
+    app_variant = os.getenv('APP_VARIANT', None)
+
+    # Phase 8.2.3: Initialize lazy loader
+    lazy_loader = LazyToolLoader(tools_dir=tools_dir)
+    print(f"📊 Found {lazy_loader.get_available_count()} available tools")
+
+    # Phase 8.2.3: Initialize preloader
+    tool_preloader = ToolPreloader(lazy_loader)
+    preload_count = 10 if app_variant in ['lite', 'standard'] else 15
+    tool_preloader.preload_top_tools(preload_count)
+    print(f"⚡ Preloaded {preload_count} most used tools")
+
+    tool_registry = ToolRegistry(tools_dir=tools_dir, variant=app_variant)
+    tool_count = len(tool_registry.tools)
+
+    print(f"✅ Registered {tool_count} tools")
+
+    # Log variant information
+    if hasattr(tool_registry, 'variant') and tool_registry.variant:
+        print(f"   Variant: {tool_registry.variant.value.upper()}")
+
+    # Scan tools
+    tool_registry.scan_tools()
     tool_registry = ToolRegistry(tools_dir=tools_dir)
-    print(f"✅ Loaded {len(tool_registry.tools)} tools")
 
     # Initialize tool runner
     upload_dir = os.getenv('DATA20_UPLOAD_PATH', '/tmp/data20/uploads')
     tool_runner = ToolRunner(
         tools_dir=tools_dir,
-        upload_dir=Path(upload_dir)
+        output_dir=Path(upload_dir)
     )
 
+    # Record startup time
+    startup_duration = (datetime.now() - startup_start).total_seconds()
+    metrics.record_startup(startup_duration)
+
+    print(f"✅ Mobile backend started in {startup_duration:.2f}s")
+    if startup_duration < 3.0:
+        print("   🎯 Startup time target achieved (< 3s)")
+    else:
+        print(f"   ⚠️ Startup time ({startup_duration:.2f}s) exceeds target (3s)")
+
+    # Phase 8.2.4: Load battery configuration
+    BatteryConfig.from_env()
+
+    # Phase 8.2.4: Start battery monitoring
+    if BatteryConfig.AUTO_STOP_ENABLED:
+        import asyncio
+        asyncio.create_task(power_manager.start_monitoring())
+        print(f"🔋 Battery optimization enabled (auto-stop: {BatteryConfig.IDLE_TIMEOUT_SECONDS}s)")
+    else:
+        print("🔋 Battery optimization disabled")
     print("✅ Mobile backend started successfully")
+    print("📦 Tool loading will happen in background on first /tools request")
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -143,12 +238,29 @@ async def shutdown():
 @app.get("/health")
 async def health():
     """Health check endpoint"""
+    perf_report = get_performance_report() if metrics else None
+    battery_stats = get_battery_stats()
+
     return {
         "status": "ok",
         "environment": "mobile",
         "database": os.getenv('DATA20_DATABASE_PATH', 'unknown'),
         "version": "1.0.0",
-        "tools_count": len(tool_registry.tools) if tool_registry else 0
+        "tools_count": len(tool_registry.tools) if tool_registry else 0,
+        "performance": {
+            "startup_time": f"{metrics.startup_time:.2f}s" if metrics and metrics.startup_time else None,
+            "startup_target_met": metrics.startup_time < 3.0 if metrics and metrics.startup_time else False,
+            "cache_hit_rate": f"{metrics.get_cache_hit_rate():.1f}%" if metrics else None,
+            "tools_loaded": metrics.tools_loaded if metrics else 0,
+            "tools_preloaded": metrics.tools_preloaded if metrics else 0,
+        } if perf_report else None,
+        "battery": {
+            "state": battery_stats["power_management"]["state"],
+            "idle_time": battery_stats["activity"]["idle_time"],
+            "auto_stop_enabled": battery_stats["power_management"]["auto_stop_enabled"],
+            "estimated_drain": battery_stats["battery_estimate"]["estimated_drain"]["per_hour"],
+            "target_met": battery_stats["battery_estimate"]["target_met"],
+        } if battery_stats else None
     }
 
 @app.get("/")
@@ -158,8 +270,35 @@ async def root():
         "message": "Data20 Mobile Backend",
         "status": "running",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "metrics": "/metrics"
     }
+
+# Phase 8.2.3: Performance metrics endpoint
+@app.get("/metrics")
+async def get_metrics(current_user: User = Depends(get_current_active_user)):
+    """Get detailed performance metrics"""
+    return get_performance_report()
+
+# Phase 8.2.4: Battery statistics endpoint
+@app.get("/battery")
+async def get_battery(current_user: User = Depends(get_current_active_user)):
+    """Get battery usage statistics"""
+    return get_battery_stats()
+
+# Phase 8.2.4: Power management control
+@app.post("/power/wake")
+async def wake_backend(current_user: User = Depends(get_current_active_user)):
+    """Wake backend from sleep"""
+    activity_tracker.record_activity()
+    power_manager.change_state(BackendState.ACTIVE)
+    return {"status": "active", "message": "Backend awakened"}
+
+@app.post("/power/sleep")
+async def sleep_backend(current_user: User = Depends(get_current_active_user)):
+    """Put backend to sleep"""
+    power_manager.change_state(BackendState.SLEEPING)
+    return {"status": "sleeping", "message": "Backend sleeping"}
 
 # ========================
 # Authentication
@@ -221,12 +360,24 @@ async def get_tools(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get list of available tools"""
+    # Phase 8.2.3: Check cache first
+    cache_key = f"tools_list:{category or 'all'}"
+    cached_result = tool_registry_cache.get(cache_key)
+
+    if cached_result:
+        return cached_result
+    # Lazy load tools on first request
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on first request...")
+        tools_count = tool_registry.scan_tools()
+        print(f"✅ Loaded {tools_count} tools")
+
     tools = tool_registry.get_all_tools()
 
     if category:
         tools = [t for t in tools if t.category == category]
 
-    return {
+    result = {
         "tools": [
             {
                 "name": t.name,
@@ -243,12 +394,19 @@ async def get_tools(
                     for p in t.parameters
                 ],
                 "icon": t.icon,
-                "color": t.color
+                "color": t.color,
+                "dependency_level": t.dependency_level,
+                "available_in_variants": t.available_in_variants,
             }
             for t in tools
         ],
         "total": len(tools)
     }
+
+    # Cache the result
+    tool_registry_cache.set(cache_key, result)
+
+    return result
 
 @app.get("/tools/{tool_name}")
 async def get_tool(
@@ -256,6 +414,11 @@ async def get_tool(
     current_user: User = Depends(get_current_active_user)
 ):
     """Get tool details"""
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools on demand...")
+        tool_registry.scan_tools()
+
     tool = tool_registry.get_tool(tool_name)
 
     if not tool:
@@ -296,6 +459,11 @@ async def execute_tool(
 ):
     """Execute tool (synchronous on mobile)"""
 
+    # Lazy load tools if not loaded yet
+    if len(tool_registry.tools) == 0:
+        print("📦 Loading tools for execution...")
+        tool_registry.scan_tools()
+
     # Validate tool exists
     tool = tool_registry.get_tool(request.tool_name)
     if not tool:
@@ -315,15 +483,18 @@ async def execute_tool(
 
     # Execute tool synchronously (no Celery on mobile)
     try:
-        result = tool_runner.run_tool(
+        result = await tool_runner.run_tool(
             tool_name=request.tool_name,
-            parameters=request.parameters,
-            input_file=request.input_file
+            parameters=request.parameters
         )
 
         # Update job with result
         job.status = JobStatus.COMPLETED
-        job.result = result
+        job.result = {
+            "output": result.output,
+            "output_files": result.output_files,
+            "duration": result.duration
+        }
         job.completed_at = datetime.utcnow()
 
         db.commit()
@@ -335,7 +506,7 @@ async def execute_tool(
             status=job.status.value,
             created_at=job.created_at.isoformat(),
             updated_at=job.updated_at.isoformat(),
-            result=result
+            result=job.result
         )
 
     except Exception as e:
