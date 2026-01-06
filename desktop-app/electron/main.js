@@ -14,6 +14,10 @@ const { app, BrowserWindow, ipcMain, Menu, dialog, shell } = require('electron')
 const path = require('path');
 const Store = require('electron-store');
 const BackendLauncher = require('./backend-launcher');
+const AutoUpdater = require('./auto-updater');
+const TrayManager = require('./tray-manager');
+const PlatformIntegrations = require('./platform-integrations');
+const PerformanceOptimizer = require('./performance-optimizer');
 
 // Initialize electron-store for persistent settings
 const store = new Store();
@@ -21,6 +25,10 @@ const store = new Store();
 let mainWindow;
 let backendLauncher;
 let splashWindow;
+let updater;
+let trayManager;
+let platformIntegrations;
+let performanceOptimizer;
 
 // Check if running in development
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -28,6 +36,14 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 // Backend configuration
 const BACKEND_PORT = store.get('backend.port', 8001);
 const BACKEND_HOST = store.get('backend.host', '127.0.0.1');
+
+// Initialize performance optimizer early
+performanceOptimizer = new PerformanceOptimizer({
+  enabled: true,
+  memoryThreshold: 200, // MB
+  gcInterval: 60000, // 60 seconds
+  monitorInterval: 30000, // 30 seconds
+});
 
 /**
  * Create splash screen window
@@ -280,6 +296,54 @@ function createMenu() {
         },
         { type: 'separator' },
         {
+          label: 'Performance Report',
+          click: () => {
+            if (performanceOptimizer) {
+              const report = performanceOptimizer.generateReport();
+
+              const recommendations = report.recommendations
+                .map(r => `• ${r.message}`)
+                .join('\n');
+
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Performance Report',
+                message: 'Application Performance',
+                detail: [
+                  'Summary:',
+                  `  Startup Time: ${report.summary.startupTime} ${report.targets.startup.met}`,
+                  `  Memory Usage: ${report.summary.memoryUsed} ${report.targets.memory.met}`,
+                  `  Peak Memory: ${report.summary.peakMemory}`,
+                  `  Uptime: ${report.summary.uptime}`,
+                  `  GC Runs: ${report.summary.gcRuns}`,
+                  '',
+                  'Targets:',
+                  `  Startup: ${report.targets.startup.actual} / ${report.targets.startup.target}`,
+                  `  Memory: ${report.targets.memory.actual} / ${report.targets.memory.target}`,
+                  '',
+                  'Recommendations:',
+                  recommendations,
+                ].join('\n'),
+              });
+            }
+          },
+        },
+        {
+          label: 'Check for Updates',
+          click: () => {
+            if (updater) {
+              updater.checkForUpdatesAndNotify();
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Auto-Update',
+                message: 'Auto-update is not available in development mode.',
+              });
+            }
+          },
+        },
+        { type: 'separator' },
+        {
           label: 'About',
           click: () => {
             const info = backendLauncher.getInfo();
@@ -479,6 +543,83 @@ ipcMain.handle('store-delete', (event, key) => {
   return true;
 });
 
+// Auto-update handlers
+ipcMain.handle('check-for-updates', async () => {
+  if (updater) {
+    return await updater.checkForUpdates();
+  }
+  return false;
+});
+
+ipcMain.handle('get-update-status', () => {
+  if (updater) {
+    return updater.getStatus();
+  }
+  return { enabled: false };
+});
+
+ipcMain.handle('install-update', () => {
+  if (updater) {
+    return updater.quitAndInstall();
+  }
+  return false;
+});
+
+// Tray and platform integration handlers
+ipcMain.handle('tray-show-balloon', (event, title, content) => {
+  if (trayManager) {
+    trayManager.showBalloon(title, content);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('platform-set-badge', (event, text) => {
+  if (platformIntegrations) {
+    platformIntegrations.setDockBadge(text);
+    platformIntegrations.setBadgeCount(parseInt(text) || 0);
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('platform-set-progress', (event, progress) => {
+  if (platformIntegrations) {
+    platformIntegrations.setProgressBar(progress);
+    return true;
+  }
+  return false;
+});
+
+// Performance optimization handlers
+ipcMain.handle('performance-get-metrics', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.getMetrics();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-get-report', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.generateReport();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-force-gc', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.forceGC();
+  }
+  return null;
+});
+
+ipcMain.handle('performance-get-memory', () => {
+  if (performanceOptimizer) {
+    return performanceOptimizer.getMemoryUsage();
+  }
+  return process.memoryUsage();
+});
+
 /**
  * App lifecycle
  */
@@ -491,6 +632,19 @@ app.whenReady().then(async () => {
   try {
     // Show splash screen
     createSplashWindow();
+
+    // Initialize auto-updater (only in production)
+    if (!isDev) {
+      console.log('🔄 Initializing auto-updater...');
+      updater = new AutoUpdater({
+        enabled: true,
+        checkOnStart: true,
+        notifyUser: true,
+        autoDownload: true,
+        autoInstallOnAppQuit: true,
+      });
+      console.log('✅ Auto-updater initialized');
+    }
 
     // Initialize backend launcher
     console.log('📦 Initializing backend launcher...');
@@ -508,6 +662,35 @@ app.whenReady().then(async () => {
     // Create main window
     console.log('🪟 Creating main window...');
     createWindow();
+
+    // Initialize system tray
+    console.log('🔔 Initializing system tray...');
+    trayManager = new TrayManager({
+      mainWindow: mainWindow,
+      backendLauncher: backendLauncher,
+      minimizeToTray: store.get('tray.minimizeToTray', true),
+    });
+    console.log('✅ System tray initialized');
+
+    // Initialize platform integrations
+    console.log('🖥️  Initializing platform integrations...');
+    platformIntegrations = new PlatformIntegrations({
+      mainWindow: mainWindow,
+      backendLauncher: backendLauncher,
+      createWindow: createWindow,
+    });
+    console.log('✅ Platform integrations initialized');
+
+    // Set main window reference for auto-updater
+    if (updater) {
+      updater.setMainWindow(mainWindow);
+
+      // Check for updates after 3 seconds
+      setTimeout(() => {
+        console.log('🔍 Checking for updates...');
+        updater.checkForUpdatesAndNotify();
+      }, 3000);
+    }
 
     console.log('✅ Application ready!');
 
@@ -547,8 +730,40 @@ app.on('before-quit', async () => {
     await backendLauncher.stop();
   }
 
+  if (trayManager) {
+    console.log('   Destroying system tray...');
+    trayManager.destroy();
+  }
+
+  if (performanceOptimizer) {
+    console.log('   Generating final performance report...');
+    const report = performanceOptimizer.generateReport();
+    console.log('   Performance Summary:', report.summary);
+    performanceOptimizer.destroy();
+  }
+
   console.log('✅ Shutdown complete');
 });
+
+// Handle second instance (for Windows Jump List)
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+
+    // Handle Windows Jump List arguments
+    if (platformIntegrations) {
+      platformIntegrations.handleJumpListArgs(commandLine);
+    }
+  });
+}
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {

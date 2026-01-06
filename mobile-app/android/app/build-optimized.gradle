@@ -1,0 +1,355 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'com.chaquo.python'
+}
+
+android {
+    namespace 'com.data20.mobile_app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.data20.mobile_app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // Enable multidex
+        multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Build type configuration
+    buildTypes {
+        release {
+            // Enable code shrinking
+            minifyEnabled true
+            shrinkResources true
+
+            // ProGuard configuration
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                         'proguard-rules.pro',
+                         'proguard-chaquopy.pro'
+
+            // Signing configuration (add your keystore)
+            // signingConfig signingConfigs.release
+        }
+
+        debug {
+            minifyEnabled false
+            debuggable true
+            applicationIdSuffix ".debug"
+        }
+    }
+
+    // ========================================
+    // PRODUCT FLAVORS - 3 Variants
+    // ========================================
+    flavorDimensions = ["version"]
+
+    productFlavors {
+        // =====================================
+        // LITE: 40-50MB, 12 core tools
+        // =====================================
+        lite {
+            dimension "version"
+            applicationIdSuffix ".lite"
+            versionNameSuffix "-lite"
+
+            // Build configuration
+            buildConfigField "int", "TOOL_COUNT", "12"
+            buildConfigField "String", "VERSION_NAME", '"Lite"'
+            buildConfigField "String", "APP_VARIANT", '"lite"'
+
+            // Pass variant to Python backend via environment
+            manifestPlaceholders = [appVariant: "lite"]
+
+            // Only arm64 (modern devices)
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+
+            // App name
+            resValue "string", "app_name", "Data20 Lite"
+        }
+
+        // =====================================
+        // STANDARD: 60-70MB, 35 essential tools
+        // =====================================
+        standard {
+            dimension "version"
+            applicationIdSuffix ".standard"
+            versionNameSuffix "-standard"
+
+            // Build configuration
+            buildConfigField "int", "TOOL_COUNT", "35"
+            buildConfigField "String", "VERSION_NAME", '"Standard"'
+            buildConfigField "String", "APP_VARIANT", '"standard"'
+
+            // Pass variant to Python backend via environment
+            manifestPlaceholders = [appVariant: "standard"]
+
+            // arm64 + arm32 fallback
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a"
+            }
+
+            // App name
+            resValue "string", "app_name", "Data20 Standard"
+        }
+
+        // =====================================
+        // FULL: 90-100MB, 57 all tools
+        // =====================================
+        full {
+            dimension "version"
+            // No suffix - default package
+
+            // Build configuration
+            buildConfigField "int", "TOOL_COUNT", "57"
+            buildConfigField "String", "VERSION_NAME", '"Full"'
+            buildConfigField "String", "APP_VARIANT", '"full"'
+
+            // Pass variant to Python backend via environment
+            manifestPlaceholders = [appVariant: "full"]
+
+            // arm64 + arm32
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a"
+            }
+
+            // App name
+            resValue "string", "app_name", "Data20"
+        }
+    }
+
+    // Combine flavors with build types
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        // Skip debug builds for lite/standard in production
+        // if (names.contains("lite") && variant.buildType.name == "debug") {
+        //     setIgnore(true)
+        // }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    // Packaging options
+    packagingOptions {
+        // Exclude duplicate files
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/*.kotlin_module'
+
+        // Merge duplicates
+        pickFirst 'lib/*/libc++_shared.so'
+    }
+
+    sourceSets {
+        main {
+            python.srcDirs = ['src/main/python']
+        }
+    }
+
+    // Split APKs by ABI for App Bundle
+    bundle {
+        language {
+            enableSplit = false  // Don't split by language
+        }
+        density {
+            enableSplit = false  // Don't split by density
+        }
+        abi {
+            enableSplit = true  // Split by ABI (recommended)
+        }
+    }
+}
+
+// ========================================
+// CHAQUOPY PYTHON CONFIGURATION
+// ========================================
+chaquopy {
+    defaultConfig {
+        version "3.9"
+
+        buildPython "/usr/bin/python3"
+
+        // Core dependencies (ALL variants)
+        pip {
+            // FastAPI backend
+            install "fastapi==0.104.1"
+            install "uvicorn==0.24.0"
+            install "pydantic==2.5.0"
+            install "pydantic-settings==2.1.0"
+
+            // Database
+            install "sqlalchemy==2.0.23"
+
+            // Authentication
+            install "python-jose[cryptography]==3.3.0"
+            install "passlib[bcrypt]==1.7.4"
+
+            // Utilities (lightweight)
+            install "PyYAML==6.0.1"
+            install "markdown==3.5.1"
+            install "beautifulsoup4==4.12.2"
+            install "requests==2.31.0"
+            install "python-dotenv==1.0.0"
+        }
+
+        pyc {
+            src false  // Don't include .pyc files (reduces size)
+        }
+    }
+
+    // =====================================
+    // LITE: Minimal dependencies
+    // =====================================
+    productFlavors {
+        lite {
+            version "3.9"
+
+            // NO additional dependencies
+            // Uses only core packages above
+            // Size saved: ~50MB
+        }
+
+        // =====================================
+        // STANDARD: Add numpy + essential tools
+        // =====================================
+        standard {
+            version "3.9"
+
+            pip {
+                // Numerical computing
+                install "numpy==1.26.2"
+
+                // Excel support
+                install "openpyxl==3.1.2"
+
+                // XML/HTML parsing
+                install "lxml==4.9.3"
+            }
+            // Size added: ~25MB
+        }
+
+        // =====================================
+        // FULL: All dependencies
+        // =====================================
+        full {
+            version "3.9"
+
+            pip {
+                // Data analysis
+                install "pandas==2.1.3"
+                install "numpy==1.26.2"
+
+                // File formats
+                install "openpyxl==3.1.2"
+                install "lxml==4.9.3"
+
+                // Image processing
+                install "Pillow==10.1.0"
+
+                // Additional tools
+                install "httpx==0.25.2"
+            }
+            // Size added: ~45MB
+        }
+    }
+}
+
+// ========================================
+// DEPENDENCIES
+// ========================================
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Multidex
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    // WorkManager (for battery optimization)
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+
+    // Lifecycle components
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-service:2.6.2'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+// ========================================
+// OPTIMIZATION TASKS
+// ========================================
+
+// Task to show APK sizes
+tasks.register('showApkSizes') {
+    doLast {
+        println "\n==================================="
+        println "APK Sizes:"
+        println "==================================="
+
+        def apkDir = file("$buildDir/outputs/apk")
+        if (apkDir.exists()) {
+            fileTree(apkDir).matching {
+                include '**/*.apk'
+            }.each { apk ->
+                def size = apk.length() / 1024 / 1024
+                println String.format("%-50s %6.2f MB", apk.name, size)
+            }
+        } else {
+            println "No APKs found. Build first!"
+        }
+        println "===================================\n"
+    }
+}
+
+// Task to build all variants
+tasks.register('buildAllVariants') {
+    dependsOn 'assembleLiteRelease',
+               'assembleStandardRelease',
+               'assembleFullRelease'
+
+    doLast {
+        println "\n✅ All variants built successfully!"
+        println "Run './gradlew showApkSizes' to see sizes\n"
+    }
+}
+
+// Task to clean Python cache
+tasks.register('cleanPythonCache') {
+    doLast {
+        delete fileTree('src/main/python') {
+            include '**/__pycache__'
+            include '**/*.pyc'
+            include '**/*.pyo'
+        }
+        println "✅ Python cache cleaned"
+    }
+}
+
+// Add to clean task
+clean.dependsOn cleanPythonCache
