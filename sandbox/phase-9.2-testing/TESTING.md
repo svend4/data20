@@ -2,7 +2,8 @@
 
 **Базовая версия**: browser-extension (Phase 9.2 - Hybrid Offline Strategy)
 **Создано**: 2026-01-05
-**Статус**: 🟡 Planned - Подготовка к тестированию
+**Обновлено**: 2026-01-06
+**Статус**: 🔵 In Progress - Unit Tests Development
 
 ---
 
@@ -21,20 +22,34 @@
 
 ### 1. Unit Tests
 
-#### 1.1 Smart Router Tests
-**Файл**: `tests/smart-router.test.js`
+#### 1.1 Smart Router Tests ✅ COMPLETED
+**Файл**: `__tests__/unit/smart-router.test.js`
+**Статус**: ✅ Implemented (378 lines, 40+ test cases)
+**Дата**: 2026-01-06
 
-```javascript
-// Тесты для:
-- getToolComplexity()
-- executeTool() с разными complexity levels
-- Cache механизм
-- Retry logic
-- Timeout handling
-- Fallback mechanisms
-```
+**Test Suites** (9 групп):
+1. **Constructor** - Initialization and default config (3 tests)
+2. **getToolComplexity()** - Classification logic (4 tests)
+3. **checkCache()** - Cache retrieval (3 tests)
+4. **cacheResult()** - Cache storage (2 tests)
+5. **executeSimple()** - Local execution (4 tests)
+6. **executeMedium()** - Timeout-based routing (3 tests)
+7. **executeComplex()** - Cloud execution with retry (5 tests)
+8. **executeTool()** - Main routing logic (7 tests)
+9. **Metrics Tracking** - Performance metrics (2 tests)
+10. **Configuration** - Config management (3 tests)
 
-**Покрытие**: Цель 90%+
+**Проверяемая функциональность**:
+- ✅ Tool complexity classification (simple/medium/complex)
+- ✅ Cache-first strategy with TTL
+- ✅ Local WASM execution
+- ✅ Cloud API execution with exponential backoff retry
+- ✅ Timeout handling for medium tools
+- ✅ Metrics tracking (local/cloud/cache stats)
+- ✅ Error handling and propagation
+- ✅ Configuration management
+
+**Покрытие**: Цель 90%+ (awaiting npm test run)
 
 #### 1.2 Offline Queue Tests
 **Файл**: `tests/offline-queue.test.js`
