@@ -1,0 +1,357 @@
+# 🎯 План Поэтапной Реализации Phase 9.3 & 9.2
+
+**Дата создания**: 2026-01-06
+**Статус**: 🟡 Планирование
+**Принцип**: ВСЕ изменения ТОЛЬКО в sandbox директориях
+
+---
+
+## ⚠️ КРИТИЧЕСКОЕ ПРАВИЛО
+
+### ❌ НЕ ТРОГАТЬ:
+```
+/home/user/data20/browser-extension/
+```
+
+### ✅ РАБОТАТЬ ТОЛЬКО:
+```
+/home/user/data20/sandbox/phase-9.3-ui-experiments/
+/home/user/data20/sandbox/phase-9.2-testing/
+```
+
+---
+
+## 📊 Phase 9.3: Advanced UI Features
+
+### Этап 1: Графики и Визуализация (Приоритет: 🔴 High)
+
+**Цель**: Добавить интерактивные графики для метрик
+
+**Шаги**:
+1. ✅ Изучить Chart.js библиотеку
+2. ⏳ Добавить Chart.js через CDN в popup.html
+3. ⏳ Создать компонент metrics-chart.js
+4. ⏳ Добавить график производительности (line chart)
+5. ⏳ Добавить график распределения routing (pie chart)
+6. ⏳ Добавить график использования инструментов (bar chart)
+7. ⏳ Тестировать в Chrome
+8. ⏳ Тестировать в Firefox
+9. ⏳ Документировать в EXPERIMENTS.md
+
+**Файлы для изменения** (в sandbox):
+- `public/popup.html` - добавить canvas элементы
+- `src/popup/popup.js` - добавить Chart.js логику
+- `src/utils/chart-helper.js` (новый) - helper функции
+
+**Ожидаемый результат**: 3 интерактивных графика в Metrics tab
+
+**Время**: ~2-3 часа
+
+---
+
+### Этап 2: Темы (Light/Dark) (Приоритет: 🟡 Medium) ✅ COMPLETED
+
+**Цель**: Добавить переключение между светлой и тёмной темами
+
+**Шаги**:
+1. ✅ Создать CSS variables для цветов
+2. ✅ Создать theme-manager.js (237 строк, 2 темы)
+3. ✅ Добавить кнопку переключения темы (🌙/☀️)
+4. ✅ Сохранять выбор в chrome.storage.local
+5. ✅ Применять тему при загрузке
+6. ✅ Добавить анимацию перехода (0.3s ease)
+7. ⏳ Тестировать в разных вкладках (требуется browser testing)
+8. ✅ Документировать в EXPERIMENTS.md
+
+**Файлы для изменения** (в sandbox):
+- `public/popup.html` - добавить theme toggle
+- `public/popup.html` - CSS variables
+- `src/utils/theme-manager.js` (новый)
+- `src/popup/popup.js` - интеграция
+
+**Ожидаемый результат**: Плавное переключение тем
+
+**Время**: ~1-2 часа
+
+---
+
+### Этап 3: Command Palette (Ctrl+K) (Приоритет: 🟡 Medium) ✅ COMPLETED
+
+**Цель**: Быстрый поиск и выполнение команд
+
+**Шаги**:
+1. ✅ Создать UI для command palette (modal + overlay)
+2. ✅ Добавить обработчик Ctrl+K / Cmd+K
+3. ✅ Реализовать fuzzy search (weighted scoring)
+4. ✅ Добавить команды - 17 команд (navigation, queue, metrics, settings, help)
+5. ✅ Добавить keyboard navigation (↑↓ Enter Escape)
+6. ✅ Добавить history последних команд (10 max, persistent)
+7. ⏳ Тестировать shortcuts (требуется browser testing)
+8. ✅ Документировать в EXPERIMENTS.md
+
+**Файлы для изменения** (в sandbox):
+- `public/popup.html` - modal для palette
+- `src/popup/command-palette.js` (новый)
+- `src/popup/popup.js` - интеграция
+
+**Ожидаемый результат**: Быстрый доступ к функциям через Ctrl+K
+
+**Время**: ~2-3 часа
+
+---
+
+### Этап 4: Desktop Notifications (Приоритет: 🟢 Low) ✅ COMPLETED
+
+**Цель**: Улучшенные уведомления с действиями
+
+**Шаги**:
+1. ✅ Создать notification-manager.js (548 строк)
+2. ✅ Добавить rich notifications (5 типов: basic, action, progress, image, list)
+3. ✅ Добавить action buttons (до 2 кнопок)
+4. ✅ Добавить progress notifications (0-100%, updateable)
+5. ✅ Добавить звуковые уведомления (Web Audio API, 800Hz beep)
+6. ✅ Настройки уведомлений (enabled, sound, priority - persistent)
+7. ⏳ Тестировать на разных ОС (требуется browser testing)
+8. ✅ Документировать в EXPERIMENTS.md
+
+**Файлы для изменения** (в sandbox):
+- `src/utils/notification-manager.js` (новый)
+- `src/background/background.js` - интеграция
+
+**Ожидаемый результат**: Более информативные уведомления
+
+**Время**: ~1-2 часа
+
+---
+
+### Этап 5: Export/Import Settings (Приоритет: 🟢 Low) ✅ COMPLETED
+
+**Цель**: Сохранение и восстановление настроек
+
+**Шаги**:
+1. ✅ Добавить кнопку Export Settings (📤 Export)
+2. ✅ Добавить кнопку Import Settings (📥 Import)
+3. ✅ Сериализация всех настроек (7 категорий, JSON с metadata)
+4. ✅ Валидация при импорте (version, checksum, structure)
+5. ✅ Backup перед импортом (автоматический, keep last 3)
+6. ⏳ Тестировать export/import (требуется browser testing)
+7. ✅ Документировать в EXPERIMENTS.md
+
+**Файлы для изменения** (в sandbox):
+- `public/popup.html` - кнопки import/export
+- `src/utils/settings-manager.js` (новый)
+- `src/popup/popup.js` - обработчики
+
+**Ожидаемый результат**: JSON файл с настройками
+
+**Время**: ~1 час
+
+---
+
+## 🧪 Phase 9.2: Testing & Quality Assurance
+
+### Этап 1: Unit Tests - Smart Router (Приоритет: 🔴 High) ✅ COMPLETED
+
+**Цель**: 90% coverage для Smart Router
+
+**Шаги**:
+1. ✅ Установить Jest и dependencies (already in package.json)
+2. ✅ Настроить Jest config (jest.config.js created)
+3. ✅ Создать mocks (chrome API, storage) - setup.js with comprehensive mocks
+4. ✅ Тест: getToolComplexity() - 4 test cases
+5. ✅ Тест: executeTool() - simple tools - 4 test cases
+6. ✅ Тест: executeTool() - medium tools - 3 test cases
+7. ✅ Тест: executeTool() - complex tools - 5 test cases
+8. ✅ Тест: cache механизм - 5 test cases
+9. ✅ Тест: retry logic - included in executeComplex tests
+10. ✅ Тест: timeout handling - included in executeMedium tests
+11. ⏳ Запустить coverage report (requires npm install + npm test)
+12. ✅ Документировать в TESTING.md
+
+**Файлы для создания** (в sandbox):
+- `package.json` - Jest dependencies
+- `jest.config.js`
+- `tests/unit/smart-router.test.js`
+- `tests/mocks/chrome-api.mock.js`
+- `tests/mocks/storage.mock.js`
+
+**Ожидаемый результат**: 90%+ coverage
+
+**Время**: ~3-4 часа
+
+---
+
+### Этап 2: Unit Tests - Offline Queue (Приоритет: 🔴 High) ✅ COMPLETED
+
+**Цель**: 85% coverage для Offline Queue
+
+**Шаги**:
+1. ✅ Тест: Constructor & initialization (10 tests)
+2. ✅ Тест: processQueue() - 11 test cases
+3. ✅ Тест: processJob() - 10 test cases with retry logic
+4. ✅ Тест: priority sorting (descending priority, ascending createdAt)
+5. ✅ Тест: exponential backoff retry logic (max 3 retries)
+6. ✅ Тест: network status handling (online/offline events)
+7. ✅ Тест: background sync & periodic sync
+8. ✅ Тест: stopProcessing() - graceful shutdown
+9. ✅ Тест: notifications (success/failure)
+10. ✅ Тест: statistics tracking
+11. ⏳ Запустить coverage report (requires npm install + npm test)
+12. ✅ Документировать в TESTING.md
+
+**Файлы для создания** (в sandbox):
+- `tests/unit/offline-queue.test.js`
+- `tests/mocks/network.mock.js`
+
+**Ожидаемый результат**: 85%+ coverage
+
+**Время**: ~3-4 часа
+
+---
+
+### Этап 3: Unit Tests - Performance Monitor (Приоритет: 🟡 Medium) ✅ COMPLETED
+
+**Цель**: 80% coverage для Performance Monitor
+
+**Шаги**:
+1. ✅ Тест: recordToolExecution() - 15 test cases
+2. ✅ Тест: recordCache() - 3 test cases
+3. ✅ Тест: recordError() - 7 test cases
+4. ✅ Тест: sampleMemory() - 6 test cases
+5. ✅ Тест: getMetrics() - 7 test cases with derived calculations
+6. ✅ Тест: exportAsJSON() - included in getMetrics tests
+7. ✅ Тест: exportAsCSV() - included in getMetrics tests
+8. ✅ Тест: resetMetrics() - 5 test cases
+9. ⏳ Запустить coverage report (requires npm install + npm test)
+10. ✅ Документировать в TESTING.md
+
+**Файлы для создания** (в sandbox):
+- ✅ `__tests__/unit/performance-monitor.test.js` (519 lines, 60+ tests)
+
+**Ожидаемый результат**: 80%+ coverage
+
+**Время**: ~2-3 часа
+
+---
+
+### Этап 4: Integration Tests (Приоритет: 🟡 Medium) ✅ COMPLETED
+
+**Цель**: Тестирование взаимодействия компонентов
+
+**Шаги**:
+1. ✅ Тест: Router + Queue (offline → queue → online) - 25+ test cases
+2. ✅ Тест: Router + Cache (cache hit/miss) - 35+ test cases
+3. ✅ Тест: Monitor + Router (metrics recording) - 35+ test cases
+4. ✅ Тест: Queue + Storage (persistence) - included in router-queue tests
+5. ⏳ Запустить все integration tests (requires npm install + npm test)
+6. ✅ Документировать в TESTING.md
+
+**Файлы для создания** (в sandbox):
+- ✅ `__tests__/integration/router-queue.test.js` (350+ lines, 25+ tests)
+- ✅ `__tests__/integration/router-cache.test.js` (400+ lines, 35+ tests)
+- ✅ `__tests__/integration/monitor-router.test.js` (450+ lines, 35+ tests)
+
+**Ожидаемый результат**: 75%+ integration coverage
+
+**Время**: ~2-3 часа
+
+---
+
+### Этап 5: E2E Tests with Puppeteer (Приоритет: 🟢 Low) ✅ COMPLETED
+
+**Цель**: End-to-end тестирование пользовательских сценариев
+
+**Шаги**:
+1. ✅ Установить Puppeteer - added to devDependencies
+2. ✅ Настроить Puppeteer для extensions - extension-helper.js created
+3. ✅ Тест: User opens popup - popup-navigation.test.js (50+ tests)
+4. ✅ Тест: User executes tool - tool-execution.test.js (40+ tests)
+5. ✅ Тест: User checks queue - queue-offline.test.js (35+ tests)
+6. ✅ Тест: User views metrics - included in popup-navigation tests
+7. ⏳ Запустить E2E suite (requires npm install + build + test:e2e)
+8. ✅ Документировать в TESTING.md
+
+**Файлы для создания** (в sandbox):
+- ✅ `__tests__/e2e/helpers/extension-helper.js` (350+ lines, 30+ helpers)
+- ✅ `__tests__/e2e/popup-navigation.test.js` (350+ lines, 50+ tests)
+- ✅ `__tests__/e2e/tool-execution.test.js` (400+ lines, 40+ tests)
+- ✅ `__tests__/e2e/queue-offline.test.js` (450+ lines, 35+ tests)
+- ✅ `__tests__/e2e/README.md` - comprehensive E2E test documentation
+
+**Ожидаемый результат**: Основные user flows покрыты - 125+ test cases
+
+**Время**: ~3-4 часа
+
+---
+
+## 📈 Общая Оценка Времени
+
+### Phase 9.3 (UI Features):
+- Этап 1: Графики - 2-3 часа
+- Этап 2: Темы - 1-2 часа
+- Этап 3: Command Palette - 2-3 часа
+- Этап 4: Notifications - 1-2 часа
+- Этап 5: Export/Import - 1 час
+**Итого**: ~7-11 часов
+
+### Phase 9.2 (Testing):
+- Этап 1: Smart Router tests - 3-4 часа
+- Этап 2: Queue tests - 3-4 часа
+- Этап 3: Monitor tests - 2-3 часа
+- Этап 4: Integration tests - 2-3 часа
+- Этап 5: E2E tests - 3-4 часа
+**Итого**: ~13-18 часов
+
+**Общее время**: ~20-29 часов
+
+---
+
+## 🎯 Порядок Выполнения
+
+### Приоритет 1 (Делать первым):
+1. Phase 9.3 Этап 1 - Графики метрик
+2. Phase 9.2 Этап 1 - Smart Router tests
+3. Phase 9.2 Этап 2 - Queue tests
+
+### Приоритет 2 (Делать вторым):
+4. Phase 9.3 Этап 2 - Темы
+5. Phase 9.3 Этап 3 - Command Palette
+6. Phase 9.2 Этап 3 - Monitor tests
+7. Phase 9.2 Этап 4 - Integration tests
+
+### Приоритет 3 (Опционально):
+8. Phase 9.3 Этап 4 - Notifications
+9. Phase 9.3 Этап 5 - Export/Import
+10. Phase 9.2 Этап 5 - E2E tests
+
+---
+
+## ✅ Критерии Готовности
+
+### Для каждого этапа Phase 9.3:
+- [ ] Код работает без ошибок
+- [ ] Протестировано в Chrome и Firefox
+- [ ] Задокументировано в EXPERIMENTS.md
+- [ ] Performance не ухудшилось
+- [ ] UX улучшился
+
+### Для каждого этапа Phase 9.2:
+- [ ] Тесты написаны
+- [ ] Coverage цель достигнута
+- [ ] Все тесты проходят
+- [ ] Задокументировано в TESTING.md
+- [ ] CI/CD настроен (опционально)
+
+---
+
+## 📝 Журнал Прогресса
+
+### 2026-01-06
+- ✅ Создан план реализации
+- ⏳ Начинаем с Phase 9.3 Этап 1
+
+---
+
+**Версия**: 1.0
+**Статус**: Готов к реализации
+**Следующий шаг**: Phase 9.3 Этап 1 - Добавление графиков

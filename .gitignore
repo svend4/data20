@@ -1,29 +1,37 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
+# Sandbox copies - не коммитить
+sandbox/phase-9.3-ui-experiments/src/
+sandbox/phase-9.3-ui-experiments/public/
+sandbox/phase-9.3-ui-experiments/dist/
+sandbox/phase-9.3-ui-experiments/scripts/
+sandbox/phase-9.3-ui-experiments/package.json
+sandbox/phase-9.3-ui-experiments/webpack.config.js
+sandbox/phase-9.3-ui-experiments/tool-classification.json
+sandbox/phase-9.3-ui-experiments/README.md
+
+sandbox/phase-9.2-testing/src/
+sandbox/phase-9.2-testing/public/
+sandbox/phase-9.2-testing/dist/
+sandbox/phase-9.2-testing/scripts/
+sandbox/phase-9.2-testing/package.json
+sandbox/phase-9.2-testing/webpack.config.js
+sandbox/phase-9.2-testing/tool-classification.json
+sandbox/phase-9.2-testing/README.md
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+*.crx
+*.xpi
 
 # IDE
 .vscode/
 .idea/
 *.swp
-*.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Temporary files
-*.tmp
-*.bak
-*.log
-
-# Don't ignore empty directories
-!.gitkeep

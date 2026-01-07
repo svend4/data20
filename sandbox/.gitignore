@@ -1,0 +1,43 @@
+# Sandbox .gitignore
+# Эти файлы не должны попадать в основной репозиторий
+
+# Временные файлы экспериментов
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Логи
+*.log
+logs/
+
+# Node modules (если используются)
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+*.crx
+*.xpi
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS файлы
+.DS_Store
+Thumbs.db
+
+# Тестовые данные
+test-data/
+fixtures/generated/
+
+# Скриншоты экспериментов
+screenshots/*.png
+screenshots/*.jpg
+
+# Экспериментальные библиотеки
+experiments/*/node_modules/

@@ -1,0 +1,395 @@
+name: 📱 Сборка v5-full - Все варианты (Lite, Standard, Full)
+
+on:
+  # Автоматическая сборка при push в ветки с изменениями v5-full
+  push:
+    branches:
+      - main
+      - master
+      - 'claude/**'
+    paths:
+      - 'mobile-app-versions/v5-full/**'
+      - 'mobile-app/BUILD_VARIANTS.md'
+      - '.github/workflows/build-v5-variants.yml'
+
+  # Сборка при создании release
+  release:
+    types: [created, published]
+
+  # Ручной запуск из GitHub UI
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Версия APK (например, 1.0.0)'
+        required: false
+        default: 'dev'
+      build_lite:
+        description: 'Собрать LITE вариант (45 MB, 12 инструментов)?'
+        required: false
+        type: boolean
+        default: true
+      build_standard:
+        description: 'Собрать STANDARD вариант (65 MB, 35 инструментов)?'
+        required: false
+        type: boolean
+        default: true
+      build_full:
+        description: 'Собрать FULL вариант (95 MB, 57 инструментов)?'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  JAVA_VERSION: '17'
+  PYTHON_VERSION: '3.9'
+  WORKING_DIR: 'mobile-app-versions/v5-full'
+
+jobs:
+  # ========================================
+  # JOB 1: LITE VARIANT (45 MB, 12 tools)
+  # ========================================
+  build-lite-variant:
+    name: ⚡ Lite Variant (45 MB, 12 tools)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_lite == 'true' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: 📥 Checkout кода
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Установка Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: 🐍 Установка Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 🦋 Установка Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📋 Информация о окружении (LITE)
+        run: |
+          echo "========================================="
+          echo "⚡ LITE VARIANT - 45 MB, 12 tools"
+          echo "========================================="
+          echo "Java:    $(java -version 2>&1 | head -n 1)"
+          echo "Flutter: $(flutter --version 2>&1 | head -n 1)"
+          echo "Python:  $(python3 --version)"
+          echo "Branch:  $(git branch --show-current || echo 'detached')"
+          echo "Commit:  $(git rev-parse --short HEAD)"
+          echo "Working directory: ${{ env.WORKING_DIR }}"
+          echo "========================================="
+
+      - name: 📝 Создание local.properties
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          cat android/local.properties
+
+      - name: 📦 Получение зависимостей Flutter
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "📦 Получение зависимостей..."
+          flutter pub get
+          flutter pub upgrade --major-versions
+
+      - name: 🏗️ Сборка APK - LITE вариант
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "🏗️ Сборка LITE варианта..."
+          flutter build apk \
+            --flavor lite \
+            --release \
+            --dart-define=APP_VARIANT=lite
+
+      - name: 📏 Размер APK (LITE)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "========================================="
+          echo "📏 Размер LITE APK:"
+          echo "========================================="
+          cd build/app/outputs/flutter-apk
+          ls -lh app-lite-release.apk | awk '{print $9, "-", $5}'
+          echo "========================================="
+
+      - name: 📤 Загрузка APK - LITE
+        uses: actions/upload-artifact@v4
+        with:
+          name: data20-lite-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-lite-release.apk
+          retention-days: 90
+
+      - name: ✅ LITE вариант готов
+        run: |
+          echo "========================================="
+          echo "✅ LITE вариант собран успешно!"
+          echo "📦 Package: com.data20.mobile_app.lite"
+          echo "📏 Размер: ~45 MB"
+          echo "🔧 Инструменты: 12"
+          echo "========================================="
+
+  # ========================================
+  # JOB 2: STANDARD VARIANT (65 MB, 35 tools)
+  # ========================================
+  build-standard-variant:
+    name: ⭐ Standard Variant (65 MB, 35 tools)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_standard == 'true' }}
+    timeout-minutes: 50
+
+    steps:
+      - name: 📥 Checkout кода
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Установка Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: 🐍 Установка Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 🦋 Установка Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📋 Информация о окружении (STANDARD)
+        run: |
+          echo "========================================="
+          echo "⭐ STANDARD VARIANT - 65 MB, 35 tools"
+          echo "========================================="
+          echo "Java:    $(java -version 2>&1 | head -n 1)"
+          echo "Flutter: $(flutter --version 2>&1 | head -n 1)"
+          echo "Python:  $(python3 --version)"
+          echo "Branch:  $(git branch --show-current || echo 'detached')"
+          echo "Commit:  $(git rev-parse --short HEAD)"
+          echo "Working directory: ${{ env.WORKING_DIR }}"
+          echo "========================================="
+
+      - name: 📝 Создание local.properties
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          cat android/local.properties
+
+      - name: 📦 Получение зависимостей Flutter
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "📦 Получение зависимостей..."
+          flutter pub get
+          flutter pub upgrade --major-versions
+
+      - name: 🏗️ Сборка APK - STANDARD вариант
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "🏗️ Сборка STANDARD варианта..."
+          flutter build apk \
+            --flavor standard \
+            --release \
+            --dart-define=APP_VARIANT=standard
+
+      - name: 📏 Размер APK (STANDARD)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "========================================="
+          echo "📏 Размер STANDARD APK:"
+          echo "========================================="
+          cd build/app/outputs/flutter-apk
+          ls -lh app-standard-release.apk | awk '{print $9, "-", $5}'
+          echo "========================================="
+
+      - name: 📤 Загрузка APK - STANDARD
+        uses: actions/upload-artifact@v4
+        with:
+          name: data20-standard-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-standard-release.apk
+          retention-days: 90
+
+      - name: ✅ STANDARD вариант готов
+        run: |
+          echo "========================================="
+          echo "✅ STANDARD вариант собран успешно!"
+          echo "📦 Package: com.data20.mobile_app.standard"
+          echo "📏 Размер: ~65 MB"
+          echo "🔧 Инструменты: 35"
+          echo "========================================="
+
+  # ========================================
+  # JOB 3: FULL VARIANT (95 MB, 57 tools)
+  # ========================================
+  build-full-variant:
+    name: 💎 Full Variant (95 MB, 57 tools)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_full == 'true' }}
+    timeout-minutes: 60
+
+    steps:
+      - name: 📥 Checkout кода
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ☕ Установка Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: 🐍 Установка Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 🦋 Установка Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: 📋 Информация о окружении (FULL)
+        run: |
+          echo "========================================="
+          echo "💎 FULL VARIANT - 95 MB, 57 tools"
+          echo "========================================="
+          echo "Java:    $(java -version 2>&1 | head -n 1)"
+          echo "Flutter: $(flutter --version 2>&1 | head -n 1)"
+          echo "Python:  $(python3 --version)"
+          echo "Branch:  $(git branch --show-current || echo 'detached')"
+          echo "Commit:  $(git rev-parse --short HEAD)"
+          echo "Working directory: ${{ env.WORKING_DIR }}"
+          echo "========================================="
+
+      - name: 📝 Создание local.properties
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          FLUTTER_ROOT=$(dirname "$(dirname "$(which flutter)")")
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          cat android/local.properties
+
+      - name: 📦 Получение зависимостей Flutter
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "📦 Получение зависимостей..."
+          flutter pub get
+          flutter pub upgrade --major-versions
+
+      - name: 🏗️ Сборка APK - FULL вариант
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "🏗️ Сборка FULL варианта..."
+          flutter build apk \
+            --flavor full \
+            --release \
+            --dart-define=APP_VARIANT=full
+
+      - name: 📏 Размер APK (FULL)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "========================================="
+          echo "📏 Размер FULL APK:"
+          echo "========================================="
+          cd build/app/outputs/flutter-apk
+          ls -lh app-full-release.apk | awk '{print $9, "-", $5}'
+          echo "========================================="
+
+      - name: 📤 Загрузка APK - FULL
+        uses: actions/upload-artifact@v4
+        with:
+          name: data20-full-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-full-release.apk
+          retention-days: 90
+
+      - name: ✅ FULL вариант готов
+        run: |
+          echo "========================================="
+          echo "✅ FULL вариант собран успешно!"
+          echo "📦 Package: com.data20.mobile_app"
+          echo "📏 Размер: ~95 MB"
+          echo "🔧 Инструменты: 57"
+          echo "========================================="
+
+  # ========================================
+  # JOB 4: SUMMARY - Итоговая информация
+  # ========================================
+  build-summary:
+    name: 📊 Итоговая сводка
+    runs-on: ubuntu-latest
+    needs: [build-lite-variant, build-standard-variant, build-full-variant]
+    if: always()
+
+    steps:
+      - name: 📊 Итоговая информация о сборке
+        run: |
+          echo "========================================="
+          echo "📱 Сборка v5-full - Все варианты"
+          echo "========================================="
+          echo ""
+          echo "Статус сборки:"
+          echo "⚡ LITE:     ${{ needs.build-lite-variant.result }}"
+          echo "⭐ STANDARD: ${{ needs.build-standard-variant.result }}"
+          echo "💎 FULL:     ${{ needs.build-full-variant.result }}"
+          echo ""
+          echo "========================================="
+          echo "📦 Собранные APK доступны в Artifacts:"
+          echo "========================================="
+          echo ""
+          if [ "${{ needs.build-lite-variant.result }}" == "success" ]; then
+            echo "✅ data20-lite-release.apk (~45 MB, 12 tools)"
+          fi
+          if [ "${{ needs.build-standard-variant.result }}" == "success" ]; then
+            echo "✅ data20-standard-release.apk (~65 MB, 35 tools)"
+          fi
+          if [ "${{ needs.build-full-variant.result }}" == "success" ]; then
+            echo "✅ data20-full-release.apk (~95 MB, 57 tools)"
+          fi
+          echo ""
+          echo "========================================="
+          echo "📥 Скачать: Actions → Artifacts (90 дней)"
+          echo "========================================="
+
+      - name: ✅ Все сборки завершены
+        if: needs.build-lite-variant.result == 'success' && needs.build-standard-variant.result == 'success' && needs.build-full-variant.result == 'success'
+        run: |
+          echo "🎉 Все 3 варианта собраны успешно!"
+          echo "⚡ LITE:     45 MB, 12 инструментов"
+          echo "⭐ STANDARD: 65 MB, 35 инструментов"
+          echo "💎 FULL:     95 MB, 57 инструментов"
+
+      - name: ⚠️ Некоторые сборки неудачны
+        if: needs.build-lite-variant.result != 'success' || needs.build-standard-variant.result != 'success' || needs.build-full-variant.result != 'success'
+        run: |
+          echo "⚠️ Некоторые сборки завершились с ошибкой"
+          echo "Проверьте логи выше для деталей"
+          exit 1
