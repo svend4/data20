@@ -75,12 +75,14 @@ android {
             // In production, replace with proper release keystore
             signingConfig signingConfigs.debug
 
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // TEMPORARILY DISABLED to speed up build (prevent timeout)
+            // These optimizations are SLOW and cause build timeouts
+            minifyEnabled false  // Was: true (ProGuard is slow!)
+            shrinkResources false  // Was: true (resource shrinking is slow!)
 
-            // Keep Python modules
-            proguardFiles 'proguard-chaquopy.pro'
+            // Keep ProGuard files for future use
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // proguardFiles 'proguard-chaquopy.pro'
         }
 
         debug {
@@ -179,9 +181,12 @@ chaquopy {
         // Using simplified backend_main_simple.py instead
         //
         // Size differences come from NDK architectures:
-        // - lite: 1 arch (arm64-v8a) → ~30-50 MB
-        // - standard: 2 arch (arm64-v8a, armeabi-v7a) → ~50-70 MB
-        // - full: 4 arch (arm64-v8a, armeabi-v7a, x86, x86_64) → ~70-100 MB
+        // NOTE: Sizes are LARGER without minify/shrinkResources (disabled for faster build)
+        // - lite: 1 arch (arm64-v8a) → ~40-60 MB
+        // - standard: 2 arch (arm64-v8a, armeabi-v7a) → ~60-90 MB
+        // - full: 4 arch (arm64-v8a, armeabi-v7a, x86, x86_64) → ~90-130 MB
+        //
+        // With minify enabled (slower build): -10-20 MB per variant
         pip {
             // MINIMAL dependencies to prevent crashes
             // Heavy dependencies (pandas, numpy, sqlalchemy, fastapi) REMOVED temporarily
