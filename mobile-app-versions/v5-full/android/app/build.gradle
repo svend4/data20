@@ -57,10 +57,8 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        // Python configuration
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
+        // NOTE: NDK filters are defined per-flavor below (lite/standard/full)
+        // Do NOT define abiFilters here - it overrides productFlavors!
 
         // Enable multidex for large app
         multiDexEnabled true
@@ -112,13 +110,14 @@ android {
     flavorDimensions "variant"
 
     // Product flavors for different app variants
+    // Size difference is mainly from NDK architectures (NOT Python deps - they're shared)
     productFlavors {
         lite {
             dimension "variant"
             applicationIdSuffix ".lite"
             versionNameSuffix "-lite"
 
-            // Lite: only arm64-v8a for minimal size
+            // Lite: 1 architecture only for smallest size (~90-110 MB)
             ndk {
                 abiFilters "arm64-v8a"
             }
@@ -133,7 +132,7 @@ android {
             applicationIdSuffix ".standard"
             versionNameSuffix "-standard"
 
-            // Standard: arm64-v8a + armeabi-v7a
+            // Standard: 2 architectures for broader device support (~130-150 MB)
             ndk {
                 abiFilters "arm64-v8a", "armeabi-v7a"
             }
@@ -148,7 +147,7 @@ android {
             // No suffix - original package name
             versionNameSuffix "-full"
 
-            // Full: all architectures
+            // Full: 2 architectures + all tools (~140-170 MB)
             ndk {
                 abiFilters "arm64-v8a", "armeabi-v7a"
             }
@@ -170,6 +169,14 @@ chaquopy {
         buildPython "/usr/bin/python3"
 
         // Python pip packages
+        // NOTE: All flavors (lite/standard/full) share the SAME Python dependencies
+        // Chaquopy does not support flavor-specific pip dependencies easily
+        // This means all variants will have similar APK sizes (~120-170 MB)
+        //
+        // Size differences come from:
+        // - lite: 1 architecture (arm64-v8a) → smallest
+        // - standard: 2 architectures (arm64-v8a, armeabi-v7a) → +30-40 MB
+        // - full: 2 architectures + more tools → +10-20 MB
         pip {
             // Core backend dependencies (using Pydantic 1.x for Chaquopy compatibility)
             install "fastapi==0.104.1"
