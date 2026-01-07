@@ -44,6 +44,26 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             }
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
+        elif self.path == '/api/tools':
+            # Tools list endpoint - mock data
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            # Return empty list for now (app can handle empty tools)
+            response = []
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        elif self.path == '/api/jobs':
+            # Jobs list endpoint - mock data
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            # Return empty list
+            response = []
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
         elif self.path == '/':
             # Root endpoint
             self.send_response(200)
@@ -58,6 +78,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                 <p>Status: <strong>Running</strong></p>
                 <p>Version: Simple 0.1.0 (Python stdlib only)</p>
                 <p><a href="/health">Health Check</a></p>
+                <p><a href="/api/tools">API: Tools</a></p>
+                <p><a href="/api/jobs">API: Jobs</a></p>
             </body>
             </html>
             """
@@ -65,6 +87,51 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
 
         else:
             # 404 for other paths
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            response = {'error': 'Not found', 'path': self.path}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
+    def do_POST(self):
+        """Handle POST requests"""
+        if self.path == '/api/run':
+            # Run tool endpoint - mock implementation
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            # Read request body
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else '{}'
+
+            try:
+                request_data = json.loads(body)
+                tool_name = request_data.get('tool_name', 'unknown')
+
+                # Return mock job response
+                response = {
+                    'job_id': 'mock-job-12345',
+                    'tool_name': tool_name,
+                    'status': 'completed',
+                    'message': f'Tool {tool_name} executed successfully (mock)',
+                    'result': {
+                        'success': True,
+                        'output': 'This is a mock result. Full backend not yet available.'
+                    }
+                }
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+            except Exception as e:
+                response = {
+                    'error': 'Invalid request',
+                    'detail': str(e)
+                }
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        else:
+            # 404 for other POST paths
             self.send_response(404)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()

@@ -38,9 +38,11 @@ def test_backend():
     print("⏳ Waiting 2 seconds for server to start...")
     time.sleep(2)
 
+    all_passed = True
+
     # Test /health endpoint
     try:
-        print("📡 Testing /health endpoint...")
+        print("\n📡 Testing /health endpoint...")
         response = urlopen("http://127.0.0.1:8001/health", timeout=5)
         data = json.loads(response.read().decode('utf-8'))
 
@@ -48,14 +50,58 @@ def test_backend():
         print(f"   Status: {data.get('status')}")
         print(f"   Service: {data.get('service')}")
         print(f"   Message: {data.get('message')}")
-
-        return True
-    except URLError as e:
-        print(f"❌ Health check failed: {e}")
-        return False
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-        return False
+        print(f"❌ Health check failed: {e}")
+        all_passed = False
+
+    # Test /api/tools endpoint
+    try:
+        print("\n📡 Testing /api/tools endpoint...")
+        response = urlopen("http://127.0.0.1:8001/api/tools", timeout=5)
+        data = json.loads(response.read().decode('utf-8'))
+
+        print(f"✅ Tools endpoint successful!")
+        print(f"   Returned {len(data)} tools (empty is OK for now)")
+    except Exception as e:
+        print(f"❌ Tools endpoint failed: {e}")
+        all_passed = False
+
+    # Test /api/jobs endpoint
+    try:
+        print("\n📡 Testing /api/jobs endpoint...")
+        response = urlopen("http://127.0.0.1:8001/api/jobs", timeout=5)
+        data = json.loads(response.read().decode('utf-8'))
+
+        print(f"✅ Jobs endpoint successful!")
+        print(f"   Returned {len(data)} jobs (empty is OK for now)")
+    except Exception as e:
+        print(f"❌ Jobs endpoint failed: {e}")
+        all_passed = False
+
+    # Test /api/run endpoint (POST)
+    try:
+        from urllib.request import Request
+        print("\n📡 Testing /api/run endpoint (POST)...")
+
+        request_data = json.dumps({'tool_name': 'test_tool', 'parameters': {}}).encode('utf-8')
+        req = Request(
+            "http://127.0.0.1:8001/api/run",
+            data=request_data,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        response = urlopen(req, timeout=5)
+        data = json.loads(response.read().decode('utf-8'))
+
+        print(f"✅ Run endpoint successful!")
+        print(f"   Job ID: {data.get('job_id')}")
+        print(f"   Status: {data.get('status')}")
+        print(f"   Message: {data.get('message')}")
+    except Exception as e:
+        print(f"❌ Run endpoint failed: {e}")
+        all_passed = False
+
+    return all_passed
 
 if __name__ == "__main__":
     success = test_backend()
