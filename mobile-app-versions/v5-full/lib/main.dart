@@ -35,8 +35,11 @@ void main() async {
   // Check if user is already logged in
   await authService.checkAuth();
 
-  // Auto-start embedded backend (optional - can be disabled)
-  // Uncomment to auto-start backend on app launch
+  // Auto-start embedded backend (DISABLED to prevent startup crash)
+  // User can manually start backend from Settings > Backend Status screen
+  //
+  // To enable auto-start, uncomment the code below:
+  /*
   try {
     print('🚀 Auto-starting embedded backend...');
     await backendService.startBackend();
@@ -45,6 +48,7 @@ void main() async {
     print('⚠️ Failed to auto-start backend: $e');
     // Continue anyway - user can start manually from status screen
   }
+  */
 
   runApp(Data20App(
     authService: authService,

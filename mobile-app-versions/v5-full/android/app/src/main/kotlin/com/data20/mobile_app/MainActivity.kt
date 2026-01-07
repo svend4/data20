@@ -23,29 +23,35 @@ class MainActivity : FlutterActivity() {
     private var python: Python? = null
     private var backendJob: Job? = null
     private var isBackendRunning = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Initialize Python
-        initializePython()
-    }
+    private var isPythonInitialized = false
 
     /**
-     * Initialize Python environment
+     * Initialize Python environment (lazy - only when needed)
+     * Returns true if Python is ready, false otherwise
      */
-    private fun initializePython() {
+    private fun ensurePythonInitialized(): Boolean {
+        if (isPythonInitialized && python != null) {
+            return true
+        }
+
         if (!Python.isStarted()) {
             try {
+                Log.i(TAG, "Initializing Python...")
                 Python.start(AndroidPlatform(this))
                 python = Python.getInstance()
-                Log.i(TAG, "Python initialized successfully")
+                isPythonInitialized = true
+                Log.i(TAG, "✅ Python initialized successfully")
+                return true
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize Python: ${e.message}")
+                Log.e(TAG, "❌ Failed to initialize Python: ${e.message}")
                 e.printStackTrace()
+                isPythonInitialized = false
+                return false
             }
         } else {
             python = Python.getInstance()
+            isPythonInitialized = true
+            return true
         }
     }
 
@@ -77,6 +83,16 @@ class MainActivity : FlutterActivity() {
                 "success" to true,
                 "message" to "Backend already running"
             ))
+            return
+        }
+
+        // Ensure Python is initialized first
+        if (!ensurePythonInitialized()) {
+            result.error(
+                "PYTHON_ERROR",
+                "Failed to initialize Python environment. Please check logs.",
+                null
+            )
             return
         }
 
