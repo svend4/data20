@@ -120,11 +120,11 @@ chaquopy {
 
         // Python pip packages
         pip {
-            // Core backend dependencies
+            // Core backend dependencies (using Pydantic 1.x for Chaquopy compatibility)
             install "fastapi==0.104.1"
             install "uvicorn==0.24.0"
-            install "pydantic==2.5.0"
-            install "pydantic-settings==2.1.0"
+            install "pydantic==1.10.13"
+            install "pydantic-settings==1.2.0"
 
             // Database
             install "sqlalchemy==2.0.23"
