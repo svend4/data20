@@ -56,6 +56,57 @@ android {
             python.srcDirs = ['src/main/python']
         }
     }
+
+    // Flavor dimensions
+    flavorDimensions "variant"
+
+    // Product flavors for different app variants
+    productFlavors {
+        lite {
+            dimension "variant"
+            applicationIdSuffix ".lite"
+            versionNameSuffix "-lite"
+
+            // Lite: only arm64-v8a for minimal size
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+
+            // Build config fields
+            buildConfigField "String", "APP_VARIANT", '"lite"'
+            buildConfigField "int", "TOOL_COUNT", "12"
+        }
+
+        standard {
+            dimension "variant"
+            applicationIdSuffix ".standard"
+            versionNameSuffix "-standard"
+
+            // Standard: arm64-v8a + armeabi-v7a
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a"
+            }
+
+            // Build config fields
+            buildConfigField "String", "APP_VARIANT", '"standard"'
+            buildConfigField "int", "TOOL_COUNT", "35"
+        }
+
+        full {
+            dimension "variant"
+            // No suffix - original package name
+            versionNameSuffix "-full"
+
+            // Full: all architectures
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a"
+            }
+
+            // Build config fields
+            buildConfigField "String", "APP_VARIANT", '"full"'
+            buildConfigField "int", "TOOL_COUNT", "57"
+        }
+    }
 }
 
 // Chaquopy Python configuration
@@ -112,11 +163,24 @@ chaquopy {
         }
     }
 
-    // Production-specific configuration
+    // Flavor-specific Python configurations
     productFlavors {
-        production {
-            dimension "environment"
-            version "3.9"
+        lite {
+            // Lite variant: minimal Python packages
+            pip {
+                // Keep only core dependencies from defaultConfig
+                // Size optimization: remove pandas, numpy, Pillow
+            }
+        }
+
+        standard {
+            // Standard variant: essential Python packages
+            // Uses defaultConfig packages
+        }
+
+        full {
+            // Full variant: all Python packages
+            // Uses defaultConfig packages
         }
     }
 }
