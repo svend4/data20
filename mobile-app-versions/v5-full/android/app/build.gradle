@@ -147,9 +147,9 @@ android {
             // No suffix - original package name
             versionNameSuffix "-full"
 
-            // Full: 2 architectures + all tools (~140-170 MB)
+            // Full: ALL architectures including emulator support (~170-200 MB)
             ndk {
-                abiFilters "arm64-v8a", "armeabi-v7a"
+                abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
             }
 
             // Build config fields
@@ -171,12 +171,11 @@ chaquopy {
         // Python pip packages
         // NOTE: All flavors (lite/standard/full) share the SAME Python dependencies
         // Chaquopy does not support flavor-specific pip dependencies easily
-        // This means all variants will have similar APK sizes (~120-170 MB)
         //
-        // Size differences come from:
-        // - lite: 1 architecture (arm64-v8a) → smallest
-        // - standard: 2 architectures (arm64-v8a, armeabi-v7a) → +30-40 MB
-        // - full: 2 architectures + more tools → +10-20 MB
+        // Size differences come from NDK architectures:
+        // - lite: 1 arch (arm64-v8a) → ~90-110 MB
+        // - standard: 2 arch (arm64-v8a, armeabi-v7a) → ~130-150 MB
+        // - full: 4 arch (arm64-v8a, armeabi-v7a, x86, x86_64) → ~180-220 MB
         pip {
             // Core backend dependencies (using Pydantic 1.x for Chaquopy compatibility)
             install "fastapi==0.104.1"
