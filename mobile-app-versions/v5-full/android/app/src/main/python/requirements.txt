@@ -1,11 +1,11 @@
 # Python Requirements for Mobile Backend
 # These are installed via Chaquopy pip in build.gradle
 
-# Core backend
+# Core backend (using Pydantic 1.x for Chaquopy compatibility)
 fastapi==0.104.1
 uvicorn==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic==1.10.13
+pydantic-settings==1.2.0
 
 # Database
 sqlalchemy==2.0.23
