@@ -188,16 +188,14 @@ chaquopy {
         //
         // With minify enabled (slower build): -10-20 MB per variant
         pip {
-            // MINIMAL dependencies to prevent crashes
-            // Heavy dependencies (pandas, numpy, sqlalchemy, fastapi) REMOVED temporarily
-            // This allows basic Python backend to work without crashing
-
-            // Only essential utilities
-            install "requests==2.31.0"
-            install "PyYAML==6.0.1"
-
-            // Note: Full backend with FastAPI will be enabled after basic Python works
-            // For now using simplified backend_main_simple.py
+            // NO DEPENDENCIES - Absolute minimal Python to prevent timeouts
+            // All dependencies removed to speed up initialization
+            // Even requests and PyYAML removed to ensure fastest startup
+            //
+            // This allows Python environment to initialize without ANY external packages
+            // Backend will use only Python standard library
+            //
+            // Full backend with dependencies will be enabled after basic Python works
         }
 
         // Python source directories to include

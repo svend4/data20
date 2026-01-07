@@ -1,20 +1,19 @@
 """
-Simplified Mobile Backend - Minimal version for testing
-No heavy dependencies (no pandas, no sqlalchemy, no fastapi)
-Just a simple HTTP server to verify Python works
+Simplified Mobile Backend - ULTRA MINIMAL version for testing
+NO external dependencies - only Python standard library
+Just confirms Python environment works without ANY pip packages
 """
 
 import os
 import sys
-import logging
-from pathlib import Path
+import time
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Simple print-based logging (faster than logging module)
+def log_info(message):
+    print(f"INFO: {message}", flush=True)
+
+def log_error(message):
+    print(f"ERROR: {message}", flush=True, file=sys.stderr)
 
 # Global variables
 database_path = None
@@ -33,9 +32,10 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     upload_path = upload_dir
     logs_path = logs_dir
 
-    # Create directories
+    # Create directories (without pathlib to be faster)
     for path in [upload_dir, logs_dir]:
-        Path(path).mkdir(parents=True, exist_ok=True)
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
 
     # Set environment variables
     os.environ['DATA20_DATABASE_PATH'] = db_path
@@ -43,39 +43,40 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     os.environ['DATA20_LOGS_PATH'] = logs_dir
     os.environ['ENVIRONMENT'] = 'mobile'
 
-    logger.info(f"✅ Environment configured:")
-    logger.info(f"   Database: {db_path}")
-    logger.info(f"   Uploads: {upload_dir}")
-    logger.info(f"   Logs: {logs_dir}")
+    log_info("Environment configured:")
+    log_info(f"  Database: {db_path}")
+    log_info(f"  Uploads: {upload_dir}")
+    log_info(f"  Logs: {logs_dir}")
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
     """
     Run minimal test server (just confirms Python works)
 
-    NOTE: This is a SIMPLIFIED version for testing.
-    Full FastAPI server is too heavy for initial mobile deployment.
+    NOTE: This is an ULTRA-SIMPLIFIED version for testing.
+    NO pip dependencies - only Python standard library.
     """
     global is_running
 
     try:
-        logger.info(f"🚀 Starting SIMPLIFIED mobile backend on {host}:{port}")
-        logger.info("✅ Python backend initialized successfully!")
-        logger.info("   This is a test version without FastAPI/heavy dependencies")
-        logger.info("   Backend is 'running' in demo mode")
+        log_info(f"Starting ULTRA-MINIMAL mobile backend on {host}:{port}")
+        log_info("Python backend initialized successfully!")
+        log_info("  This is a test version with ZERO pip dependencies")
+        log_info("  Backend is 'running' in demo mode")
 
         is_running = True
 
         # Just keep running (no actual server for now)
         # This confirms Python works without crashing
-        import time
         while is_running:
             time.sleep(1)
 
-        logger.info("✅ Backend test completed successfully")
+        log_info("Backend test completed successfully")
 
     except Exception as e:
-        logger.error(f"❌ Failed to start server: {e}")
+        log_error(f"Failed to start server: {e}")
+        # Print traceback manually without importing traceback module
+        import sys
         import traceback
         traceback.print_exc()
         raise
@@ -88,11 +89,11 @@ def stop_server():
     global is_running
 
     try:
-        logger.info("🛑 Stopping server...")
+        log_info("Stopping server...")
         is_running = False
-        logger.info("✅ Server stopped")
+        log_info("Server stopped")
     except Exception as e:
-        logger.error(f"❌ Error stopping server: {e}")
+        log_error(f"Error stopping server: {e}")
 
 
 # For testing
@@ -101,9 +102,9 @@ if __name__ == "__main__":
     temp_dir = tempfile.gettempdir()
 
     setup_environment(
-        db_path=f"{temp_dir}/test_data20.db",
-        upload_dir=f"{temp_dir}/data20_uploads",
-        logs_dir=f"{temp_dir}/data20_logs"
+        db_path=os.path.join(temp_dir, "test_data20.db"),
+        upload_dir=os.path.join(temp_dir, "data20_uploads"),
+        logs_dir=os.path.join(temp_dir, "data20_logs")
     )
 
     run_server(host="127.0.0.1", port=8001)

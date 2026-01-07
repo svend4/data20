@@ -23,7 +23,7 @@ class BackendService {
   // Backend configuration
   static const String baseUrl = 'http://127.0.0.1:8001';
   static const String healthEndpoint = '/health';
-  static const int maxHealthCheckAttempts = 60; // 60 seconds
+  static const int maxHealthCheckAttempts = 120; // 120 seconds (increased for slow initialization)
   static const Duration healthCheckInterval = Duration(seconds: 1);
 
   // State
