@@ -104,7 +104,14 @@ class MainActivity : FlutterActivity() {
                 setupEnvironment()
 
                 // Get Python main module
-                val mainModule = python!!.getModule("backend_main")
+                // Using SIMPLIFIED backend to avoid crashes from heavy dependencies
+                Log.i(TAG, "Loading simplified backend module...")
+                val mainModule = try {
+                    python!!.getModule("backend_main_simple")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Failed to load backend_main_simple, trying backend_main...")
+                    python!!.getModule("backend_main")
+                }
 
                 // Setup Android-specific paths
                 mainModule.callAttr(
