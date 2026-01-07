@@ -134,9 +134,11 @@ android {
             applicationIdSuffix ".standard"
             versionNameSuffix "-standard"
 
-            // Standard: 2 architectures for broader device support (~130-150 MB)
+            // Standard: Same architecture as lite (arm64-v8a only)
+            // REASON: armeabi-v7a causes crashes with Python backend
+            // All modern devices (2017+) support arm64-v8a
             ndk {
-                abiFilters "arm64-v8a", "armeabi-v7a"
+                abiFilters "arm64-v8a"
             }
 
             // Build config fields
@@ -149,9 +151,11 @@ android {
             // No suffix - original package name
             versionNameSuffix "-full"
 
-            // Full: ALL architectures including emulator support (~170-200 MB)
+            // Full: Same architecture as lite (arm64-v8a only)
+            // REASON: Additional architectures (armeabi-v7a, x86, x86_64) crash backend
+            // arm64-v8a is stable and works on all modern devices
             ndk {
-                abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+                abiFilters "arm64-v8a"
             }
 
             // Build config fields
@@ -180,13 +184,16 @@ chaquopy {
         //
         // Using simplified backend_main_simple.py instead
         //
-        // Size differences come from NDK architectures:
-        // NOTE: Sizes are LARGER without minify/shrinkResources (disabled for faster build)
-        // - lite: 1 arch (arm64-v8a) → ~40-60 MB
-        // - standard: 2 arch (arm64-v8a, armeabi-v7a) → ~60-90 MB
-        // - full: 4 arch (arm64-v8a, armeabi-v7a, x86, x86_64) → ~90-130 MB
+        // APK Sizes (all variants use arm64-v8a only):
+        // NOTE: All variants have similar size (~40-50 MB) since same architecture
+        // - lite: arm64-v8a, 6 tools → ~40-50 MB
+        // - standard: arm64-v8a, 6 tools → ~40-50 MB (same size as lite)
+        // - full: arm64-v8a, 6 tools → ~40-50 MB (same size as lite)
         //
-        // With minify enabled (slower build): -10-20 MB per variant
+        // REASON for single architecture:
+        // - armeabi-v7a (32-bit) causes backend crashes
+        // - x86/x86_64 (emulator) also cause crashes
+        // - arm64-v8a works stable on all modern devices (2017+)
         pip {
             // NO DEPENDENCIES - Absolute minimal Python to prevent timeouts
             // All dependencies removed to speed up initialization
