@@ -45,14 +45,13 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
         elif self.path == '/api/tools':
-            # Tools list endpoint - mock data
+            # Tools list endpoint - returns mock tools
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
 
-            # Return empty list for now (app can handle empty tools)
-            response = []
-            self.wfile.write(json.dumps(response).encode('utf-8'))
+            # Return static list of demo tools
+            self.wfile.write(json.dumps(MOCK_TOOLS).encode('utf-8'))
 
         elif self.path == '/api/jobs':
             # Jobs list endpoint - mock data
@@ -145,6 +144,119 @@ upload_path = None
 logs_path = None
 is_running = False
 http_server = None
+
+# Mock tools data - static list for testing
+MOCK_TOOLS = [
+    {
+        "name": "calculate_statistics",
+        "display_name": "Расчёт статистики",
+        "description": "Вычисление базовых статистических показателей для набора данных",
+        "category": "statistics",
+        "parameters": {
+            "data": {
+                "type": "array",
+                "required": True,
+                "description": "Массив числовых данных"
+            },
+            "metrics": {
+                "type": "array",
+                "required": False,
+                "default": ["mean", "median", "std"],
+                "enum": ["mean", "median", "std", "min", "max", "variance"],
+                "description": "Список метрик для расчёта"
+            }
+        }
+    },
+    {
+        "name": "data_cleaning",
+        "display_name": "Очистка данных",
+        "description": "Удаление дубликатов, пропущенных значений и выбросов",
+        "category": "cleaning",
+        "parameters": {
+            "remove_duplicates": {
+                "type": "boolean",
+                "required": False,
+                "default": True,
+                "description": "Удалить дубликаты"
+            },
+            "fill_na": {
+                "type": "string",
+                "required": False,
+                "enum": ["mean", "median", "zero", "drop"],
+                "default": "mean",
+                "description": "Метод заполнения пропусков"
+            }
+        }
+    },
+    {
+        "name": "text_analysis",
+        "display_name": "Анализ текста",
+        "description": "Частотный анализ слов, извлечение ключевых фраз",
+        "category": "nlp",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для анализа"
+            },
+            "language": {
+                "type": "string",
+                "required": False,
+                "default": "ru",
+                "enum": ["ru", "en"],
+                "description": "Язык текста"
+            }
+        }
+    },
+    {
+        "name": "create_chart",
+        "display_name": "Создание графика",
+        "description": "Построение различных типов графиков и диаграмм",
+        "category": "visualization",
+        "parameters": {
+            "chart_type": {
+                "type": "string",
+                "required": True,
+                "enum": ["line", "bar", "pie", "scatter"],
+                "description": "Тип графика"
+            },
+            "title": {
+                "type": "string",
+                "required": False,
+                "description": "Заголовок графика"
+            }
+        }
+    },
+    {
+        "name": "transform_data",
+        "display_name": "Преобразование данных",
+        "description": "Нормализация, стандартизация, масштабирование данных",
+        "category": "transformation",
+        "parameters": {
+            "method": {
+                "type": "string",
+                "required": True,
+                "enum": ["normalize", "standardize", "minmax"],
+                "description": "Метод преобразования"
+            }
+        }
+    },
+    {
+        "name": "network_analysis",
+        "display_name": "Анализ сетей",
+        "description": "Анализ графов и сетевых структур",
+        "category": "network",
+        "parameters": {
+            "algorithm": {
+                "type": "string",
+                "required": False,
+                "default": "pagerank",
+                "enum": ["pagerank", "centrality", "clustering"],
+                "description": "Алгоритм анализа"
+            }
+        }
+    }
+]
 
 
 def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
