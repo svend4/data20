@@ -116,32 +116,23 @@ jobs:
           flutter build apk \
             --flavor lite \
             --release \
-            --dart-define=APP_VARIANT=lite \
-            --split-per-abi
+            --dart-define=APP_VARIANT=lite
 
       - name: 📏 Размер APK (LITE)
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "========================================="
-          echo "📏 Размеры LITE APK:"
+          echo "📏 Размер LITE APK:"
           echo "========================================="
           cd build/app/outputs/flutter-apk
-          ls -lh app-lite-release*.apk | awk '{print $9, "-", $5}'
+          ls -lh app-lite-release.apk | awk '{print $9, "-", $5}'
           echo "========================================="
 
-      - name: 📤 Загрузка APK - LITE (arm64-v8a)
+      - name: 📤 Загрузка APK - LITE
         uses: actions/upload-artifact@v4
         with:
-          name: data20-lite-arm64-v8a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-lite-release-arm64-v8a.apk
-          retention-days: 90
-
-      - name: 📤 Загрузка APK - LITE (armeabi-v7a)
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: data20-lite-armeabi-v7a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-lite-release-armeabi-v7a.apk
+          name: data20-lite-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-lite-release.apk
           retention-days: 90
 
       - name: ✅ LITE вариант готов
@@ -223,32 +214,23 @@ jobs:
           flutter build apk \
             --flavor standard \
             --release \
-            --dart-define=APP_VARIANT=standard \
-            --split-per-abi
+            --dart-define=APP_VARIANT=standard
 
       - name: 📏 Размер APK (STANDARD)
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "========================================="
-          echo "📏 Размеры STANDARD APK:"
+          echo "📏 Размер STANDARD APK:"
           echo "========================================="
           cd build/app/outputs/flutter-apk
-          ls -lh app-standard-release*.apk | awk '{print $9, "-", $5}'
+          ls -lh app-standard-release.apk | awk '{print $9, "-", $5}'
           echo "========================================="
 
-      - name: 📤 Загрузка APK - STANDARD (arm64-v8a)
+      - name: 📤 Загрузка APK - STANDARD
         uses: actions/upload-artifact@v4
         with:
-          name: data20-standard-arm64-v8a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-standard-release-arm64-v8a.apk
-          retention-days: 90
-
-      - name: 📤 Загрузка APK - STANDARD (armeabi-v7a)
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: data20-standard-armeabi-v7a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-standard-release-armeabi-v7a.apk
+          name: data20-standard-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-standard-release.apk
           retention-days: 90
 
       - name: ✅ STANDARD вариант готов
@@ -330,32 +312,23 @@ jobs:
           flutter build apk \
             --flavor full \
             --release \
-            --dart-define=APP_VARIANT=full \
-            --split-per-abi
+            --dart-define=APP_VARIANT=full
 
       - name: 📏 Размер APK (FULL)
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           echo "========================================="
-          echo "📏 Размеры FULL APK:"
+          echo "📏 Размер FULL APK:"
           echo "========================================="
           cd build/app/outputs/flutter-apk
-          ls -lh app-full-release*.apk | awk '{print $9, "-", $5}'
+          ls -lh app-full-release.apk | awk '{print $9, "-", $5}'
           echo "========================================="
 
-      - name: 📤 Загрузка APK - FULL (arm64-v8a)
+      - name: 📤 Загрузка APK - FULL
         uses: actions/upload-artifact@v4
         with:
-          name: data20-full-arm64-v8a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-full-release-arm64-v8a.apk
-          retention-days: 90
-
-      - name: 📤 Загрузка APK - FULL (armeabi-v7a)
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: data20-full-armeabi-v7a
-          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-full-release-armeabi-v7a.apk
+          name: data20-full-release
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-full-release.apk
           retention-days: 90
 
       - name: ✅ FULL вариант готов
@@ -393,16 +366,13 @@ jobs:
           echo "========================================="
           echo ""
           if [ "${{ needs.build-lite-variant.result }}" == "success" ]; then
-            echo "✅ data20-lite-arm64-v8a.apk (~45 MB, 12 tools)"
-            echo "✅ data20-lite-armeabi-v7a.apk (~45 MB, 12 tools)"
+            echo "✅ data20-lite-release.apk (~45 MB, 12 tools)"
           fi
           if [ "${{ needs.build-standard-variant.result }}" == "success" ]; then
-            echo "✅ data20-standard-arm64-v8a.apk (~65 MB, 35 tools)"
-            echo "✅ data20-standard-armeabi-v7a.apk (~65 MB, 35 tools)"
+            echo "✅ data20-standard-release.apk (~65 MB, 35 tools)"
           fi
           if [ "${{ needs.build-full-variant.result }}" == "success" ]; then
-            echo "✅ data20-full-arm64-v8a.apk (~95 MB, 57 tools)"
-            echo "✅ data20-full-armeabi-v7a.apk (~95 MB, 57 tools)"
+            echo "✅ data20-full-release.apk (~95 MB, 57 tools)"
           fi
           echo ""
           echo "========================================="

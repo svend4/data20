@@ -162,27 +162,6 @@ chaquopy {
             src false  // Don't include .pyc files to reduce size
         }
     }
-
-    // Flavor-specific Python configurations
-    productFlavors {
-        lite {
-            // Lite variant: minimal Python packages
-            pip {
-                // Keep only core dependencies from defaultConfig
-                // Size optimization: remove pandas, numpy, Pillow
-            }
-        }
-
-        standard {
-            // Standard variant: essential Python packages
-            // Uses defaultConfig packages
-        }
-
-        full {
-            // Full variant: all Python packages
-            // Uses defaultConfig packages
-        }
-    }
 }
 
 dependencies {
