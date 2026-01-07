@@ -1,12 +1,15 @@
 """
 Simplified Mobile Backend - ULTRA MINIMAL version for testing
 NO external dependencies - only Python standard library
-Just confirms Python environment works without ANY pip packages
+Simple HTTP server with /health endpoint using http.server
 """
 
 import os
 import sys
 import time
+import json
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from threading import Thread
 
 # Simple print-based logging (faster than logging module)
 def log_info(message):
@@ -15,11 +18,66 @@ def log_info(message):
 def log_error(message):
     print(f"ERROR: {message}", flush=True, file=sys.stderr)
 
+
+class SimpleBackendHandler(BaseHTTPRequestHandler):
+    """
+    Simple HTTP request handler with /health endpoint
+    """
+
+    def log_message(self, format, *args):
+        # Override to use our logging
+        log_info(f"{self.address_string()} - {format % args}")
+
+    def do_GET(self):
+        """Handle GET requests"""
+        if self.path == '/health':
+            # Health check endpoint
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            response = {
+                'status': 'healthy',
+                'service': 'data20-mobile-backend',
+                'version': 'simple-0.1.0',
+                'message': 'Backend is running (minimal version)'
+            }
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        elif self.path == '/':
+            # Root endpoint
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.end_headers()
+
+            html = """
+            <html>
+            <head><title>Data20 Mobile Backend</title></head>
+            <body>
+                <h1>Data20 Mobile Backend</h1>
+                <p>Status: <strong>Running</strong></p>
+                <p>Version: Simple 0.1.0 (Python stdlib only)</p>
+                <p><a href="/health">Health Check</a></p>
+            </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+
+        else:
+            # 404 for other paths
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            response = {'error': 'Not found', 'path': self.path}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
 # Global variables
 database_path = None
 upload_path = None
 logs_path = None
 is_running = False
+http_server = None
 
 
 def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
@@ -51,47 +109,60 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
     """
-    Run minimal test server (just confirms Python works)
+    Run simple HTTP server with /health endpoint
 
-    NOTE: This is an ULTRA-SIMPLIFIED version for testing.
-    NO pip dependencies - only Python standard library.
+    NOTE: This is a SIMPLIFIED version using only Python standard library.
+    NO pip dependencies - uses http.server from stdlib.
     """
-    global is_running
+    global is_running, http_server
 
     try:
-        log_info(f"Starting ULTRA-MINIMAL mobile backend on {host}:{port}")
+        log_info(f"Starting simple HTTP backend on {host}:{port}")
         log_info("Python backend initialized successfully!")
-        log_info("  This is a test version with ZERO pip dependencies")
-        log_info("  Backend is 'running' in demo mode")
+        log_info("  Using http.server from Python standard library")
+        log_info("  Endpoints: / and /health")
+
+        # Create HTTP server
+        server_address = (host, port)
+        http_server = HTTPServer(server_address, SimpleBackendHandler)
 
         is_running = True
 
-        # Just keep running (no actual server for now)
-        # This confirms Python works without crashing
-        while is_running:
-            time.sleep(1)
+        log_info(f"HTTP server listening on {host}:{port}")
+        log_info("Backend is ready to accept requests!")
 
-        log_info("Backend test completed successfully")
+        # Serve requests (blocking call)
+        http_server.serve_forever()
 
     except Exception as e:
         log_error(f"Failed to start server: {e}")
-        # Print traceback manually without importing traceback module
-        import sys
         import traceback
         traceback.print_exc()
+        is_running = False
         raise
+    finally:
+        if http_server:
+            http_server.server_close()
+        log_info("HTTP server shut down")
 
 
 def stop_server():
     """
-    Stop the test server
+    Stop the HTTP server
     """
-    global is_running
+    global is_running, http_server
 
     try:
-        log_info("Stopping server...")
+        log_info("Stopping HTTP server...")
         is_running = False
-        log_info("Server stopped")
+
+        if http_server:
+            http_server.shutdown()
+            http_server.server_close()
+            log_info("HTTP server stopped successfully")
+        else:
+            log_info("No HTTP server to stop")
+
     except Exception as e:
         log_error(f"Error stopping server: {e}")
 
