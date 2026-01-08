@@ -255,6 +255,215 @@ MOCK_TOOLS = [
                 "description": "Алгоритм анализа"
             }
         }
+    },
+    {
+        "name": "correlation_analysis",
+        "display_name": "Корреляционный анализ",
+        "description": "Вычисление корреляции между двумя наборами данных",
+        "category": "statistics",
+        "parameters": {
+            "data_x": {
+                "type": "array",
+                "required": True,
+                "description": "Первый набор данных"
+            },
+            "data_y": {
+                "type": "array",
+                "required": True,
+                "description": "Второй набор данных"
+            }
+        }
+    },
+    {
+        "name": "sentiment_analysis",
+        "display_name": "Анализ тональности",
+        "description": "Определение тональности текста (позитивный, негативный, нейтральный)",
+        "category": "nlp",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для анализа"
+            }
+        }
+    },
+    {
+        "name": "word_frequency",
+        "display_name": "Частота слов",
+        "description": "Подсчёт частоты встречаемости слов в тексте",
+        "category": "text",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для анализа"
+            },
+            "top_n": {
+                "type": "integer",
+                "required": False,
+                "default": 10,
+                "description": "Количество самых частых слов"
+            }
+        }
+    },
+    {
+        "name": "json_parser",
+        "display_name": "Парсер JSON",
+        "description": "Парсинг и валидация JSON строки",
+        "category": "other",
+        "parameters": {
+            "json_string": {
+                "type": "string",
+                "required": True,
+                "description": "JSON строка"
+            }
+        }
+    },
+    {
+        "name": "csv_parser",
+        "display_name": "Парсер CSV",
+        "description": "Парсинг CSV данных в структурированный формат",
+        "category": "other",
+        "parameters": {
+            "csv_data": {
+                "type": "string",
+                "required": True,
+                "description": "CSV данные"
+            },
+            "delimiter": {
+                "type": "string",
+                "required": False,
+                "default": ",",
+                "description": "Разделитель (запятая, точка с запятой и т.д.)"
+            }
+        }
+    },
+    {
+        "name": "data_filter",
+        "display_name": "Фильтрация данных",
+        "description": "Фильтрация массива данных по условию",
+        "category": "cleaning",
+        "parameters": {
+            "data": {
+                "type": "array",
+                "required": True,
+                "description": "Массив данных"
+            },
+            "condition": {
+                "type": "string",
+                "required": True,
+                "enum": ["positive", "negative", "non_zero", "unique"],
+                "description": "Условие фильтрации"
+            }
+        }
+    },
+    {
+        "name": "outlier_detection",
+        "display_name": "Обнаружение выбросов",
+        "description": "Поиск выбросов в данных методом межквартильного размаха",
+        "category": "statistics",
+        "parameters": {
+            "data": {
+                "type": "array",
+                "required": True,
+                "description": "Массив числовых данных"
+            }
+        }
+    },
+    {
+        "name": "text_summarize",
+        "display_name": "Суммаризация текста",
+        "description": "Извлечение ключевых предложений из текста",
+        "category": "nlp",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для суммаризации"
+            },
+            "sentences": {
+                "type": "integer",
+                "required": False,
+                "default": 3,
+                "description": "Количество предложений в резюме"
+            }
+        }
+    },
+    {
+        "name": "base64_encode",
+        "display_name": "Base64 кодирование",
+        "description": "Кодирование/декодирование текста в Base64",
+        "category": "transformation",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для кодирования/декодирования"
+            },
+            "operation": {
+                "type": "string",
+                "required": True,
+                "enum": ["encode", "decode"],
+                "description": "Операция (кодирование или декодирование)"
+            }
+        }
+    },
+    {
+        "name": "hash_calculator",
+        "display_name": "Вычисление хэша",
+        "description": "Вычисление хэша строки (MD5, SHA256)",
+        "category": "transformation",
+        "parameters": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Текст для хэширования"
+            },
+            "algorithm": {
+                "type": "string",
+                "required": False,
+                "default": "sha256",
+                "enum": ["md5", "sha1", "sha256"],
+                "description": "Алгоритм хэширования"
+            }
+        }
+    },
+    {
+        "name": "date_calculator",
+        "display_name": "Калькулятор дат",
+        "description": "Вычисление разницы между датами или добавление дней к дате",
+        "category": "other",
+        "parameters": {
+            "date": {
+                "type": "string",
+                "required": True,
+                "description": "Дата в формате YYYY-MM-DD"
+            },
+            "operation": {
+                "type": "string",
+                "required": True,
+                "enum": ["add_days", "diff_days"],
+                "description": "Операция с датой"
+            },
+            "value": {
+                "type": "integer",
+                "required": False,
+                "description": "Количество дней (для add_days) или вторая дата (для diff_days)"
+            }
+        }
+    },
+    {
+        "name": "url_parser",
+        "display_name": "Парсер URL",
+        "description": "Разбор URL на составные части (протокол, домен, параметры)",
+        "category": "other",
+        "parameters": {
+            "url": {
+                "type": "string",
+                "required": True,
+                "description": "URL для разбора"
+            }
+        }
     }
 ]
 
