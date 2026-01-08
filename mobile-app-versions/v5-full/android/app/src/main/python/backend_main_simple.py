@@ -127,14 +127,31 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
 
             html = """
             <html>
-            <head><title>Data20 Mobile Backend</title></head>
+            <head>
+                <title>Data20 Mobile Backend</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; }
+                    .status { color: #22c55e; }
+                    .version { color: #3b82f6; font-weight: bold; }
+                    .feature { color: #8b5cf6; }
+                    a { color: #2563eb; text-decoration: none; }
+                    a:hover { text-decoration: underline; }
+                </style>
+            </head>
             <body>
                 <h1>Data20 Mobile Backend</h1>
-                <p>Status: <strong>Running</strong></p>
-                <p>Version: Simple 0.1.0 (Python stdlib only)</p>
-                <p><a href="/health">Health Check</a></p>
-                <p><a href="/api/tools">API: Tools</a></p>
-                <p><a href="/api/jobs">API: Jobs</a></p>
+                <p>Status: <strong class="status">Running</strong></p>
+                <p>Version: <span class="version">simple-0.2.1</span></p>
+                <p class="feature">✅ Real implementations (12 tools)</p>
+                <p class="feature">✅ SQLite database</p>
+                <p class="feature">✅ 18 tools available</p>
+                <hr>
+                <h3>API Endpoints:</h3>
+                <p>🏥 <a href="/health">Health Check</a> - Backend status and version info</p>
+                <p>🔧 <a href="/api/tools">API: Tools</a> - List all available tools</p>
+                <p>📋 <a href="/api/jobs">API: Jobs</a> - Job history</p>
+                <p>📊 <a href="/api/stats">API: Stats</a> - Usage statistics</p>
+                <p>🔍 <a href="/api/search?q=statistics">API: Search</a> - Search tools</p>
             </body>
             </html>
             """
