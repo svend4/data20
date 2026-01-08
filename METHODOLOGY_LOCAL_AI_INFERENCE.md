@@ -1772,676 +1772,1326 @@ class SmartBackendRouter {
 
 ---
 
-# TROUBLESHOOTING
+# TROUBLESHOOTING И FAQ
 
-## 5.1 Проблемы с Ollama
+## 🔧 Частые проблемы и решения
 
-### Проблема: Ollama не запускается
+### Проблема 1: Ollama не запускается
 
+**Симптомы:**
 ```bash
-# Проверка статуса сервиса
-systemctl status ollama  # Linux
-ps aux | grep ollama     # Проверка процесса
-
-# Решение 1: Перезапуск
-systemctl restart ollama  # Linux
-# Windows: перезапустить через Task Manager
-
-# Решение 2: Проверка портов
-netstat -an | grep 11434
-# Если порт занят - изменить OLLAMA_HOST
-
-# Решение 3: Логи
-journalctl -u ollama -f  # Linux
-# Windows: C:\Users\<user>\.ollama\logs\
+Error: Failed to connect to Ollama
+Connection refused at http://localhost:11434
 ```
 
-### Проблема: Модель не загружается
+**Решения:**
 
-```bash
-# Ошибка: "model not found"
-# Решение: Загрузить модель
-ollama pull llama2
+**Windows:**
+```powershell
+# Проверить, запущен ли сервис
+Get-Process ollama
 
-# Ошибка: "insufficient memory"
-# Решение: Использовать меньшую модель
-ollama pull phi-2  # Только 2.7B параметров
+# Перезапустить Ollama
+Stop-Process -Name ollama -Force
+ollama serve
 
-# Проверка доступного места
-df -h ~/.ollama/models  # Linux
-dir %USERPROFILE%\.ollama\models  # Windows
+# Проверить порт
+netstat -ano | findstr :11434
 ```
 
-### Проблема: Медленная генерация
-
+**Linux/macOS:**
 ```bash
-# Проблема: Нет GPU ускорения
-# Проверка GPU
-nvidia-smi  # NVIDIA GPU
-rocm-smi    # AMD GPU
+# Проверить процесс
+ps aux | grep ollama
 
-# Решение: Установка драйверов
-# NVIDIA CUDA: https://developer.nvidia.com/cuda-downloads
-# AMD ROCm: https://rocm.docs.amd.com/
+# Перезапустить
+pkill ollama
+ollama serve
 
-# Проблема: Слишком большая модель
-# Решение: Уменьшить размер модели
-ollama run llama2  # 7B - быстрее
-# вместо
-ollama run llama2:70b  # 70B - медленно
+# Проверить порт
+lsof -i :11434
+netstat -tuln | grep 11434
 ```
 
-### Проблема: Flutter не может подключиться
-
-```dart
-// Ошибка: Connection refused
-// Решение 1: Проверить доступность
-curl http://localhost:11434/api/tags
-
-// Решение 2: Изменить URL
-// Если на другом компьютере в сети:
-OllamaService(baseUrl: 'http://192.168.1.100:11434')
-
-// Решение 3: Настроить CORS (если нужно)
-// Ollama по умолчанию разрешает CORS
+**Альтернатива:**
+```bash
+# Запустить на другом порту
+OLLAMA_HOST=0.0.0.0:11435 ollama serve
 ```
 
 ---
 
-## 5.2 Проблемы с Desktop Server
+### Проблема 2: Модель загружается слишком долго
 
-### Проблема: XAMPP не запускается
+**Симптомы:**
+- Первый запрос занимает 30+ секунд
+- Приложение зависает при первом обращении
 
-```
-Ошибка: "Port 80 already in use"
+**Причина:** Модель загружается в память при первом запросе
 
-Решение 1: Изменить порт Apache
-1. Открыть XAMPP Control Panel
-2. Config -> Apache (httpd.conf)
-3. Найти: Listen 80
-4. Изменить: Listen 8080
-5. Перезапустить Apache
-
-Решение 2: Остановить конфликтующий процесс
-Windows:
-  netstat -ano | findstr :80
-  taskkill /PID <PID> /F
-
-Linux:
-  sudo lsof -i :80
-  sudo kill <PID>
-```
-
-### Проблема: Python зависимости не устанавливаются
-
-```bash
-# Ошибка: "No module named 'torch'"
-# Решение: Установить в правильное окружение
-
-# 1. Активировать venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate      # Windows
-
-# 2. Проверить активацию
-which python  # Должно показать venv/bin/python
-
-# 3. Установить зависимости
-pip install -r requirements.txt
-
-# Ошибка: "Could not find a version that satisfies torch"
-# Решение: Установить через официальный URL
-pip install torch --index-url https://download.pytorch.org/whl/cpu
-```
-
-### Проблема: Модель не загружается
+**Решение 1: Прогрев модели при старте**
 
 ```python
-# Ошибка: "OutOfMemoryError"
-# Решение: Использовать меньшую модель или CPU
+# desktop_server.py
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+def warmup_model():
+    """Прогрев модели при запуске сервера"""
+    print("🔥 Warming up model...")
+    try:
+        # Выполнить пустой запрос
+        _ = pipeline("Hello", max_length=5)
+        print("✅ Model ready!")
+    except Exception as e:
+        print(f"❌ Warmup failed: {e}")
 
-# Вместо большой модели:
-# model_name = "EleutherAI/gpt-neo-2.7B"
-
-# Использовать маленькую:
-model_name = "distilgpt2"
-
-# Или загрузить на CPU:
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype=torch.float32,  # Вместо float16
-    device_map="cpu"  # Принудительно CPU
-)
-
-# Ошибка: "Connection timeout"
-# Решение: Использовать локальный кэш
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    cache_dir="./models",  # Локальная папка
-    local_files_only=True   # Не скачивать заново
-)
+# Вызвать при запуске Flask
+if __name__ == '__main__':
+    warmup_model()
+    app.run(host='0.0.0.0', port=5000)
 ```
 
-### Проблема: Flask сервер падает
+**Решение 2: Keep-alive для Ollama**
 
 ```bash
-# Ошибка: "Address already in use"
-# Решение: Изменить порт
-
-# В app.py:
-app.run(port=5001)  # Вместо 5000
-
-# Или убить процесс на порту 5000:
-# Linux/Mac:
-lsof -ti:5000 | xargs kill -9
-
-# Windows:
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-
-# Ошибка: "Werkzeug crashed"
-# Решение: Использовать production сервер
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
+# Держать модель в памяти постоянно
+ollama run llama2
+# В отдельном окне - запросы будут быстрыми
 ```
 
-### Проблема: Flutter не видит API
+**Решение 3: Меньшая модель для разработки**
 
-```dart
-// Ошибка: "Connection refused"
-// Отладка:
+```bash
+# Вместо llama2:13b (8 ГБ, медленно)
+ollama pull phi  # 2 ГБ, быстро
 
-// 1. Проверить доступность API
-curl http://localhost:5000/health
-
-// 2. Проверить CORS
-// В app.py добавить:
-from flask_cors import CORS
-CORS(app, origins=['*'])  # Для разработки
-
-// 3. Проверить firewall
-// Windows: Settings -> Firewall -> Allow app
-// Linux: sudo ufw allow 5000
-
-// 4. Если Flutter на телефоне, использовать IP:
-MLBackendService(baseUrl: 'http://192.168.1.100:5000')
+# Для production - большая модель
+# Для dev - маленькая
 ```
 
 ---
 
-## 5.3 Проблемы производительности
+### Проблема 3: Out of Memory (OOM)
 
-### Медленная генерация текста
-
-```python
-# Проблема: Генерация 30+ секунд
-# Решение: Оптимизация параметров
-
-# ❌ Медленно
-result = pipeline(
-    prompt,
-    max_length=2048,  # Слишком много
-    num_beams=5,      # Beam search медленный
-)
-
-# ✅ Быстро
-result = pipeline(
-    prompt,
-    max_length=200,    # Меньше токенов
-    do_sample=True,    # Sampling быстрее beam search
-    top_k=50,
-    top_p=0.95,
-    num_return_sequences=1
-)
+**Симптомы:**
+```
+RuntimeError: CUDA out of memory
+Killed (OOM)
 ```
 
-### Высокое использование RAM
+**Причина:** Модель не помещается в RAM/VRAM
+
+**Решение 1: Квантизация модели**
 
 ```python
-# Проблема: Модель использует 16+ ГБ RAM
-# Решение: Квантизация модели
-
+# Загрузить модель в 8-bit
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
-# 8-bit квантизация (уменьшает размер в 2 раза)
 quantization_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-    llm_int8_threshold=6.0
+    load_in_8bit=True,  # 8-bit вместо 32-bit (4x экономия памяти)
 )
 
 model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+    "gpt2",
     quantization_config=quantization_config,
     device_map="auto"
 )
 
-# Или 4-bit квантизация (уменьшает в 4 раза!)
+# Для еще большей экономии - 4-bit
 quantization_config = BitsAndBytesConfig(
-    load_in_4bit=True,
+    load_in_4bit=True,  # 4-bit (8x экономия)
     bnb_4bit_compute_dtype=torch.float16
 )
 ```
 
+**Решение 2: Меньшая модель**
+
+```bash
+# Вместо llama2:13b (требует 16 ГБ RAM)
+ollama pull llama2:7b   # требует 8 ГБ RAM
+ollama pull phi         # требует 4 ГБ RAM
+```
+
+**Решение 3: CPU inference**
+
+```python
+# Использовать CPU вместо GPU (медленнее, но работает)
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+model = model.to('cpu')  # Принудительно на CPU
+```
+
+**Решение 4: Batch size = 1**
+
+```python
+# Обрабатывать по одному запросу
+for item in data:
+    result = model.generate(item, max_length=100)
+    # НЕ model.generate(data, ...) - весь batch сразу
+```
+
 ---
+
+### Проблема 4: Flutter не подключается к Desktop Server
+
+**Симптомы:**
+```dart
+SocketException: Connection refused
+DioError: Failed to connect
+```
+
+**Причина:** Firewall, неправильный IP, или CORS
+
+**Решение 1: Проверить доступность API**
+
+```bash
+# На компьютере с сервером
+curl http://localhost:5000/generate -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"test"}'
+
+# Если работает локально, но не с телефона - проблема в сети
+```
+
+**Решение 2: Правильный IP адрес**
+
+```dart
+// ❌ НЕПРАВИЛЬНО (работает только на том же устройстве)
+final apiUrl = 'http://localhost:5000';
+
+// ✅ ПРАВИЛЬНО (работает в локальной сети)
+final apiUrl = 'http://192.168.1.100:5000';  // IP компьютера
+
+// Узнать IP компьютера:
+// Windows: ipconfig
+// Linux/macOS: ifconfig | grep inet
+```
+
+**Решение 3: CORS настройки**
+
+```python
+# desktop_server.py
+
+from flask import Flask
+from flask_cors import CORS
+
+app = Flask(__name__)
+
+# Разрешить запросы с любых источников
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",  # В production укажите конкретные домены
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+```
+
+**Решение 4: Firewall**
+
+```bash
+# Windows: Добавить правило в Windows Defender Firewall
+# Settings → Windows Security → Firewall → Allow an app
+
+# Linux: Открыть порт в ufw
+sudo ufw allow 5000/tcp
+sudo ufw reload
+
+# macOS: System Preferences → Security & Privacy → Firewall
+# Разрешить входящие соединения для Python/Flask
+```
+
+**Решение 5: Привязка к 0.0.0.0**
+
+```python
+# Слушать на всех интерфейсах, не только localhost
+app.run(host='0.0.0.0', port=5000)  # ✅ Правильно
+
+# НЕ:
+app.run(host='localhost', port=5000)  # ❌ Только локально
+app.run(host='127.0.0.1', port=5000)  # ❌ Только локально
+```
+
+---
+
+### Проблема 5: Медленная генерация текста
+
+**Симптомы:**
+- Генерация 100 токенов занимает 30+ секунд
+- Flutter приложение тормозит
+
+**Решение 1: Уменьшить max_length**
+
+```python
+# ❌ Долго (генерирует до 1000 токенов)
+result = pipeline(prompt, max_length=1000)
+
+# ✅ Быстрее (генерирует до 100 токенов)
+result = pipeline(prompt, max_length=100)
+```
+
+```dart
+// Flutter
+final response = await dio.post('/generate', data: {
+  'prompt': prompt,
+  'max_length': 50,  // Короткие ответы = быстрее
+});
+```
+
+**Решение 2: Streaming ответы**
+
+```python
+# desktop_server.py
+
+from flask import Response, stream_with_context
+import json
+
+@app.route('/generate_stream', methods=['POST'])
+def generate_stream():
+    """Streaming генерация - токены возвращаются по мере генерации"""
+    prompt = request.json['prompt']
+
+    def generate():
+        # Генерация токен за токеном
+        for token in model.generate_streaming(prompt):
+            yield f"data: {json.dumps({'token': token})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
+```
+
+```dart
+// Flutter - показывать текст по мере генерации
+Stream<String> generateStream(String prompt) async* {
+  final response = await dio.post(
+    '/generate_stream',
+    data: {'prompt': prompt},
+    options: Options(responseType: ResponseType.stream),
+  );
+
+  await for (var chunk in response.data.stream) {
+    final text = utf8.decode(chunk);
+    yield text;
+  }
+}
+
+// Использование
+generateStream('Расскажи про Flutter').listen((token) {
+  setState(() {
+    fullText += token;  // Добавляем токены по мере получения
+  });
+});
+```
+
+**Решение 3: Использовать GPU**
+
+```python
+# Проверить, доступен ли GPU
+import torch
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"CUDA device: {torch.cuda.get_device_name(0)}")
+
+# Загрузить модель на GPU
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+model = model.to('cuda')  # На GPU
+
+# CPU vs GPU скорость:
+# CPU (Intel i7): ~2-5 tokens/sec
+# GPU (RTX 3060): ~30-50 tokens/sec
+# GPU (RTX 4090): ~100-150 tokens/sec
+```
+
+**Решение 4: Меньшая модель**
+
+```bash
+# Скорость зависит от размера модели:
+
+# phi (1.3B параметров) - ~50 tokens/sec на CPU
+ollama pull phi
+
+# llama2:7b (7B параметров) - ~10 tokens/sec на CPU
+ollama pull llama2:7b
+
+# llama2:13b (13B параметров) - ~5 tokens/sec на CPU
+ollama pull llama2:13b
+
+# Для production с требованием скорости:
+# GPU + маленькая модель > CPU + большая модель
+```
+
+---
+
+### Проблема 6: Кодировка (кириллица не отображается)
+
+**Симптомы:**
+```
+"������������" вместо "Привет"
+UnicodeDecodeError
+```
+
+**Решение:**
+
+```python
+# desktop_server.py
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False  # ✅ Поддержка Unicode
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.json['prompt']
+    result = pipeline(prompt)
+
+    return jsonify({
+        'result': result
+    }), 200, {'Content-Type': 'application/json; charset=utf-8'}
+```
+
+```dart
+// Flutter
+
+final response = await dio.post(
+  '/generate',
+  data: {'prompt': 'Привет'},
+  options: Options(
+    responseType: ResponseType.json,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+  ),
+);
+```
+
+---
+
+## ❓ FAQ (Часто задаваемые вопросы)
+
+### Q1: Можно ли использовать Ollama в production?
+
+**A:** Да, но с оговорками:
+
+✅ **Подходит для:**
+- Прототипы и MVP
+- Внутренние инструменты компании
+- Персональные проекты
+- Демо и proof-of-concept
+
+⚠️ **Не подходит для:**
+- High-load системы (>1000 запросов/мин)
+- Mission-critical приложения
+- Приложения с SLA требованиями
+
+**Рекомендация:** Используйте Desktop Server или облачные решения для production.
+
+---
+
+### Q2: Сколько нужно RAM для локального AI?
+
+**Минимальные требования:**
+
+| Модель | RAM | VRAM (GPU) | Примечания |
+|--------|-----|------------|------------|
+| phi (1.3B) | 4 ГБ | 2 ГБ | Маленькая, быстрая |
+| llama2:7b | 8 ГБ | 6 ГБ | Оптимальная |
+| llama2:13b | 16 ГБ | 12 ГБ | Качественная |
+| llama2:70b | 64 ГБ | 48 ГБ | Профессиональная |
+| GPT-J-6B | 12 ГБ | 8 ГБ | Альтернатива |
+
+**Рекомендации:**
+- **Для разработки:** 8-16 ГБ RAM
+- **Для production:** 16-32 ГБ RAM + GPU
+- **Для enterprise:** 64+ ГБ RAM + несколько GPU
+
+---
+
+### Q3: Работает ли это офлайн?
+
+**A:** Да!
+
+✅ **Полностью офлайн:**
+- Ollama - работает локально
+- Desktop Server - работает локально
+- Flutter app - подключается к локальному серверу
+
+📶 **Интернет нужен только для:**
+- Первоначальной загрузки модели
+- Установки библиотек
+- Обновлений
+
+**Сценарии использования офлайн:**
+```
+1. Загрузка (требует интернет):
+   ollama pull llama2  # Скачать модель
+
+2. Использование (офлайн):
+   ollama run llama2   # Работает без интернета
+   Flutter app → Desktop Server → Ollama ✅
+```
+
+---
+
+### Q4: Можно ли использовать облако + локальный сервер вместе?
+
+**A:** Да! Гибридный подход - лучшая практика.
+
+**Архитектура:**
+
+```dart
+// Flutter - умная маршрутизация
+
+class HybridAIService {
+  Future<String> generate(String prompt, {bool useCloud = false}) async {
+    // Простые задачи → локально (быстро, бесплатно)
+    if (!useCloud && prompt.length < 500) {
+      return _generateLocal(prompt);
+    }
+
+    // Сложные задачи → облако (качественно, но платно)
+    return _generateCloud(prompt);
+  }
+
+  Future<String> _generateLocal(String prompt) async {
+    // Ollama или Desktop Server
+    final response = await dio.post('http://localhost:11434/api/generate');
+    return response.data['response'];
+  }
+
+  Future<String> _generateCloud(String prompt) async {
+    // OpenAI, Anthropic, etc.
+    final response = await dio.post('https://api.openai.com/v1/chat/completions');
+    return response.data['choices'][0]['message']['content'];
+  }
+}
+```
+
+**Преимущества:**
+- ✅ Локально - быстро и бесплатно
+- ✅ Облако - качественно для сложных задач
+- ✅ Офлайн fallback
+- ✅ Экономия на API costs
+
+---
+
+### Q5: Как защитить API сервер?
+
+**Решение: JWT аутентификация**
+
+```python
+# desktop_server.py
+
+from flask import Flask, request, jsonify
+import jwt
+from functools import wraps
+
+app = Flask(__name__)
+SECRET_KEY = 'your-secret-key-here'  # Хранить в .env
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token:
+            return jsonify({'error': 'Token missing'}), 401
+
+        try:
+            # Проверка токена
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except:
+            return jsonify({'error': 'Invalid token'}), 401
+
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/generate', methods=['POST'])
+@token_required  # ✅ Защищено
+def generate():
+    prompt = request.json['prompt']
+    result = pipeline(prompt)
+    return jsonify({'result': result})
+
+@app.route('/login', methods=['POST'])
+def login():
+    """Выдать токен после аутентификации"""
+    username = request.json['username']
+    password = request.json['password']
+
+    # Проверить credentials (упрощенно)
+    if username == 'admin' and password == 'secret':
+        token = jwt.encode({'user': username}, SECRET_KEY, algorithm="HS256")
+        return jsonify({'token': token})
+
+    return jsonify({'error': 'Invalid credentials'}), 401
+```
+
+```dart
+// Flutter
+
+class SecureAIService {
+  String? _token;
+
+  Future<void> login(String username, String password) async {
+    final response = await dio.post('/login', data: {
+      'username': username,
+      'password': password,
+    });
+
+    _token = response.data['token'];
+  }
+
+  Future<String> generate(String prompt) async {
+    if (_token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await dio.post(
+      '/generate',
+      data: {'prompt': prompt},
+      options: Options(headers: {
+        'Authorization': _token,  // ✅ Отправляем токен
+      }),
+    );
+
+    return response.data['result'];
+  }
+}
+```
+
+---
+
+### Q6: Сколько это стоит?
+
+**Локальный AI (Ollama / Desktop Server):**
+
+💰 **Стоимость:**
+- ✅ Бесплатно (модели open-source)
+- ✅ Нет API costs
+- ✅ Неограниченное использование
+
+💻 **Требуется:**
+- Компьютер/сервер (один раз)
+- Электричество (~50-100W непрерывно)
+
+**Облачный AI (OpenAI, Anthropic):**
+
+💰 **Стоимость:**
+- OpenAI GPT-3.5: $0.002 за 1K токенов
+- OpenAI GPT-4: $0.03 за 1K токенов
+- Claude: $0.015 за 1K токенов
+
+📊 **Пример расчета:**
+```
+1000 пользователей × 10 запросов/день × 500 токенов = 5M токенов/день
+
+OpenAI GPT-3.5: 5M × $0.002/1K = $10/день = $300/месяц
+OpenAI GPT-4: 5M × $0.03/1K = $150/день = $4500/месяц
+
+Локальный сервер: $0/месяц + стоимость оборудования (~$1000-2000 один раз)
+```
+
+**Вывод:** Локальный AI окупается при >100 пользователей или >10000 запросов/день
+
+---
+
 
 # BEST PRACTICES
 
-## 6.1 Безопасность
+## 🏆 Лучшие практики локального AI
 
-### Ollama:
+### 1. Управление ресурсами
 
-```bash
-# 1. Не открывать наружу без аутентификации
-# По умолчанию: localhost only ✅
-
-# 2. Если нужен доступ из сети - использовать nginx proxy
-server {
-    listen 80;
-    server_name ollama.local;
-
-    location / {
-        proxy_pass http://localhost:11434;
-        
-        # Basic auth
-        auth_basic "Restricted";
-        auth_basic_user_file /etc/nginx/.htpasswd;
-    }
-}
-
-# 3. Ограничение доступа по IP
-# В nginx:
-allow 192.168.1.0/24;
-deny all;
-```
-
-### Desktop Server:
+#### ✅ Кэширование результатов
 
 ```python
-# 1. Использовать API ключи
-from flask import request, abort
+# desktop_server.py
 
-API_KEYS = {
-    "flutter-app-key-123": "mobile_app",
-    "web-app-key-456": "web_client"
-}
+from functools import lru_cache
+import hashlib
 
-@app.before_request
-def check_api_key():
-    api_key = request.headers.get('X-API-Key')
-    if api_key not in API_KEYS:
-        abort(401, "Invalid API key")
+# In-memory кэш для одинаковых промптов
+@lru_cache(maxsize=100)
+def generate_cached(prompt_hash: str, prompt: str) -> str:
+    """Кэшировать результаты генерации"""
+    result = pipeline(prompt, max_length=100)
+    return result[0]['generated_text']
 
-# 2. Валидация входных данных
-from pydantic import BaseModel, validator
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.json['prompt']
 
-class GenerateRequest(BaseModel):
-    prompt: str
-    max_length: int = 200
-    
-    @validator('prompt')
-    def prompt_not_empty(cls, v):
-        if not v.strip():
-            raise ValueError('Prompt cannot be empty')
-        return v
-    
-    @validator('max_length')
-    def max_length_limit(cls, v):
-        if v > 2048:
-            raise ValueError('Max length cannot exceed 2048')
-        return v
+    # Создать хэш промпта
+    prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
 
-# 3. Rate limiting
+    # Использовать кэш
+    result = generate_cached(prompt_hash, prompt)
+
+    return jsonify({'result': result})
+```
+
+**Redis кэш для production:**
+
+```python
+import redis
+import json
+
+redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.json['prompt']
+
+    # Проверить кэш
+    cached = redis_client.get(f"ai:{prompt}")
+    if cached:
+        return jsonify({'result': json.loads(cached), 'cached': True})
+
+    # Генерация
+    result = pipeline(prompt)
+
+    # Сохранить в кэш (на 1 час)
+    redis_client.setex(f"ai:{prompt}", 3600, json.dumps(result))
+
+    return jsonify({'result': result, 'cached': False})
+```
+
+---
+
+#### ✅ Лимиты и rate limiting
+
+```python
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+app = Flask(__name__)
+
+# Rate limiter
 limiter = Limiter(
-    app,
+    app=app,
     key_func=get_remote_address,
-    default_limits=["100 per hour"]
+    default_limits=["100 per hour"]  # 100 запросов в час с одного IP
 )
 
-@app.route('/api/llm/generate')
-@limiter.limit("10 per minute")
-def generate_text():
-    # ...
-    pass
+@app.route('/generate', methods=['POST'])
+@limiter.limit("10 per minute")  # Дополнительно - 10 запросов в минуту
+def generate():
+    prompt = request.json['prompt']
+
+    # Лимит на длину промпта
+    if len(prompt) > 1000:
+        return jsonify({'error': 'Prompt too long (max 1000 chars)'}), 400
+
+    result = pipeline(prompt, max_length=200)  # Лимит на output
+    return jsonify({'result': result})
 ```
 
 ---
 
-## 6.2 Оптимизация
-
-### Кэширование результатов:
+#### ✅ Graceful shutdown
 
 ```python
-# Использование Redis для кэша
-import redis
-import json
-import hashlib
+import signal
+import sys
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+def signal_handler(sig, frame):
+    """Корректное завершение работы"""
+    print('\n🛑 Shutting down gracefully...')
 
-def generate_with_cache(prompt, max_length):
-    # Создаем ключ из параметров
-    cache_key = hashlib.md5(
-        f"{prompt}:{max_length}".encode()
-    ).hexdigest()
-    
-    # Проверяем кэш
-    cached = redis_client.get(cache_key)
-    if cached:
-        print("✅ Cache hit!")
-        return json.loads(cached)
-    
-    # Генерация если нет в кэше
-    result = llm_service.generate(prompt, max_length)
-    
-    # Сохранение в кэш (TTL 1 час)
-    redis_client.setex(
-        cache_key,
-        3600,  # 1 час
-        json.dumps(result)
-    )
-    
-    return result
+    # Выгрузить модель из памяти
+    global pipeline
+    del pipeline
+
+    # Очистить GPU память
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    print('✅ Cleanup complete')
+    sys.exit(0)
+
+# Обработчик Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
+
+if __name__ == '__main__':
+    print('🚀 Starting server... (Press Ctrl+C to stop)')
+    app.run(host='0.0.0.0', port=5000)
 ```
 
-### Предзагрузка моделей:
+---
+
+### 2. Безопасность
+
+#### ✅ Валидация input
 
 ```python
-# app.py
+import re
 
-# ❌ Плохо: загрузка при каждом запросе
-@app.route('/api/generate')
-def generate():
-    model = load_model()  # Медленно!
-    result = model.generate(...)
-    return result
+def validate_prompt(prompt: str) -> tuple[bool, str]:
+    """Валидация промпта"""
 
-# ✅ Хорошо: загрузка при старте
-# Глобальные переменные
-llm_service = None
-vision_service = None
+    # Проверка длины
+    if len(prompt) < 3:
+        return False, "Prompt too short (min 3 chars)"
 
-@app.before_first_request
-def init_models():
-    global llm_service, vision_service
-    
-    print("Loading models...")
-    llm_service = LLMService()
-    llm_service.load_model()
-    
-    vision_service = VisionService()
-    vision_service.load_model()
-    print("✅ Models loaded!")
+    if len(prompt) > 2000:
+        return False, "Prompt too long (max 2000 chars)"
 
-@app.route('/api/generate')
-def generate():
-    # Модель уже загружена
-    result = llm_service.generate(...)
-    return result
-```
-
-### Batch processing:
-
-```python
-# Обработка нескольких запросов одновременно
-from concurrent.futures import ThreadPoolExecutor
-
-executor = ThreadPoolExecutor(max_workers=4)
-
-@app.route('/api/batch-generate', methods=['POST'])
-def batch_generate():
-    prompts = request.json['prompts']  # Список промптов
-    
-    # Параллельная обработка
-    futures = [
-        executor.submit(llm_service.generate, prompt)
-        for prompt in prompts
+    # Проверка на инъекции
+    dangerous_patterns = [
+        r'<script',  # XSS
+        r'DROP\s+TABLE',  # SQL injection
+        r'system\(',  # Command injection
+        r'eval\(',  # Code injection
     ]
-    
-    results = [future.result() for future in futures]
-    
-    return jsonify({'results': results})
+
+    for pattern in dangerous_patterns:
+        if re.search(pattern, prompt, re.IGNORECASE):
+            return False, f"Dangerous pattern detected: {pattern}"
+
+    return True, "OK"
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.json['prompt']
+
+    # Валидация
+    valid, message = validate_prompt(prompt)
+    if not valid:
+        return jsonify({'error': message}), 400
+
+    result = pipeline(prompt)
+    return jsonify({'result': result})
 ```
 
 ---
 
-## 6.3 Мониторинг
+#### ✅ HTTPS для production
 
-### Логирование запросов:
+```bash
+# Генерация self-signed сертификата для разработки
+openssl req -x509 -newkey rsa:4096 \
+  -keyout key.pem -out cert.pem \
+  -days 365 -nodes
+```
+
+```python
+# desktop_server.py
+
+if __name__ == '__main__':
+    # Development
+    if os.getenv('ENVIRONMENT') == 'development':
+        app.run(host='0.0.0.0', port=5000)
+
+    # Production - с HTTPS
+    else:
+        app.run(
+            host='0.0.0.0',
+            port=5000,
+            ssl_context=('cert.pem', 'key.pem')  # HTTPS
+        )
+```
+
+```dart
+// Flutter - обработка HTTPS
+
+final dio = Dio();
+
+// Для разработки с self-signed сертификатом
+(dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+  client.badCertificateCallback = (cert, host, port) {
+    return true;  // Принимать self-signed сертификаты (только для dev!)
+  };
+  return client;
+};
+```
+
+---
+
+#### ✅ Environment variables
+
+```python
+# .env файл (НЕ коммитить в Git!)
+SECRET_KEY=your-secret-key-here
+DATABASE_URL=postgresql://user:pass@localhost/db
+OLLAMA_URL=http://localhost:11434
+MAX_WORKERS=4
+```
+
+```python
+# desktop_server.py
+
+from dotenv import load_dotenv
+import os
+
+# Загрузить переменные из .env
+load_dotenv()
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434')
+MAX_WORKERS = int(os.getenv('MAX_WORKERS', 4))
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = SECRET_KEY
+```
+
+---
+
+### 3. Мониторинг и логирование
+
+#### ✅ Структурированное логирование
 
 ```python
 import logging
+from logging.handlers import RotatingFileHandler
+import json
 from datetime import datetime
 
 # Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('ml_backend.log'),
-        logging.StreamHandler()
-    ]
+handler = RotatingFileHandler('ai_server.log', maxBytes=10000000, backupCount=5)
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+handler.setFormatter(formatter)
 
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
-@app.route('/api/llm/generate')
-def generate_text():
+@app.route('/generate', methods=['POST'])
+def generate():
     start_time = datetime.now()
-    
+    prompt = request.json['prompt']
+
+    # Логирование запроса
+    logger.info(json.dumps({
+        'event': 'generation_started',
+        'prompt_length': len(prompt),
+        'ip': request.remote_addr,
+        'timestamp': start_time.isoformat()
+    }))
+
     try:
-        prompt = request.json['prompt']
-        
-        logger.info(f"Generate request: {prompt[:50]}...")
-        
-        result = llm_service.generate(prompt)
-        
-        elapsed = (datetime.now() - start_time).total_seconds()
-        logger.info(f"Generation completed in {elapsed:.2f}s")
-        
-        return jsonify(result)
-        
+        result = pipeline(prompt)
+
+        # Логирование успеха
+        duration = (datetime.now() - start_time).total_seconds()
+        logger.info(json.dumps({
+            'event': 'generation_completed',
+            'duration': duration,
+            'result_length': len(result),
+            'timestamp': datetime.now().isoformat()
+        }))
+
+        return jsonify({'result': result})
+
     except Exception as e:
-        logger.error(f"Generation failed: {e}", exc_info=True)
+        # Логирование ошибки
+        logger.error(json.dumps({
+            'event': 'generation_failed',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }))
+
         return jsonify({'error': str(e)}), 500
 ```
 
-### Метрики производительности:
+---
+
+#### ✅ Prometheus метрики
 
 ```python
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Histogram, generate_latest
 
-# Определение метрик
-requests_total = Counter(
-    'ml_requests_total',
-    'Total requests',
-    ['endpoint', 'status']
-)
+# Метрики
+request_count = Counter('ai_requests_total', 'Total AI requests')
+request_duration = Histogram('ai_request_duration_seconds', 'AI request duration')
+error_count = Counter('ai_errors_total', 'Total AI errors')
 
-request_duration = Histogram(
-    'ml_request_duration_seconds',
-    'Request duration',
-    ['endpoint']
-)
+@app.route('/generate', methods=['POST'])
+def generate():
+    request_count.inc()  # Увеличить счетчик запросов
 
-models_loaded = Gauge(
-    'ml_models_loaded',
-    'Number of loaded models'
-)
+    with request_duration.time():  # Измерить время
+        try:
+            result = pipeline(prompt)
+            return jsonify({'result': result})
+        except Exception as e:
+            error_count.inc()  # Увеличить счетчик ошибок
+            raise
 
-@app.before_request
-def start_timer():
-    request.start_time = time.time()
-
-@app.after_request
-def record_metrics(response):
-    duration = time.time() - request.start_time
-    
-    request_duration.labels(
-        endpoint=request.endpoint
-    ).observe(duration)
-    
-    requests_total.labels(
-        endpoint=request.endpoint,
-        status=response.status_code
-    ).inc()
-    
-    return response
+@app.route('/metrics')
+def metrics():
+    """Endpoint для Prometheus"""
+    return generate_latest()
 ```
 
 ---
 
-# ПРИМЕРЫ РЕАЛЬНЫХ ПРОЕКТОВ
+### 4. Оптимизация производительности
 
-## 7.1 Проект: Локальный AI Ассистент (Ollama)
+#### ✅ Батчинг запросов
 
-### Описание:
-Персональный ассистент для работы с документами, кодом и общения.
+```python
+from collections import deque
+import threading
+import time
 
-### Стек:
-- Frontend: Flutter (Mobile + Desktop)
-- Backend: Ollama (llama2)
-- Хранилище: SharedPreferences
+# Очередь запросов
+request_queue = deque()
+result_dict = {}
 
-### Архитектура:
+def batch_processor():
+    """Фоновый процесс - обрабатывает запросы батчами"""
+    while True:
+        if len(request_queue) >= 4 or (len(request_queue) > 0 and time.time() % 1 < 0.1):
+            # Собрать batch
+            batch = []
+            request_ids = []
 
+            for _ in range(min(4, len(request_queue))):
+                req_id, prompt = request_queue.popleft()
+                batch.append(prompt)
+                request_ids.append(req_id)
+
+            # Обработать batch (быстрее, чем по одному)
+            results = pipeline(batch, max_length=100)
+
+            # Сохранить результаты
+            for req_id, result in zip(request_ids, results):
+                result_dict[req_id] = result
+
+        time.sleep(0.1)
+
+# Запустить фоновый процесс
+threading.Thread(target=batch_processor, daemon=True).start()
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    prompt = request.json['prompt']
+
+    # Добавить в очередь
+    request_id = str(uuid.uuid4())
+    request_queue.append((request_id, prompt))
+
+    # Ждать результат
+    timeout = 30
+    start = time.time()
+    while request_id not in result_dict:
+        if time.time() - start > timeout:
+            return jsonify({'error': 'Timeout'}), 408
+        time.sleep(0.1)
+
+    # Вернуть результат
+    result = result_dict.pop(request_id)
+    return jsonify({'result': result})
 ```
-Flutter App
-├── Chat Screen
-│   └── Ollama API (localhost:11434)
-├── Document Analyzer
-│   └── Загрузка PDF/TXT → Ollama Summary
-└── Code Helper
-    └── Генерация/объяснение кода
-```
-
-### Особенности:
-- ✅ Полностью офлайн
-- ✅ Работает на любом компьютере
-- ✅ Простая установка (10 минут)
-- ❌ Только текстовые задачи
 
 ---
 
-## 7.2 Проект: Мультимодальная платформа (Desktop Server)
+#### ✅ Асинхронная обработка
 
-### Описание:
-Платформа для обработки текста, изображений и аудио с единым API.
+```python
+from celery import Celery
 
-### Стек:
-- Frontend: Flutter Web + Mobile
-- Backend: Flask + Python ML Stack
-- База данных: PostgreSQL
-- Очереди: Celery + Redis
-- Мониторинг: Prometheus + Grafana
+# Celery для фоновых задач
+celery_app = Celery('ai_server', broker='redis://localhost:6379/0')
 
-### Архитектура:
+@celery_app.task
+def generate_async(prompt: str) -> str:
+    """Асинхронная генерация"""
+    result = pipeline(prompt, max_length=200)
+    return result[0]['generated_text']
 
+@app.route('/generate_async', methods=['POST'])
+def generate_async_endpoint():
+    """Запустить генерацию в фоне"""
+    prompt = request.json['prompt']
+
+    # Создать фоновую задачу
+    task = generate_async.delay(prompt)
+
+    return jsonify({
+        'task_id': task.id,
+        'status': 'processing'
+    }), 202
+
+@app.route('/result/<task_id>', methods=['GET'])
+def get_result(task_id):
+    """Получить результат фоновой задачи"""
+    task = generate_async.AsyncResult(task_id)
+
+    if task.ready():
+        return jsonify({
+            'status': 'completed',
+            'result': task.result
+        })
+    else:
+        return jsonify({
+            'status': 'processing'
+        }), 202
 ```
-Flutter Clients (Web + Mobile)
-        ↓
-    nginx (Load Balancer)
-        ↓
-   Flask API Servers (3 instances)
-        ↓
-    ┌───┴───┬────────┬─────────┐
-    ↓       ↓        ↓         ↓
-  LLM    Vision   Audio    Custom ML
-  GPT-2   ViT    Whisper   Sklearn
-    └───┬───┴────────┴─────────┘
-        ↓
-   PostgreSQL (история)
-   Redis (кэш + очереди)
-   
-   Celery Workers (фоновые задачи)
-```
-
-### Сервисы:
-
-**1. Text Service:**
-- Генерация текста (GPT-2)
-- Суммаризация (BART)
-- Перевод (Helsinki-NLP)
-- Sentiment Analysis
-
-**2. Vision Service:**
-- Классификация (ViT)
-- Object Detection (YOLO)
-- Face Recognition (FaceNet)
-- Image Generation (Stable Diffusion)
-
-**3. Audio Service:**
-- Speech-to-Text (Whisper)
-- Text-to-Speech (TTS)
-- Audio Classification
-
-**4. Custom ML Service:**
-- Рекомендательная система
-- Anomaly Detection
-- Time Series Forecasting
-
-### Особенности:
-- ✅ Все типы ML задач
-- ✅ Горизонтальное масштабирование
-- ✅ Фоновые задачи
-- ✅ Полный мониторинг
-- ❌ Сложная настройка (1 неделя)
 
 ---
 
-## 7.3 Проект: Edge AI для IoT (Hybrid)
+### 5. Тестирование
 
-### Описание:
-Система для обработки данных с IoT устройств с использованием локального AI.
+#### ✅ Unit тесты
 
-### Стек:
-- Frontend: Flutter Mobile
-- Local Backend: Ollama (быстрые задачи)
-- Heavy Backend: Desktop Server (сложные задачи)
-- Edge Devices: Raspberry Pi + TensorFlow Lite
+```python
+# test_ai_server.py
 
-### Архитектура:
+import pytest
+from desktop_server import app
 
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
+
+def test_generate_success(client):
+    """Тест успешной генерации"""
+    response = client.post('/generate', json={
+        'prompt': 'Hello, world!'
+    })
+
+    assert response.status_code == 200
+    assert 'result' in response.json
+
+def test_generate_empty_prompt(client):
+    """Тест с пустым промптом"""
+    response = client.post('/generate', json={
+        'prompt': ''
+    })
+
+    assert response.status_code == 400
+
+def test_generate_long_prompt(client):
+    """Тест с слишком длинным промптом"""
+    response = client.post('/generate', json={
+        'prompt': 'x' * 10000
+    })
+
+    assert response.status_code == 400
+
+def test_rate_limiting(client):
+    """Тест rate limiting"""
+    # Отправить 20 запросов
+    for _ in range(20):
+        response = client.post('/generate', json={
+            'prompt': 'test'
+        })
+
+    # 21-й запрос должен быть отклонен
+    response = client.post('/generate', json={
+        'prompt': 'test'
+    })
+
+    assert response.status_code == 429  # Too Many Requests
 ```
-IoT Sensors → Raspberry Pi (TFLite)
-                ↓
-         Edge Processing
-                ↓
-      ┌────────┴────────┐
-      ↓                 ↓
-  Ollama            Desktop Server
- (quick)              (heavy)
-      └────────┬────────┘
-               ↓
-        Flutter Dashboard
-```
-
-### Workflow:
-
-1. **Быстрые задачи** → Ollama
-   - Классификация сенсорных данных
-   - Простые алерты
-
-2. **Сложные задачи** → Desktop Server
-   - Анализ паттернов
-   - Предсказание аномалий
-   - Обучение моделей
-
-3. **Real-time** → Edge (TFLite)
-   - Мгновенная реакция
-   - Работа без сети
-
-### Особенности:
-- ✅ Гибридный подход
-- ✅ Работает офлайн
-- ✅ Real-time обработка
-- ✅ Масштабируемость
 
 ---
+
+#### ✅ Интеграционные тесты
+
+```python
+# test_integration.py
+
+import requests
+import pytest
+
+BASE_URL = 'http://localhost:5000'
+
+def test_full_workflow():
+    """Тест полного workflow"""
+
+    # 1. Логин
+    response = requests.post(f'{BASE_URL}/login', json={
+        'username': 'test',
+        'password': 'test'
+    })
+    assert response.status_code == 200
+    token = response.json()['token']
+
+    # 2. Генерация с токеном
+    response = requests.post(
+        f'{BASE_URL}/generate',
+        json={'prompt': 'Test prompt'},
+        headers={'Authorization': token}
+    )
+    assert response.status_code == 200
+    assert 'result' in response.json()
+
+    # 3. Проверка кэша
+    response = requests.post(
+        f'{BASE_URL}/generate',
+        json={'prompt': 'Test prompt'},
+        headers={'Authorization': token}
+    )
+    assert response.status_code == 200
+    assert response.json()['cached'] == True
+
+def test_flutter_integration():
+    """Тест интеграции с Flutter"""
+
+    # Симуляция Flutter запроса
+    response = requests.post(
+        f'{BASE_URL}/generate',
+        json={
+            'prompt': 'Explain quantum computing',
+            'max_length': 100
+        },
+        headers={
+            'User-Agent': 'Flutter/3.0',
+            'Content-Type': 'application/json'
+        }
+    )
+
+    assert response.status_code == 200
+    result = response.json()['result']
+    assert len(result) > 0
+```
+
+---
+
+### 6. Deployment Best Practices
+
+#### ✅ Docker для изоляции
+
+```dockerfile
+# Dockerfile для Desktop Server
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Установка зависимостей
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование кода
+COPY desktop_server.py .
+
+# Скачивание модели при сборке (опционально)
+RUN python -c "from transformers import pipeline; pipeline('text-generation', model='gpt2')"
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
+  CMD curl -f http://localhost:5000/health || exit 1
+
+# Expose port
+EXPOSE 5000
+
+# Запуск
+CMD ["python", "desktop_server.py"]
+```
+
+```yaml
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  ai-server:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - ENVIRONMENT=production
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./models:/models  # Кэш моделей
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+```
+
+---
+
+#### ✅ Systemd service для Linux
+
+```ini
+# /etc/systemd/system/ai-server.service
+
+[Unit]
+Description=AI Server
+After=network.target
+
+[Service]
+Type=simple
+User=aiserver
+WorkingDirectory=/opt/ai-server
+Environment="PATH=/opt/ai-server/venv/bin"
+ExecStart=/opt/ai-server/venv/bin/python desktop_server.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# Установка и запуск
+sudo systemctl daemon-reload
+sudo systemctl enable ai-server
+sudo systemctl start ai-server
+
+# Проверка статуса
+sudo systemctl status ai-server
+
+# Логи
+sudo journalctl -u ai-server -f
+```
+
+---
+
+## 📊 Метрики для мониторинга
+
+Важные метрики для отслеживания:
+
+### Performance:
+- **Latency (p50, p95, p99):** <500ms (хорошо), <1000ms (нормально)
+- **Throughput:** запросов/секунду
+- **Token generation speed:** токенов/секунду
+
+### Resources:
+- **CPU usage:** <80%
+- **Memory usage:** <90%
+- **GPU utilization:** >80% (если доступен)
+
+### Reliability:
+- **Error rate:** <1%
+- **Uptime:** >99.9%
+- **Cache hit rate:** >50%
+
+### Business:
+- **Daily active users**
+- **Total requests/day**
+- **Average session duration**
 
 ## ЗАКЛЮЧЕНИЕ
 
