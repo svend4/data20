@@ -96,7 +96,7 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle POST requests"""
         if self.path == '/api/run':
-            # Run tool endpoint - mock implementation
+            # Run tool endpoint - NOW WITH REAL IMPLEMENTATIONS
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
@@ -108,18 +108,56 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             try:
                 request_data = json.loads(body)
                 tool_name = request_data.get('tool_name', 'unknown')
+                parameters = request_data.get('parameters', {})
 
-                # Return mock job response
-                response = {
-                    'job_id': 'mock-job-12345',
-                    'tool_name': tool_name,
-                    'status': 'completed',
-                    'message': f'Tool {tool_name} executed successfully (mock)',
-                    'result': {
-                        'success': True,
-                        'output': 'This is a mock result. Full backend not yet available.'
+                # Generate unique job ID using timestamp
+                job_id = f'job-{int(time.time() * 1000)}'
+
+                # Check if tool has real implementation
+                if tool_name in TOOL_IMPLEMENTATIONS:
+                    # Call real implementation
+                    try:
+                        result_data = TOOL_IMPLEMENTATIONS[tool_name](parameters)
+
+                        # Check if implementation returned error
+                        if 'error' in result_data:
+                            response = {
+                                'job_id': job_id,
+                                'tool_name': tool_name,
+                                'status': 'failed',
+                                'message': result_data['error'],
+                                'result': result_data
+                            }
+                        else:
+                            response = {
+                                'job_id': job_id,
+                                'tool_name': tool_name,
+                                'status': 'completed',
+                                'message': f'Tool {tool_name} executed successfully',
+                                'result': result_data
+                            }
+                    except Exception as impl_error:
+                        # Implementation function raised exception
+                        response = {
+                            'job_id': job_id,
+                            'tool_name': tool_name,
+                            'status': 'failed',
+                            'message': f'Implementation error: {str(impl_error)}',
+                            'result': {'error': str(impl_error)}
+                        }
+                else:
+                    # Fallback to mock for unimplemented tools
+                    response = {
+                        'job_id': job_id,
+                        'tool_name': tool_name,
+                        'status': 'completed',
+                        'message': f'Tool {tool_name} executed (mock - not yet implemented)',
+                        'result': {
+                            'success': True,
+                            'output': 'This tool implementation is pending.'
+                        }
                     }
-                }
+
                 self.wfile.write(json.dumps(response).encode('utf-8'))
 
             except Exception as e:
@@ -466,6 +504,338 @@ MOCK_TOOLS = [
         }
     }
 ]
+
+
+# ============================================================================
+# TOOL IMPLEMENTATIONS - Real calculations using Python stdlib only
+# ============================================================================
+
+def calculate_statistics_impl(params):
+    """Calculate basic statistics (mean, median, std, min, max, variance)"""
+    data = params.get('data', [])
+    metrics = params.get('metrics', ['mean', 'median', 'std'])
+
+    if not data:
+        return {'error': 'No data provided'}
+
+    n = len(data)
+    result = {}
+
+    if 'mean' in metrics:
+        result['mean'] = sum(data) / n
+
+    if 'median' in metrics:
+        sorted_data = sorted(data)
+        mid = n // 2
+        result['median'] = sorted_data[mid] if n % 2 else (sorted_data[mid-1] + sorted_data[mid]) / 2
+
+    if 'min' in metrics:
+        result['min'] = min(data)
+
+    if 'max' in metrics:
+        result['max'] = max(data)
+
+    if 'variance' in metrics or 'std' in metrics:
+        mean = sum(data) / n
+        variance = sum((x - mean) ** 2 for x in data) / n
+        if 'variance' in metrics:
+            result['variance'] = variance
+        if 'std' in metrics:
+            result['std'] = variance ** 0.5
+
+    return result
+
+
+def text_analysis_impl(params):
+    """Analyze text: word count, unique words, character count"""
+    text = params.get('text', '')
+    language = params.get('language', 'ru')
+
+    words = text.split()
+    chars = len(text)
+    unique_words = len(set(words))
+
+    # Word frequency
+    word_freq = {}
+    for word in words:
+        word_lower = word.lower().strip('.,!?;:')
+        word_freq[word_lower] = word_freq.get(word_lower, 0) + 1
+
+    top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    return {
+        'total_words': len(words),
+        'unique_words': unique_words,
+        'total_characters': chars,
+        'top_words': [{'word': w, 'count': c} for w, c in top_words],
+        'language': language
+    }
+
+
+def correlation_analysis_impl(params):
+    """Calculate Pearson correlation coefficient"""
+    data_x = params.get('data_x', [])
+    data_y = params.get('data_y', [])
+
+    if len(data_x) != len(data_y) or not data_x:
+        return {'error': 'Data arrays must have equal non-zero length'}
+
+    n = len(data_x)
+    mean_x = sum(data_x) / n
+    mean_y = sum(data_y) / n
+
+    numerator = sum((data_x[i] - mean_x) * (data_y[i] - mean_y) for i in range(n))
+    denominator_x = sum((x - mean_x) ** 2 for x in data_x) ** 0.5
+    denominator_y = sum((y - mean_y) ** 2 for y in data_y) ** 0.5
+
+    if denominator_x == 0 or denominator_y == 0:
+        return {'error': 'Cannot calculate correlation: zero variance'}
+
+    correlation = numerator / (denominator_x * denominator_y)
+
+    return {
+        'correlation': correlation,
+        'interpretation': 'strong' if abs(correlation) > 0.7 else 'moderate' if abs(correlation) > 0.4 else 'weak'
+    }
+
+
+def word_frequency_impl(params):
+    """Count word frequency in text"""
+    text = params.get('text', '')
+    top_n = params.get('top_n', 10)
+
+    words = text.lower().split()
+    word_freq = {}
+
+    for word in words:
+        word = word.strip('.,!?;:()[]{}\"\'')
+        if word:
+            word_freq[word] = word_freq.get(word, 0) + 1
+
+    top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
+    return {
+        'total_words': len(words),
+        'unique_words': len(word_freq),
+        'top_words': [{'word': w, 'frequency': c} for w, c in top_words]
+    }
+
+
+def json_parser_impl(params):
+    """Parse and validate JSON"""
+    json_string = params.get('json_string', '')
+
+    try:
+        parsed = json.loads(json_string)
+        return {
+            'valid': True,
+            'type': type(parsed).__name__,
+            'data': parsed
+        }
+    except json.JSONDecodeError as e:
+        return {
+            'valid': False,
+            'error': str(e)
+        }
+
+
+def csv_parser_impl(params):
+    """Parse CSV data"""
+    csv_data = params.get('csv_data', '')
+    delimiter = params.get('delimiter', ',')
+
+    lines = csv_data.strip().split('\n')
+    if not lines:
+        return {'error': 'No data provided'}
+
+    # Parse header
+    header = lines[0].split(delimiter)
+
+    # Parse rows
+    rows = []
+    for line in lines[1:]:
+        values = line.split(delimiter)
+        row = {header[i]: values[i] if i < len(values) else '' for i in range(len(header))}
+        rows.append(row)
+
+    return {
+        'columns': header,
+        'row_count': len(rows),
+        'data': rows[:10]  # Return first 10 rows
+    }
+
+
+def base64_encode_impl(params):
+    """Encode/decode Base64"""
+    import base64
+
+    text = params.get('text', '')
+    operation = params.get('operation', 'encode')
+
+    try:
+        if operation == 'encode':
+            encoded = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+            return {'result': encoded, 'operation': 'encode'}
+        else:  # decode
+            decoded = base64.b64decode(text.encode('utf-8')).decode('utf-8')
+            return {'result': decoded, 'operation': 'decode'}
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def hash_calculator_impl(params):
+    """Calculate hash (MD5, SHA1, SHA256)"""
+    import hashlib
+
+    text = params.get('text', '')
+    algorithm = params.get('algorithm', 'sha256')
+
+    hash_funcs = {
+        'md5': hashlib.md5,
+        'sha1': hashlib.sha1,
+        'sha256': hashlib.sha256
+    }
+
+    hash_func = hash_funcs.get(algorithm, hashlib.sha256)
+    hash_value = hash_func(text.encode('utf-8')).hexdigest()
+
+    return {
+        'algorithm': algorithm,
+        'hash': hash_value,
+        'input_length': len(text)
+    }
+
+
+def date_calculator_impl(params):
+    """Calculate date operations"""
+    from datetime import datetime, timedelta
+
+    date_str = params.get('date', '')
+    operation = params.get('operation', 'add_days')
+    value = params.get('value', 0)
+
+    try:
+        date = datetime.strptime(date_str, '%Y-%m-%d')
+
+        if operation == 'add_days':
+            new_date = date + timedelta(days=value)
+            return {
+                'original_date': date_str,
+                'operation': f'add {value} days',
+                'result_date': new_date.strftime('%Y-%m-%d')
+            }
+        elif operation == 'diff_days':
+            # value should contain second date string
+            date2 = datetime.strptime(str(value), '%Y-%m-%d')
+            diff = (date2 - date).days
+            return {
+                'date1': date_str,
+                'date2': str(value),
+                'difference_days': diff
+            }
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def url_parser_impl(params):
+    """Parse URL into components"""
+    from urllib.parse import urlparse, parse_qs
+
+    url = params.get('url', '')
+
+    try:
+        parsed = urlparse(url)
+        query_params = parse_qs(parsed.query)
+
+        return {
+            'scheme': parsed.scheme,
+            'netloc': parsed.netloc,
+            'path': parsed.path,
+            'params': parsed.params,
+            'query': parsed.query,
+            'fragment': parsed.fragment,
+            'query_parameters': {k: v[0] if len(v) == 1 else v for k, v in query_params.items()}
+        }
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def outlier_detection_impl(params):
+    """Detect outliers using IQR method"""
+    data = params.get('data', [])
+
+    if len(data) < 4:
+        return {'error': 'Need at least 4 data points'}
+
+    sorted_data = sorted(data)
+    n = len(sorted_data)
+    q1_idx = n // 4
+    q3_idx = 3 * n // 4
+
+    q1 = sorted_data[q1_idx]
+    q3 = sorted_data[q3_idx]
+    iqr = q3 - q1
+
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+
+    outliers = [x for x in data if x < lower_bound or x > upper_bound]
+
+    return {
+        'q1': q1,
+        'q3': q3,
+        'iqr': iqr,
+        'lower_bound': lower_bound,
+        'upper_bound': upper_bound,
+        'outliers': outliers,
+        'outlier_count': len(outliers)
+    }
+
+
+def data_filter_impl(params):
+    """Filter data array by condition"""
+    data = params.get('data', [])
+    condition = params.get('condition', 'positive')
+
+    if condition == 'positive':
+        filtered = [x for x in data if x > 0]
+    elif condition == 'negative':
+        filtered = [x for x in data if x < 0]
+    elif condition == 'non_zero':
+        filtered = [x for x in data if x != 0]
+    elif condition == 'unique':
+        seen = set()
+        filtered = []
+        for x in data:
+            if x not in seen:
+                seen.add(x)
+                filtered.append(x)
+    else:
+        filtered = data
+
+    return {
+        'original_count': len(data),
+        'filtered_count': len(filtered),
+        'filtered_data': filtered,
+        'condition': condition
+    }
+
+
+# Map tool names to implementation functions
+TOOL_IMPLEMENTATIONS = {
+    'calculate_statistics': calculate_statistics_impl,
+    'text_analysis': text_analysis_impl,
+    'correlation_analysis': correlation_analysis_impl,
+    'word_frequency': word_frequency_impl,
+    'json_parser': json_parser_impl,
+    'csv_parser': csv_parser_impl,
+    'base64_encode': base64_encode_impl,
+    'hash_calculator': hash_calculator_impl,
+    'date_calculator': date_calculator_impl,
+    'url_parser': url_parser_impl,
+    'outlier_detection': outlier_detection_impl,
+    'data_filter': data_filter_impl,
+}
 
 
 def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
