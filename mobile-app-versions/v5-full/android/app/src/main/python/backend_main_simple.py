@@ -1,7 +1,11 @@
 """
-Simplified Mobile Backend - ULTRA MINIMAL version for testing
+Simplified Mobile Backend - Version 0.2.0
 NO external dependencies - only Python standard library
 Simple HTTP server with /health endpoint using http.server
+
+Version History:
+- 0.2.0 (2026-01-08): Real implementations, SQLite database, stats/search endpoints
+- 0.1.0 (2026-01-07): Initial minimal version with mock data
 """
 
 import os
