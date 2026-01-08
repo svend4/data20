@@ -41,8 +41,15 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             response = {
                 'status': 'healthy',
                 'service': 'data20-mobile-backend',
-                'version': 'simple-0.1.0',
-                'message': 'Backend is running (minimal version)'
+                'version': 'simple-0.2.0',
+                'git_commit': 'b8dfcf4',
+                'features': {
+                    'real_implementations': True,
+                    'database': True,
+                    'tools_count': len(MOCK_TOOLS),
+                    'implementations_count': len(TOOL_IMPLEMENTATIONS)
+                },
+                'message': 'Backend is running with real implementations and SQLite database'
             }
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
