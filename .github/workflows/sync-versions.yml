@@ -1,0 +1,188 @@
+name: 🔄 Auto-Sync Versions
+
+# Автоматическая синхронизация изменений из v5-full во все остальные версии
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'claude/**'
+    paths:
+      # Триггер при изменении v5-full
+      - 'mobile-app-versions/v5-full/**'
+      - 'mobile-app-sandboxes/hybrid-best-of-both/**'
+
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source version (v5-full, hybrid, current)'
+        required: true
+        default: 'v5-full'
+      component:
+        description: 'Component to sync (all, gradle, backend, flutter)'
+        required: true
+        default: 'all'
+      dry_run:
+        description: 'Dry run (preview only)'
+        type: boolean
+        default: false
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  check-changes:
+    name: 🔍 Check what changed
+    runs-on: ubuntu-latest
+    outputs:
+      should_sync: ${{ steps.check.outputs.should_sync }}
+      changed_files: ${{ steps.check.outputs.changed_files }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check changed files
+        id: check
+        run: |
+          # Получить список изменённых файлов
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Проверить нужна ли синхронизация
+          if echo "$CHANGED_FILES" | grep -q "mobile-app-versions/v5-full/\|mobile-app-sandboxes/hybrid-best-of-both/"; then
+            echo "should_sync=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected in v5-full or hybrid - sync needed"
+          else
+            echo "should_sync=false" >> $GITHUB_OUTPUT
+            echo "⏭️  No changes in v5-full or hybrid - skipping sync"
+          fi
+
+  sync-versions:
+    name: 🔄 Sync to all versions
+    needs: check-changes
+    if: needs.check-changes.outputs.should_sync == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Make sync script executable
+        run: chmod +x sync-versions.sh check-consistency.sh
+
+      - name: Check current consistency
+        run: |
+          echo "📊 Текущее состояние версий:"
+          ./check-consistency.sh || true
+
+      - name: Determine source and component
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "source=${{ github.event.inputs.source }}" >> $GITHUB_OUTPUT
+            echo "component=${{ github.event.inputs.component }}" >> $GITHUB_OUTPUT
+            echo "dry_run=${{ github.event.inputs.dry_run }}" >> $GITHUB_OUTPUT
+          else
+            echo "source=v5-full" >> $GITHUB_OUTPUT
+            echo "component=all" >> $GITHUB_OUTPUT
+            echo "dry_run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync backend components
+        if: steps.params.outputs.component == 'all' || steps.params.outputs.component == 'backend'
+        run: |
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            ./sync-versions.sh backend ${{ steps.params.outputs.source }} --dry-run
+          else
+            ./sync-versions.sh backend ${{ steps.params.outputs.source }} --force
+          fi
+
+      - name: Sync Gradle components
+        if: steps.params.outputs.component == 'all' || steps.params.outputs.component == 'gradle'
+        run: |
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            ./sync-versions.sh gradle ${{ steps.params.outputs.source }} --dry-run
+          else
+            ./sync-versions.sh gradle ${{ steps.params.outputs.source }} --force
+          fi
+
+      - name: Sync Flutter components
+        if: steps.params.outputs.component == 'all' || steps.params.outputs.component == 'flutter'
+        run: |
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            ./sync-versions.sh flutter ${{ steps.params.outputs.source }} --dry-run
+          else
+            ./sync-versions.sh flutter ${{ steps.params.outputs.source }} --force
+          fi
+
+      - name: Sync Android resources
+        if: steps.params.outputs.component == 'all'
+        run: |
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            ./sync-versions.sh android_res ${{ steps.params.outputs.source }} --dry-run
+          else
+            ./sync-versions.sh android_res ${{ steps.params.outputs.source }} --force
+          fi
+
+      - name: Check consistency after sync
+        run: |
+          echo "📊 Состояние после синхронизации:"
+          ./check-consistency.sh
+
+      - name: Commit changes
+        if: steps.params.outputs.dry_run == 'false'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add mobile-app-versions/
+            git commit -m "🔄 Auto-sync: ${{ steps.params.outputs.component }} from ${{ steps.params.outputs.source }} to all versions
+
+Автоматическая синхронизация изменений:
+- Источник: ${{ steps.params.outputs.source }}
+- Компоненты: ${{ steps.params.outputs.component }}
+- Целевые версии: v1-v7
+
+Изменённые файлы в источнике:
+${{ needs.check-changes.outputs.changed_files }}
+
+Триггер: ${{ github.event_name }}
+Commit: ${{ github.sha }}"
+
+            git push
+            echo "✅ Changes committed and pushed"
+          else
+            echo "⏭️  No changes to commit"
+          fi
+
+  summary:
+    name: 📊 Summary
+    needs: [check-changes, sync-versions]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print summary
+        run: |
+          echo "## 🔄 Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Should sync:** ${{ needs.check-changes.outputs.should_sync }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Sync result:** ${{ needs.sync-versions.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.sync-versions.result }}" = "success" ]; then
+            echo "✅ Синхронизация завершена успешно!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.sync-versions.result }}" = "skipped" ]; then
+            echo "⏭️  Синхронизация не требовалась" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Синхронизация завершилась с ошибкой" >> $GITHUB_STEP_SUMMARY
+          fi
