@@ -1,354 +1,130 @@
-# Data20 Mobile App
+# 📱 v2-hybrid - Flutter Frontend Development Version
 
-Native mobile application for Data20 Knowledge Base built with Flutter.
+**Назначение:** Версия для изолированной разработки и тестирования Flutter фронтенда
 
-## Features
+## 🎯 Специализация
 
-✅ **Cross-Platform**:
-- iOS (iPhone, iPad)
-- Android (phones, tablets)
-- Shared codebase (~95%)
+Эта версия предназначена **исключительно для разработки Flutter UI**:
+- ✅ Полный Flutter код (screens, widgets, services)
+- ✅ Material Design 3 компоненты
+- ✅ Роутинг (go_router)
+- ✅ Состояние (Provider/Riverpod)
+- ❌ Без Python бэкенда
+- ❌ Без Chaquopy (работает с mock данными или внешним API)
 
-✅ **Native UI**:
-- Material Design 3
-- Adaptive widgets
-- Platform-specific behaviors
-- Smooth animations
-
-✅ **Core Functionality**:
-- JWT authentication
-- Tools catalog with search/filters
-- Job execution (placeholder)
-- Job history (placeholder)
-- Offline storage
-
-✅ **Mobile Optimizations**:
-- Touch-optimized UI
-- Pull-to-refresh
-- Responsive grid layouts
-- Secure storage for tokens
-
-## Architecture
+## 📦 Структура
 
 ```
-mobile-app/
+v2-hybrid/
 ├── lib/
-│   ├── main.dart           # App entry point
-│   ├── models/             # Data models
+│   ├── main.dart               # Точка входа
+│   ├── models/                 # Модели данных
 │   │   ├── user.dart
 │   │   ├── tool.dart
 │   │   └── job.dart
-│   ├── services/           # Business logic
+│   ├── screens/                # Экраны
+│   │   ├── home_screen.dart
+│   │   ├── login_screen.dart
+│   │   ├── tools_screen.dart
+│   │   └── settings_screen.dart
+│   ├── services/               # Сервисы
 │   │   ├── api_service.dart
 │   │   ├── auth_service.dart
 │   │   └── storage_service.dart
-│   ├── screens/            # UI screens
-│   │   ├── login_screen.dart
-│   │   ├── home_screen.dart
-│   │   ├── tool_detail_screen.dart   # Placeholder
-│   │   ├── jobs_screen.dart          # Placeholder
-│   │   └── job_detail_screen.dart    # Placeholder
-│   └── utils/
-│       └── theme.dart      # App theme
-├── android/                # Android native code
-├── ios/                    # iOS native code
-├── assets/                 # Images, fonts
-└── pubspec.yaml            # Dependencies
+│   └── utils/                  # Утилиты
+│       ├── constants.dart
+│       └── theme.dart
+└── pubspec.yaml
 ```
 
-## Prerequisites
+## 🚀 Быстрый старт
 
-- Flutter SDK 3.0+
-- Dart 3.0+
-- Android Studio (for Android)
-- Xcode (for iOS, macOS only)
-- Data20 backend running
-
-## Installation
-
-### 1. Install Flutter
-
-Follow official guide: https://docs.flutter.dev/get-started/install
-
-### 2. Verify Installation
+### Установка зависимостей:
 
 ```bash
-flutter doctor
-```
-
-Should show:
-- ✅ Flutter SDK
-- ✅ Android toolchain (if developing for Android)
-- ✅ Xcode (if developing for iOS)
-- ✅ VS Code or Android Studio
-
-### 3. Get Dependencies
-
-```bash
-cd mobile-app
+cd mobile-app-versions/v2-hybrid
 flutter pub get
 ```
 
-## Development
-
-### Run on Emulator/Simulator
+### Запуск на эмуляторе:
 
 ```bash
-# Start backend first
-cd ..
-python run_standalone.py
-
-# Start Flutter app (iOS simulator)
-cd mobile-app
+# Android эмулятор
 flutter run
 
-# Or specify device
-flutter run -d <device-id>
+# iOS симулятор
+flutter run -d ios
 
-# List available devices
-flutter devices
+# Web браузер (для быстрой разработки UI)
+flutter run -d chrome
 ```
 
-### Run on Physical Device
+## 🔧 Конфигурация
 
-**Android**:
-1. Enable Developer Options on phone
-2. Enable USB Debugging
-3. Connect via USB
-4. Run `flutter run`
+### Подключение к внешнему API (v1-original):
 
-**iOS**:
-1. Connect iPhone via USB
-2. Trust computer on device
-3. Run `flutter run`
-4. May need Apple Developer account
+Отредактируйте `lib/services/api_service.dart`:
 
-### Hot Reload
-
-While app is running:
-- Press `r` to hot reload
-- Press `R` to hot restart
-- Press `q` to quit
-
-### Backend Configuration
-
-Default backend URL: `http://localhost:8001`
-
-To change (in app):
-- Use settings screen (TODO)
-- Or modify `StorageService` default
-
-For physical devices, use computer IP:
 ```dart
-// In storage_service.dart
-String get backendUrl {
-  return getString('backend_url') ?? 'http://192.168.1.100:8001';
+class ApiService {
+  final Dio _dio = Dio(
+    BaseOptions(
+      // Подключиться к v1-original бэкенду
+      baseUrl: 'http://localhost:8001/api',
+      // Или для Android эмулятора:
+      // baseUrl: 'http://10.0.2.2:8001/api',
+      
+      connectTimeout: Duration(seconds: 5),
+      receiveTimeout: Duration(seconds: 3),
+    ),
+  );
 }
 ```
 
-## Building
+## 🔗 Интеграция с v1-original
 
-### Android APK (Debug)
-
-```bash
-flutter build apk
-```
-
-Output: `build/app/outputs/flutter-apk/app-release.apk`
-
-### Android App Bundle (Release)
+Для полного стека используйте обе версии вместе:
 
 ```bash
-flutter build appbundle
-```
+# Терминал 1: Запустить v1-original бэкенд
+cd mobile-app-versions/v1-original/android/app/src/main/python
+python -c "from backend_main import *; setup_environment('/tmp/db', '/tmp/up', '/tmp/log'); run_server('0.0.0.0', 8001)"
 
-Output: `build/app/outputs/bundle/release/app-release.aab`
-
-For Google Play Store.
-
-### iOS (Requires macOS + Xcode)
-
-```bash
-flutter build ios
-```
-
-Then open Xcode:
-```bash
-open ios/Runner.xcworkspace
-```
-
-Archive and distribute from Xcode.
-
-## Dependencies
-
-### Core
-- `flutter`: SDK
-- `provider`: State management
-- `go_router`: Navigation
-
-### HTTP & API
-- `http`: Simple HTTP client
-- `dio`: Advanced HTTP client (optional)
-
-### Storage
-- `shared_preferences`: Key-value storage
-- `flutter_secure_storage`: Secure token storage
-
-### Auth
-- `jwt_decoder`: JWT token parsing
-
-### UI
-- `flutter_spinkit`: Loading indicators
-- `cached_network_image`: Image caching
-- `intl`: Internationalization
-
-### Forms
-- `flutter_form_builder`: Form helpers
-- `form_builder_validators`: Validation
-
-## Current Implementation Status
-
-✅ **Complete**:
-- Project structure
-- Data models (User, Tool, Job)
-- API service (full backend integration)
-- Auth service (login, register, logout)
-- Storage service (tokens, settings)
-- Theme (Material Design 3)
-- Login screen (full implementation)
-- Home screen (full implementation)
-- Routing (go_router)
-
-🚧 **Placeholder**:
-- Tool Detail screen
-- Jobs List screen
-- Job Detail screen
-- Settings screen
-
-## Extending
-
-### Add New Screen
-
-1. Create file in `lib/screens/my_screen.dart`
-2. Add route in `lib/main.dart`:
-
-```dart
-GoRoute(
-  path: '/my-route',
-  builder: (context, state) => const MyScreen(),
-),
-```
-
-### Add New Service
-
-1. Create file in `lib/services/my_service.dart`
-2. Add to providers in `main.dart`:
-
-```dart
-Provider(create: (_) => MyService()),
-```
-
-### Access Service
-
-```dart
-// Read once
-final myService = context.read<MyService>();
-
-// Watch for changes
-final myService = context.watch<MyService>();
-```
-
-## Troubleshooting
-
-### "Backend not reachable"
-
-**Problem**: App can't connect to backend
-
-**Solutions**:
-1. Check backend is running
-2. On emulator: use `http://10.0.2.2:8001` (Android) or `http://localhost:8001` (iOS)
-3. On physical device: use computer's IP address
-4. Check firewall allows connections
-
-### Build errors
-
-**Clear cache**:
-```bash
-flutter clean
-flutter pub get
+# Терминал 2: Запустить v2-hybrid фронтенд
+cd mobile-app-versions/v2-hybrid
 flutter run
 ```
 
-### iOS signing issues
+## 🔄 Синхронизация с другими версиями
 
-Need Apple Developer account ($99/year) for:
-- Physical device testing (free account works for 7 days)
-- App Store distribution
-
-### Android build fails
-
-Check:
-- Java version (Java 11+ required)
-- Android SDK installed
-- `ANDROID_HOME` environment variable set
-
-## Testing
-
-### Unit Tests
+После завершения разработки UI:
 
 ```bash
-flutter test
+# Синхронизировать с v5-full (gold standard)
+cd /home/user/data20
+./sync-versions.sh flutter v2-hybrid --dry-run  # Предпросмотр
+./sync-versions.sh flutter v2-hybrid --force     # Применить
 ```
 
-### Widget Tests
+## 📊 Flutter зависимости
 
-```bash
-flutter test test/widget_test.dart
-```
+| Пакет | Версия | Назначение |
+|-------|--------|-----------|
+| `flutter` | SDK | Framework |
+| `go_router` | ^13.0.0 | Навигация |
+| `provider` | ^6.1.1 | Управление состоянием |
+| `dio` | ^5.4.0 | HTTP клиент |
+| `shared_preferences` | ^2.2.2 | Локальное хранилище |
 
-### Integration Tests
+## 🔗 Связанные версии
 
-```bash
-flutter test integration_test/
-```
+- **v5-full** - Gold standard с полным функционалом
+- **v1-original** - Python-only версия для разработки бэкенда
+- **hybrid-best-of-both** - Песочница для экспериментов
 
-## Publishing
+---
 
-### Google Play Store
-
-1. Create keystore:
-```bash
-keytool -genkey -v -keystore ~/data20-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias data20
-```
-
-2. Configure `android/key.properties`:
-```properties
-storePassword=<password>
-keyPassword=<password>
-keyAlias=data20
-storeFile=/path/to/data20-release.jks
-```
-
-3. Build:
-```bash
-flutter build appbundle
-```
-
-4. Upload to Google Play Console
-
-### Apple App Store
-
-1. Create App ID in Apple Developer portal
-2. Create provisioning profile
-3. Configure signing in Xcode
-4. Archive in Xcode
-5. Upload to App Store Connect
-
-## License
-
-Same as Data20 Knowledge Base project.
-
-## Support
-
-- Documentation: https://github.com/data20/docs
-- Issues: https://github.com/data20/issues
+**Статус:** ✅ Готово к разработке фронтенда
+**Последнее обновление:** 2026-01-08
+**Flutter SDK:** 3.19+
+**Dart SDK:** 3.3+
