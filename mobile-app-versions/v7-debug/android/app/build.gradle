@@ -68,42 +68,20 @@ chaquopy {
         buildPython "/usr/bin/python3"
 
         // Python pip packages
+        // NOTE: MINIMAL dependencies to prevent build timeouts and crashes
+        //
+        // REMOVED (cause slow builds and timeouts):
+        // - lxml (requires C compilation, very slow)
+        // - pandas, numpy (require native libraries, slow compilation)
+        // - fastapi, uvicorn, pydantic (too heavy for mobile)
+        // - sqlalchemy, alembic (database too heavy)
+        // - Pillow (image processing, requires C compilation)
+        //
+        // Using minimal Python backend with stdlib only
         pip {
-            // Core backend dependencies
-            install "fastapi==0.104.1"
-            install "uvicorn==0.24.0"
-            install "pydantic==2.5.0"
-            install "pydantic-settings==2.1.0"
-
-            // Database
-            install "sqlalchemy==2.0.23"
-            install "alembic==1.12.1"
-
-            // Authentication
-            install "python-jose[cryptography]==3.3.0"
-            install "passlib[bcrypt]==1.7.4"
-            install "python-multipart==0.0.6"
-
-            // Logging and monitoring
-            install "structlog==23.2.0"
-            install "prometheus-client==0.19.0"
-
-            // Utilities
-            install "python-dotenv==1.0.0"
-            install "httpx==0.25.2"
-
-            // Data processing (lightweight versions)
-            install "pandas==2.1.3"
-            install "numpy==1.26.2"
-            install "openpyxl==3.1.2"
-            install "lxml==4.9.3"
-
-            // Tools dependencies
-            install "Pillow==10.1.0"
-            install "requests==2.31.0"
-            install "beautifulsoup4==4.12.2"
-            install "markdown==3.5.1"
-            install "PyYAML==6.0.1"
+            // NO DEPENDENCIES - Absolute minimal Python to prevent timeouts
+            // All dependencies removed to speed up build and prevent failures
+            // Backend will use only Python standard library
         }
 
         // Python source directories to include
