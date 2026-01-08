@@ -114,6 +114,20 @@ class _HomeScreenState extends State<HomeScreen> {
               const PopupMenuDivider(),
               PopupMenuItem<void>(
                 child: const ListTile(
+                  leading: Icon(Icons.developer_board),
+                  title: Text('Backend Status'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onTap: () {
+                  // Navigate after menu closes
+                  Future.delayed(Duration.zero, () {
+                    context.push('/backend-status');
+                  });
+                },
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem<void>(
+                child: const ListTile(
                   leading: Icon(Icons.logout),
                   title: Text('Выход'),
                   contentPadding: EdgeInsets.zero,

@@ -21,9 +21,9 @@ class BackendService {
   static const platform = MethodChannel('com.data20/backend');
 
   // Backend configuration
-  static const String baseUrl = 'http://127.0.0.1:8001';
+  String _baseUrl = 'http://127.0.0.1:8001';  // Default, will be updated from backend status
   static const String healthEndpoint = '/health';
-  static const int maxHealthCheckAttempts = 60; // 60 seconds
+  static const int maxHealthCheckAttempts = 1800; // 30 minutes (1800 seconds) - TEST MODE to measure real startup time
   static const Duration healthCheckInterval = Duration(seconds: 1);
 
   // State
@@ -39,7 +39,7 @@ class BackendService {
   bool get isRunning => _isRunning;
   bool get isStarting => _isStarting;
   Map<String, dynamic>? get status => _status;
-  String get apiUrl => baseUrl;
+  String get apiUrl => _baseUrl;  // Returns current backend URL (updated dynamically)
 
   // MARK: - Backend Control
 
@@ -186,6 +186,13 @@ class BackendService {
     try {
       final status = await platform.invokeMethod('getBackendStatus');
       _status = Map<String, dynamic>.from(status);
+
+      // Update base URL from backend status (port varies by variant)
+      if (_status!['url'] != null) {
+        _baseUrl = _status!['url'];
+        print('📡 Updated backend URL to: $_baseUrl');
+      }
+
       _notifyStatus(_status!);
       return _status;
     } catch (e) {
@@ -200,37 +207,47 @@ class BackendService {
    * Wait for backend to be ready
    *
    * Polls the /health endpoint until it responds or timeout
+   * PROGRESS COUNTER MODE: Shows elapsed time every 5 seconds to measure real startup time
    */
   Future<bool> _waitForReady({int? maxAttempts}) async {
     final attempts = maxAttempts ?? maxHealthCheckAttempts;
 
-    print('⏳ Waiting for backend to be ready (max ${attempts}s)...');
+    print('⏳ Waiting for backend to be ready (max ${attempts}s = ${attempts ~/ 60} minutes)...');
+    print('📊 PROGRESS COUNTER MODE: Will show elapsed time every 5 seconds');
+
+    final startTime = DateTime.now();
 
     for (int i = 0; i < attempts; i++) {
       try {
         final response = await http
             .get(
-              Uri.parse('$baseUrl$healthEndpoint'),
+              Uri.parse('$_baseUrl$healthEndpoint'),
               headers: {'Accept': 'application/json'},
             )
             .timeout(Duration(seconds: 2));
 
         if (response.statusCode == 200) {
+          final elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
           final data = json.decode(response.body);
           print('✅ Backend health check passed: ${data['status']}');
+          print('⏱️  TOTAL STARTUP TIME: ${elapsedSeconds}s (${elapsedSeconds ~/ 60}m ${elapsedSeconds % 60}s)');
           return true;
         }
       } catch (e) {
         // Not ready yet, wait and retry
-        if (i % 10 == 0) {
-          print('⏳ Still waiting... (${i}s elapsed)');
+        // Show progress every 5 seconds
+        if (i > 0 && i % 5 == 0) {
+          final elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
+          print('⏳ Still waiting... ${elapsedSeconds}s elapsed (${elapsedSeconds ~/ 60}m ${elapsedSeconds % 60}s)');
         }
       }
 
       await Future.delayed(healthCheckInterval);
     }
 
+    final elapsedSeconds = DateTime.now().difference(startTime).inSeconds;
     print('❌ Backend failed to become ready within ${attempts}s');
+    print('⏱️  Total time waited: ${elapsedSeconds}s (${elapsedSeconds ~/ 60}m ${elapsedSeconds % 60}s)');
     return false;
   }
 
@@ -240,7 +257,7 @@ class BackendService {
   Future<bool> checkHealth() async {
     try {
       final response = await http
-          .get(Uri.parse('$baseUrl$healthEndpoint'))
+          .get(Uri.parse('$_baseUrl$healthEndpoint'))
           .timeout(Duration(seconds: 5));
 
       return response.statusCode == 200;
@@ -269,7 +286,7 @@ class BackendService {
       await startBackend();
     }
 
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = Uri.parse('$_baseUrl$endpoint');
 
     http.Response response;
     final requestHeaders = {

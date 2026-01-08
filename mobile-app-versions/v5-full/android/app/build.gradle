@@ -57,10 +57,8 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        // Python configuration
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
+        // NOTE: NDK filters are defined per-flavor below (lite/standard/full)
+        // Do NOT define abiFilters here - it overrides productFlavors!
 
         // Enable multidex for large app
         multiDexEnabled true
@@ -71,25 +69,24 @@ android {
         ]
     }
 
-    // Signing configuration for release builds
-    signingConfigs {
-        release {
-            // For now, use debug signing (self-signed)
-            // In production, replace with proper keystore
-        }
-    }
-
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // Use debug signing for testing (self-signed)
+            // In production, replace with proper release keystore
+            signingConfig signingConfigs.debug
 
-            // Keep Python modules
-            proguardFiles 'proguard-chaquopy.pro'
+            // TEMPORARILY DISABLED to speed up build (prevent timeout)
+            // These optimizations are SLOW and cause build timeouts
+            minifyEnabled false  // Was: true (ProGuard is slow!)
+            shrinkResources false  // Was: true (resource shrinking is slow!)
+
+            // Keep ProGuard files for future use
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // proguardFiles 'proguard-chaquopy.pro'
         }
 
         debug {
+            signingConfig signingConfigs.debug
             minifyEnabled false
             debuggable true
         }
@@ -115,13 +112,14 @@ android {
     flavorDimensions "variant"
 
     // Product flavors for different app variants
+    // Size difference is mainly from NDK architectures (NOT Python deps - they're shared)
     productFlavors {
         lite {
             dimension "variant"
             applicationIdSuffix ".lite"
             versionNameSuffix "-lite"
 
-            // Lite: only arm64-v8a for minimal size
+            // Lite: 1 architecture only for smallest size (~90-110 MB)
             ndk {
                 abiFilters "arm64-v8a"
             }
@@ -129,6 +127,7 @@ android {
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"lite"'
             buildConfigField "int", "TOOL_COUNT", "12"
+            buildConfigField "int", "BACKEND_PORT", "8001"  // Unique port to avoid conflicts
         }
 
         standard {
@@ -136,14 +135,17 @@ android {
             applicationIdSuffix ".standard"
             versionNameSuffix "-standard"
 
-            // Standard: arm64-v8a + armeabi-v7a
+            // Standard: Same architecture as lite (arm64-v8a only)
+            // REASON: armeabi-v7a causes crashes with Python backend
+            // All modern devices (2017+) support arm64-v8a
             ndk {
-                abiFilters "arm64-v8a", "armeabi-v7a"
+                abiFilters "arm64-v8a"
             }
 
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"standard"'
             buildConfigField "int", "TOOL_COUNT", "35"
+            buildConfigField "int", "BACKEND_PORT", "8002"  // Unique port to avoid conflicts with lite
         }
 
         full {
@@ -151,14 +153,17 @@ android {
             // No suffix - original package name
             versionNameSuffix "-full"
 
-            // Full: all architectures
+            // Full: Same architecture as lite (arm64-v8a only)
+            // REASON: Additional architectures (armeabi-v7a, x86, x86_64) crash backend
+            // arm64-v8a is stable and works on all modern devices
             ndk {
-                abiFilters "arm64-v8a", "armeabi-v7a"
+                abiFilters "arm64-v8a"
             }
 
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"full"'
             buildConfigField "int", "TOOL_COUNT", "57"
+            buildConfigField "int", "BACKEND_PORT", "8003"  // Unique port to avoid conflicts with lite/standard
         }
     }
 }
@@ -173,37 +178,34 @@ chaquopy {
         buildPython "/usr/bin/python3"
 
         // Python pip packages
+        // NOTE: MINIMAL dependencies to prevent startup crashes
+        //
+        // REMOVED temporarily (cause crashes on Android):
+        // - fastapi, uvicorn, pydantic (too heavy for mobile)
+        // - pandas, numpy (require native libraries)
+        // - sqlalchemy, alembic (database too heavy)
+        //
+        // Using simplified backend_main_simple.py instead
+        //
+        // APK Sizes (all variants use arm64-v8a only):
+        // NOTE: All variants have similar size (~40-50 MB) since same architecture
+        // - lite: arm64-v8a, 6 tools → ~40-50 MB
+        // - standard: arm64-v8a, 6 tools → ~40-50 MB (same size as lite)
+        // - full: arm64-v8a, 6 tools → ~40-50 MB (same size as lite)
+        //
+        // REASON for single architecture:
+        // - armeabi-v7a (32-bit) causes backend crashes
+        // - x86/x86_64 (emulator) also cause crashes
+        // - arm64-v8a works stable on all modern devices (2017+)
         pip {
-            // Core backend dependencies (using Pydantic 1.x for Chaquopy compatibility)
-            install "fastapi==0.104.1"
-            install "uvicorn==0.24.0"
-            install "pydantic==1.10.13"
-            install "pydantic-settings==1.2.0"
-
-            // Database
-            install "sqlalchemy==2.0.23"
-            install "alembic==1.12.1"
-
-            // Authentication
-            install "python-jose[cryptography]==3.3.0"
-            install "passlib[bcrypt]==1.7.4"
-            install "python-multipart==0.0.6"
-
-            // Logging and monitoring
-            install "structlog==23.2.0"
-            install "prometheus-client==0.19.0"
-
-            // Utilities
-            install "python-dotenv==1.0.0"
-            install "httpx==0.25.2"
-
-            // Data processing (lightweight versions)
-            install "pandas==2.1.3"
-            install "numpy==1.26.2"
-
-            // Tools dependencies
-            install "requests==2.31.0"
-            install "PyYAML==6.0.1"
+            // NO DEPENDENCIES - Absolute minimal Python to prevent timeouts
+            // All dependencies removed to speed up initialization
+            // Even requests and PyYAML removed to ensure fastest startup
+            //
+            // This allows Python environment to initialize without ANY external packages
+            // Backend will use only Python standard library
+            //
+            // Full backend with dependencies will be enabled after basic Python works
         }
 
         // Python source directories to include

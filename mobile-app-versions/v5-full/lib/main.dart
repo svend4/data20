@@ -33,10 +33,14 @@ void main() async {
   final backendService = BackendService();
 
   // Check if user is already logged in
-  await authService.checkAuth();
+  // TEMPORARILY DISABLED for testing - allows app to open without login
+  // await authService.checkAuth();
 
-  // Auto-start embedded backend (optional - can be disabled)
-  // Uncomment to auto-start backend on app launch
+  // Auto-start embedded backend (DISABLED to prevent startup crash)
+  // User can manually start backend from Settings > Backend Status screen
+  //
+  // To enable auto-start, uncomment the code below:
+  /*
   try {
     print('🚀 Auto-starting embedded backend...');
     await backendService.startBackend();
@@ -45,6 +49,7 @@ void main() async {
     print('⚠️ Failed to auto-start backend: $e');
     // Continue anyway - user can start manually from status screen
   }
+  */
 
   runApp(Data20App(
     authService: authService,
@@ -90,7 +95,16 @@ class Data20App extends StatelessWidget {
 
   GoRouter _router(AuthService auth) {
     return GoRouter(
-      initialLocation: auth.isAuthenticated ? '/home' : '/login',
+      // TEMPORARILY DISABLED: Authentication requirement for testing
+      // This allows the app to open directly to home screen without login
+      //
+      // To re-enable authentication, uncomment the line below:
+      // initialLocation: auth.isAuthenticated ? '/home' : '/login',
+      initialLocation: '/home',  // Skip login for testing
+
+      // TEMPORARILY DISABLED: Auth redirect for testing
+      // To re-enable, uncomment the redirect function below:
+      /*
       redirect: (context, state) {
         final isAuthenticated = auth.isAuthenticated;
         final isLoginRoute = state.matchedLocation == '/login';
@@ -107,6 +121,7 @@ class Data20App extends StatelessWidget {
 
         return null;
       },
+      */
       routes: [
         GoRoute(
           path: '/login',

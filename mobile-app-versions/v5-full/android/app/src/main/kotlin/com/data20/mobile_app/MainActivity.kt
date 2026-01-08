@@ -23,29 +23,42 @@ class MainActivity : FlutterActivity() {
     private var python: Python? = null
     private var backendJob: Job? = null
     private var isBackendRunning = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Initialize Python
-        initializePython()
-    }
+    private var isPythonInitialized = false
 
     /**
-     * Initialize Python environment
+     * Initialize Python environment (lazy - only when needed)
+     * Returns true if Python is ready, false otherwise
      */
-    private fun initializePython() {
+    private fun ensurePythonInitialized(): Boolean {
+        if (isPythonInitialized && python != null) {
+            Log.i(TAG, "Python already initialized, skipping")
+            return true
+        }
+
         if (!Python.isStarted()) {
             try {
+                val startTime = System.currentTimeMillis()
+                Log.i(TAG, "⏱️  [TIMER] Starting Python initialization...")
+
                 Python.start(AndroidPlatform(this))
                 python = Python.getInstance()
-                Log.i(TAG, "Python initialized successfully")
+                isPythonInitialized = true
+
+                val elapsedMs = System.currentTimeMillis() - startTime
+                Log.i(TAG, "✅ Python initialized successfully")
+                Log.i(TAG, "⏱️  [TIMER] Python initialization took: ${elapsedMs}ms (${elapsedMs / 1000}s)")
+                return true
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize Python: ${e.message}")
+                Log.e(TAG, "❌ Failed to initialize Python: ${e.message}")
                 e.printStackTrace()
+                isPythonInitialized = false
+                return false
             }
         } else {
             python = Python.getInstance()
+            isPythonInitialized = true
+            Log.i(TAG, "Python was already started, got instance")
+            return true
         }
     }
 
@@ -80,43 +93,83 @@ class MainActivity : FlutterActivity() {
             return
         }
 
+        val totalStartTime = System.currentTimeMillis()
+        Log.i(TAG, "⏱️  [TIMER] ===== BACKEND START - TOTAL TIMER STARTED =====")
+
+        // Ensure Python is initialized first
+        val pythonInitStart = System.currentTimeMillis()
+        if (!ensurePythonInitialized()) {
+            result.error(
+                "PYTHON_ERROR",
+                "Failed to initialize Python environment. Please check logs.",
+                null
+            )
+            return
+        }
+        val pythonInitElapsed = System.currentTimeMillis() - pythonInitStart
+        Log.i(TAG, "⏱️  [TIMER] Python init step: ${pythonInitElapsed}ms")
+
         Log.i(TAG, "Starting Python backend...")
 
         backendJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Setup environment
+                val envSetupStart = System.currentTimeMillis()
                 setupEnvironment()
+                val envSetupElapsed = System.currentTimeMillis() - envSetupStart
+                Log.i(TAG, "⏱️  [TIMER] Environment setup: ${envSetupElapsed}ms")
 
                 // Get Python main module
-                val mainModule = python!!.getModule("backend_main")
+                // Using SIMPLIFIED backend to avoid crashes from heavy dependencies
+                Log.i(TAG, "Loading simplified backend module...")
+                val moduleLoadStart = System.currentTimeMillis()
+                val mainModule = try {
+                    python!!.getModule("backend_main_simple")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Failed to load backend_main_simple, trying backend_main...")
+                    python!!.getModule("backend_main")
+                }
+                val moduleLoadElapsed = System.currentTimeMillis() - moduleLoadStart
+                Log.i(TAG, "⏱️  [TIMER] Module loading: ${moduleLoadElapsed}ms (${moduleLoadElapsed / 1000}s)")
 
                 // Setup Android-specific paths
+                val setupEnvStart = System.currentTimeMillis()
                 mainModule.callAttr(
                     "setup_environment",
                     getDatabasePath(),
                     getUploadPath(),
                     getLogsPath()
                 )
+                val setupEnvElapsed = System.currentTimeMillis() - setupEnvStart
+                Log.i(TAG, "⏱️  [TIMER] Python setup_environment call: ${setupEnvElapsed}ms")
 
                 // Mark as running
                 isBackendRunning = true
 
                 // Notify Flutter that backend started
+                val totalElapsed = System.currentTimeMillis() - totalStartTime
+                Log.i(TAG, "⏱️  [TIMER] ===== BACKEND INITIALIZATION COMPLETE =====")
+                Log.i(TAG, "⏱️  [TIMER] TOTAL TIME TO START: ${totalElapsed}ms (${totalElapsed / 1000}s)")
+
                 withContext(Dispatchers.Main) {
                     result.success(mapOf(
                         "success" to true,
                         "message" to "Backend started successfully",
-                        "port" to 8001,
+                        "port" to BuildConfig.BACKEND_PORT,
                         "host" to "127.0.0.1"
                     ))
                 }
 
                 // Run server (blocks until stopped)
-                Log.i(TAG, "Running FastAPI server on 127.0.0.1:8001")
-                mainModule.callAttr("run_server", "127.0.0.1", 8001)
+                Log.i(TAG, "Running server on 127.0.0.1:${BuildConfig.BACKEND_PORT} (this call blocks)...")
+                val runServerStart = System.currentTimeMillis()
+                mainModule.callAttr("run_server", "127.0.0.1", BuildConfig.BACKEND_PORT)
+                val runServerElapsed = System.currentTimeMillis() - runServerStart
+                Log.i(TAG, "⏱️  [TIMER] run_server call finished after: ${runServerElapsed}ms")
 
             } catch (e: Exception) {
-                Log.e(TAG, "Backend error: ${e.message}")
+                val totalElapsed = System.currentTimeMillis() - totalStartTime
+                Log.e(TAG, "❌ Backend error after ${totalElapsed}ms: ${e.message}")
                 e.printStackTrace()
                 isBackendRunning = false
 
@@ -178,9 +231,9 @@ class MainActivity : FlutterActivity() {
     private fun getBackendStatus(result: MethodChannel.Result) {
         val status = mapOf(
             "isRunning" to isBackendRunning,
-            "port" to 8001,
+            "port" to BuildConfig.BACKEND_PORT,
             "host" to "127.0.0.1",
-            "url" to "http://127.0.0.1:8001",
+            "url" to "http://127.0.0.1:${BuildConfig.BACKEND_PORT}",
             "databasePath" to getDatabasePath(),
             "uploadPath" to getUploadPath(),
             "logsPath" to getLogsPath()
