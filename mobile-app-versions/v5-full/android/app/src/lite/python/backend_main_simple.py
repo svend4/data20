@@ -1,11 +1,7 @@
 """
-Simplified Mobile Backend - Version 0.2.0
-NO external dependencies - only Python standard library
+Lite Mobile Backend - 12 tools with real implementations
+Python standard library only
 Simple HTTP server with /health endpoint using http.server
-
-Version History:
-- 0.2.0 (2026-01-08): Real implementations, SQLite database, stats/search endpoints
-- 0.1.0 (2026-01-07): Initial minimal version with mock data
 """
 
 import os
@@ -44,8 +40,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
 
             response = {
                 'status': 'healthy',
-                'service': 'data20-mobile-backend',
-                'version': 'simple-0.2.1',
+                'service': 'data20-mobile-backend-lite',
+                'version': 'lite-0.2.1',
                 'git_commit': 'cce8ecd',
                 'build_timestamp': datetime.now().isoformat(),
                 'features': {
@@ -54,7 +50,7 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                     'tools_count': len(MOCK_TOOLS),
                     'implementations_count': len(TOOL_IMPLEMENTATIONS)
                 },
-                'message': 'Backend is running with real implementations and SQLite database'
+                'message': 'Lite backend: 12 essential tools'
             }
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
@@ -132,7 +128,7 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             html = """
             <html>
             <head>
-                <title>Data20 Mobile Backend</title>
+                <title>Data20 Mobile Backend - Lite</title>
                 <style>
                     body { font-family: Arial, sans-serif; margin: 40px; }
                     .status { color: #22c55e; }
@@ -143,12 +139,12 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                 </style>
             </head>
             <body>
-                <h1>Data20 Mobile Backend</h1>
+                <h1>Data20 Mobile Backend - Lite</h1>
                 <p>Status: <strong class="status">Running</strong></p>
-                <p>Version: <span class="version">simple-0.2.1</span></p>
-                <p class="feature">✅ Real implementations (12 tools)</p>
+                <p>Version: <span class="version">lite-0.2.1</span></p>
+                <p class="feature">✅ 12 essential tools</p>
+                <p class="feature">✅ All real implementations</p>
                 <p class="feature">✅ SQLite database</p>
-                <p class="feature">✅ 18 tools available</p>
                 <hr>
                 <h3>API Endpoints:</h3>
                 <p>🏥 <a href="/health">Health Check</a> - Backend status and version info</p>
@@ -229,19 +225,18 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                         # Save failed job to database
                         save_job(job_id, tool_name, 'failed', parameters, {'error': str(impl_error)}, str(impl_error))
                 else:
-                    # Fallback to mock for unimplemented tools
+                    # Tool not found
                     response = {
                         'job_id': job_id,
                         'tool_name': tool_name,
-                        'status': 'completed',
-                        'message': f'Tool {tool_name} executed (mock - not yet implemented)',
+                        'status': 'failed',
+                        'message': f'Tool {tool_name} not found',
                         'result': {
-                            'success': True,
-                            'output': 'This tool implementation is pending.'
+                            'error': f'Tool {tool_name} is not available in Lite version'
                         }
                     }
-                    # Save mock job to database
-                    save_job(job_id, tool_name, 'completed', parameters, response['result'])
+                    # Save failed job to database
+                    save_job(job_id, tool_name, 'failed', parameters, response['result'], f'Tool not found: {tool_name}')
 
                 self.wfile.write(json.dumps(response).encode('utf-8'))
 
@@ -268,7 +263,7 @@ logs_path = None
 is_running = False
 http_server = None
 
-# Mock tools data - static list for testing
+# Mock tools data - 12 essential tools (Lite version)
 MOCK_TOOLS = [
     {
         "name": "calculate_statistics",
@@ -287,27 +282,6 @@ MOCK_TOOLS = [
                 "default": ["mean", "median", "std"],
                 "enum": ["mean", "median", "std", "min", "max", "variance"],
                 "description": "Список метрик для расчёта"
-            }
-        }
-    },
-    {
-        "name": "data_cleaning",
-        "display_name": "Очистка данных",
-        "description": "Удаление дубликатов, пропущенных значений и выбросов",
-        "category": "cleaning",
-        "parameters": {
-            "remove_duplicates": {
-                "type": "boolean",
-                "required": False,
-                "default": True,
-                "description": "Удалить дубликаты"
-            },
-            "fill_na": {
-                "type": "string",
-                "required": False,
-                "enum": ["mean", "median", "zero", "drop"],
-                "default": "mean",
-                "description": "Метод заполнения пропусков"
             }
         }
     },
@@ -332,81 +306,20 @@ MOCK_TOOLS = [
         }
     },
     {
-        "name": "create_chart",
-        "display_name": "Создание графика",
-        "description": "Построение различных типов графиков и диаграмм",
-        "category": "visualization",
-        "parameters": {
-            "chart_type": {
-                "type": "string",
-                "required": True,
-                "enum": ["line", "bar", "pie", "scatter"],
-                "description": "Тип графика"
-            },
-            "title": {
-                "type": "string",
-                "required": False,
-                "description": "Заголовок графика"
-            }
-        }
-    },
-    {
-        "name": "transform_data",
-        "display_name": "Преобразование данных",
-        "description": "Нормализация, стандартизация, масштабирование данных",
-        "category": "transformation",
-        "parameters": {
-            "method": {
-                "type": "string",
-                "required": True,
-                "enum": ["normalize", "standardize", "minmax"],
-                "description": "Метод преобразования"
-            }
-        }
-    },
-    {
-        "name": "network_analysis",
-        "display_name": "Анализ сетей",
-        "description": "Анализ графов и сетевых структур",
-        "category": "network",
-        "parameters": {
-            "algorithm": {
-                "type": "string",
-                "required": False,
-                "default": "pagerank",
-                "enum": ["pagerank", "centrality", "clustering"],
-                "description": "Алгоритм анализа"
-            }
-        }
-    },
-    {
         "name": "correlation_analysis",
         "display_name": "Корреляционный анализ",
         "description": "Вычисление корреляции между двумя наборами данных",
         "category": "statistics",
         "parameters": {
-            "data_x": {
+            "x": {
                 "type": "array",
                 "required": True,
                 "description": "Первый набор данных"
             },
-            "data_y": {
+            "y": {
                 "type": "array",
                 "required": True,
                 "description": "Второй набор данных"
-            }
-        }
-    },
-    {
-        "name": "sentiment_analysis",
-        "display_name": "Анализ тональности",
-        "description": "Определение тональности текста (позитивный, негативный, нейтральный)",
-        "category": "nlp",
-        "parameters": {
-            "text": {
-                "type": "string",
-                "required": True,
-                "description": "Текст для анализа"
             }
         }
     },
@@ -475,40 +388,33 @@ MOCK_TOOLS = [
             "condition": {
                 "type": "string",
                 "required": True,
-                "enum": ["positive", "negative", "non_zero", "unique"],
+                "enum": ["greater_than", "less_than", "equal", "not_equal"],
                 "description": "Условие фильтрации"
+            },
+            "value": {
+                "type": "number",
+                "required": True,
+                "description": "Значение для сравнения"
             }
         }
     },
     {
         "name": "outlier_detection",
         "display_name": "Обнаружение выбросов",
-        "description": "Поиск выбросов в данных методом межквартильного размаха",
+        "description": "Поиск выбросов в данных методом межквартильного размаха (IQR)",
         "category": "statistics",
         "parameters": {
             "data": {
                 "type": "array",
                 "required": True,
                 "description": "Массив числовых данных"
-            }
-        }
-    },
-    {
-        "name": "text_summarize",
-        "display_name": "Суммаризация текста",
-        "description": "Извлечение ключевых предложений из текста",
-        "category": "nlp",
-        "parameters": {
-            "text": {
-                "type": "string",
-                "required": True,
-                "description": "Текст для суммаризации"
             },
-            "sentences": {
-                "type": "integer",
+            "method": {
+                "type": "string",
                 "required": False,
-                "default": 3,
-                "description": "Количество предложений в резюме"
+                "default": "iqr",
+                "enum": ["iqr"],
+                "description": "Метод обнаружения выбросов"
             }
         }
     },
@@ -534,7 +440,7 @@ MOCK_TOOLS = [
     {
         "name": "hash_calculator",
         "display_name": "Вычисление хэша",
-        "description": "Вычисление хэша строки (MD5, SHA256)",
+        "description": "Вычисление хэша строки (MD5, SHA1, SHA256)",
         "category": "transformation",
         "parameters": {
             "text": {
@@ -659,8 +565,9 @@ def text_analysis_impl(params):
 
 def correlation_analysis_impl(params):
     """Calculate Pearson correlation coefficient"""
-    data_x = params.get('data_x', [])
-    data_y = params.get('data_y', [])
+    # Support both old style (data_x, data_y) and new style (x, y)
+    data_x = params.get('x') or params.get('data_x', [])
+    data_y = params.get('y') or params.get('data_y', [])
 
     if len(data_x) != len(data_y) or not data_x:
         return {'error': 'Data arrays must have equal non-zero length'}
@@ -709,13 +616,15 @@ def word_frequency_impl(params):
 def json_parser_impl(params):
     """Parse and validate JSON"""
     json_string = params.get('json_string', '')
+    operation = params.get('operation', 'validate')
 
     try:
         parsed = json.loads(json_string)
         return {
             'valid': True,
             'type': type(parsed).__name__,
-            'data': parsed
+            'data': parsed,
+            'operation': operation
         }
     except json.JSONDecodeError as e:
         return {
@@ -848,6 +757,7 @@ def url_parser_impl(params):
 def outlier_detection_impl(params):
     """Detect outliers using IQR method"""
     data = params.get('data', [])
+    method = params.get('method', 'iqr')
 
     if len(data) < 4:
         return {'error': 'Need at least 4 data points'}
@@ -873,28 +783,25 @@ def outlier_detection_impl(params):
         'lower_bound': lower_bound,
         'upper_bound': upper_bound,
         'outliers': outliers,
-        'outlier_count': len(outliers)
+        'outlier_count': len(outliers),
+        'method': method
     }
 
 
 def data_filter_impl(params):
     """Filter data array by condition"""
     data = params.get('data', [])
-    condition = params.get('condition', 'positive')
+    condition = params.get('condition', 'greater_than')
+    value = params.get('value', 0)
 
-    if condition == 'positive':
-        filtered = [x for x in data if x > 0]
-    elif condition == 'negative':
-        filtered = [x for x in data if x < 0]
-    elif condition == 'non_zero':
-        filtered = [x for x in data if x != 0]
-    elif condition == 'unique':
-        seen = set()
-        filtered = []
-        for x in data:
-            if x not in seen:
-                seen.add(x)
-                filtered.append(x)
+    if condition == 'greater_than':
+        filtered = [x for x in data if x > value]
+    elif condition == 'less_than':
+        filtered = [x for x in data if x < value]
+    elif condition == 'equal':
+        filtered = [x for x in data if x == value]
+    elif condition == 'not_equal':
+        filtered = [x for x in data if x != value]
     else:
         filtered = data
 
@@ -902,7 +809,8 @@ def data_filter_impl(params):
         'original_count': len(data),
         'filtered_count': len(filtered),
         'filtered_data': filtered,
-        'condition': condition
+        'condition': condition,
+        'filter_value': value
     }
 
 
@@ -1036,7 +944,7 @@ def get_jobs(limit=50, tool_name=None):
                 'status': row['status'],
                 'parameters': json.loads(row['parameters']) if row['parameters'] else {},
                 'result': json.loads(row['result']) if row['result'] else {},
-                'error_message': row['error_message'],
+                'error': row['error_message'],
                 'created_at': row['created_at'],
                 'completed_at': row['completed_at']
             })
@@ -1101,7 +1009,7 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     os.environ['DATA20_LOGS_PATH'] = logs_dir
     os.environ['ENVIRONMENT'] = 'mobile'
 
-    log_info("Environment configured:")
+    log_info("Environment configured (Lite):")
     log_info(f"  Database: {db_path}")
     log_info(f"  Uploads: {upload_dir}")
     log_info(f"  Logs: {logs_dir}")
@@ -1120,10 +1028,10 @@ def run_server(host: str = "127.0.0.1", port: int = 8001):
     global is_running, http_server
 
     try:
-        log_info(f"Starting simple HTTP backend on {host}:{port}")
+        log_info(f"Starting Lite HTTP backend on {host}:{port}")
         log_info("Python backend initialized successfully!")
         log_info("  Using http.server from Python standard library")
-        log_info("  Endpoints: / and /health")
+        log_info("  Lite version: 12 essential tools")
 
         # Create HTTP server
         server_address = (host, port)
@@ -1176,9 +1084,9 @@ if __name__ == "__main__":
     temp_dir = tempfile.gettempdir()
 
     setup_environment(
-        db_path=os.path.join(temp_dir, "test_data20.db"),
-        upload_dir=os.path.join(temp_dir, "data20_uploads"),
-        logs_dir=os.path.join(temp_dir, "data20_logs")
+        db_path=os.path.join(temp_dir, "test_data20_lite.db"),
+        upload_dir=os.path.join(temp_dir, "data20_uploads_lite"),
+        logs_dir=os.path.join(temp_dir, "data20_logs_lite")
     )
 
     run_server(host="127.0.0.1", port=8001)

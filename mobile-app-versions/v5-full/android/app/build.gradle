@@ -103,8 +103,21 @@ android {
 
     sourceSets {
         main {
-            // Python source directory
-            python.srcDirs = ['src/main/python']
+            // Main source directories (Dart/Flutter code)
+            // Python sources are flavor-specific (see below)
+        }
+
+        // Flavor-specific Python sources
+        lite {
+            python.srcDirs = ['src/lite/python']
+        }
+
+        standard {
+            python.srcDirs = ['src/standard/python']
+        }
+
+        full {
+            python.srcDirs = ['src/full/python']
         }
     }
 
