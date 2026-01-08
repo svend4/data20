@@ -8,8 +8,10 @@ import os
 import sys
 import time
 import json
+import sqlite3
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from threading import Thread
+from datetime import datetime
 
 # Simple print-based logging (faster than logging module)
 def log_info(message):
@@ -53,14 +55,60 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
             # Return static list of demo tools
             self.wfile.write(json.dumps(MOCK_TOOLS).encode('utf-8'))
 
-        elif self.path == '/api/jobs':
-            # Jobs list endpoint - mock data
+        elif self.path.startswith('/api/jobs'):
+            # Jobs endpoint - return real jobs from database
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
 
-            # Return empty list
-            response = []
+            # Parse query parameters (e.g., ?tool_name=calculate_statistics&limit=10)
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(self.path)
+            query_params = parse_qs(parsed.query)
+
+            tool_name = query_params.get('tool_name', [None])[0]
+            limit = int(query_params.get('limit', [50])[0])
+
+            # Get jobs from database
+            response = get_jobs(limit=limit, tool_name=tool_name)
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        elif self.path == '/api/stats':
+            # Stats endpoint - return job statistics
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            # Get statistics from database
+            response = get_job_stats()
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        elif self.path.startswith('/api/search'):
+            # Search endpoint - search for tools by name/description
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+
+            # Parse query parameters (e.g., ?q=statistics)
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(self.path)
+            query_params = parse_qs(parsed.query)
+
+            query = query_params.get('q', [''])[0].lower()
+
+            if query:
+                # Search in tool names, display names, and descriptions
+                results = [
+                    tool for tool in MOCK_TOOLS
+                    if query in tool['name'].lower()
+                    or query in tool.get('display_name', '').lower()
+                    or query in tool.get('description', '').lower()
+                    or query in tool.get('category', '').lower()
+                ]
+                response = {'query': query, 'results': results, 'count': len(results)}
+            else:
+                response = {'query': '', 'results': [], 'count': 0}
+
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
         elif self.path == '/':
@@ -128,6 +176,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                                 'message': result_data['error'],
                                 'result': result_data
                             }
+                            # Save failed job to database
+                            save_job(job_id, tool_name, 'failed', parameters, result_data, result_data['error'])
                         else:
                             response = {
                                 'job_id': job_id,
@@ -136,6 +186,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                                 'message': f'Tool {tool_name} executed successfully',
                                 'result': result_data
                             }
+                            # Save completed job to database
+                            save_job(job_id, tool_name, 'completed', parameters, result_data)
                     except Exception as impl_error:
                         # Implementation function raised exception
                         response = {
@@ -145,6 +197,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                             'message': f'Implementation error: {str(impl_error)}',
                             'result': {'error': str(impl_error)}
                         }
+                        # Save failed job to database
+                        save_job(job_id, tool_name, 'failed', parameters, {'error': str(impl_error)}, str(impl_error))
                 else:
                     # Fallback to mock for unimplemented tools
                     response = {
@@ -157,6 +211,8 @@ class SimpleBackendHandler(BaseHTTPRequestHandler):
                             'output': 'This tool implementation is pending.'
                         }
                     }
+                    # Save mock job to database
+                    save_job(job_id, tool_name, 'completed', parameters, response['result'])
 
                 self.wfile.write(json.dumps(response).encode('utf-8'))
 
@@ -838,6 +894,163 @@ TOOL_IMPLEMENTATIONS = {
 }
 
 
+# ============================================================================
+# DATABASE FUNCTIONS - Job history using SQLite
+# ============================================================================
+
+def init_database():
+    """Initialize SQLite database for job history"""
+    if not database_path:
+        log_error("Database path not set")
+        return
+
+    try:
+        conn = sqlite3.connect(database_path)
+        cursor = conn.cursor()
+
+        # Create jobs table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS jobs (
+                job_id TEXT PRIMARY KEY,
+                tool_name TEXT NOT NULL,
+                status TEXT NOT NULL,
+                parameters TEXT,
+                result TEXT,
+                error_message TEXT,
+                created_at TEXT NOT NULL,
+                completed_at TEXT
+            )
+        ''')
+
+        # Create index on created_at for faster queries
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)
+        ''')
+
+        # Create index on tool_name for faster searches
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_jobs_tool_name ON jobs(tool_name)
+        ''')
+
+        conn.commit()
+        conn.close()
+        log_info("Database initialized successfully")
+    except Exception as e:
+        log_error(f"Failed to initialize database: {e}")
+
+
+def save_job(job_id, tool_name, status, parameters, result, error_message=None):
+    """Save job to database"""
+    if not database_path:
+        return
+
+    try:
+        conn = sqlite3.connect(database_path)
+        cursor = conn.cursor()
+
+        created_at = datetime.now().isoformat()
+        completed_at = created_at if status in ['completed', 'failed'] else None
+
+        cursor.execute('''
+            INSERT OR REPLACE INTO jobs
+            (job_id, tool_name, status, parameters, result, error_message, created_at, completed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            job_id,
+            tool_name,
+            status,
+            json.dumps(parameters),
+            json.dumps(result),
+            error_message,
+            created_at,
+            completed_at
+        ))
+
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log_error(f"Failed to save job: {e}")
+
+
+def get_jobs(limit=50, tool_name=None):
+    """Get jobs from database"""
+    if not database_path:
+        return []
+
+    try:
+        conn = sqlite3.connect(database_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        if tool_name:
+            cursor.execute('''
+                SELECT * FROM jobs
+                WHERE tool_name = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+            ''', (tool_name, limit))
+        else:
+            cursor.execute('''
+                SELECT * FROM jobs
+                ORDER BY created_at DESC
+                LIMIT ?
+            ''', (limit,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        jobs = []
+        for row in rows:
+            jobs.append({
+                'job_id': row['job_id'],
+                'tool_name': row['tool_name'],
+                'status': row['status'],
+                'parameters': json.loads(row['parameters']) if row['parameters'] else {},
+                'result': json.loads(row['result']) if row['result'] else {},
+                'error_message': row['error_message'],
+                'created_at': row['created_at'],
+                'completed_at': row['completed_at']
+            })
+
+        return jobs
+    except Exception as e:
+        log_error(f"Failed to get jobs: {e}")
+        return []
+
+
+def get_job_stats():
+    """Get statistics about jobs"""
+    if not database_path:
+        return {}
+
+    try:
+        conn = sqlite3.connect(database_path)
+        cursor = conn.cursor()
+
+        # Total jobs
+        cursor.execute('SELECT COUNT(*) FROM jobs')
+        total_jobs = cursor.fetchone()[0]
+
+        # Jobs by status
+        cursor.execute('SELECT status, COUNT(*) FROM jobs GROUP BY status')
+        by_status = {row[0]: row[1] for row in cursor.fetchall()}
+
+        # Jobs by tool
+        cursor.execute('SELECT tool_name, COUNT(*) FROM jobs GROUP BY tool_name ORDER BY COUNT(*) DESC LIMIT 10')
+        by_tool = [{'tool_name': row[0], 'count': row[1]} for row in cursor.fetchall()]
+
+        conn.close()
+
+        return {
+            'total_jobs': total_jobs,
+            'by_status': by_status,
+            'top_tools': by_tool
+        }
+    except Exception as e:
+        log_error(f"Failed to get job stats: {e}")
+        return {}
+
+
 def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     """
     Setup environment for mobile backend
@@ -863,6 +1076,9 @@ def setup_environment(db_path: str, upload_dir: str, logs_dir: str):
     log_info(f"  Database: {db_path}")
     log_info(f"  Uploads: {upload_dir}")
     log_info(f"  Logs: {logs_dir}")
+
+    # Initialize database
+    init_database()
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8001):
