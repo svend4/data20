@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/backend_service.dart';
+import '../services/api_service.dart';
 
 /**
  * BackendStatusScreen - Diagnostic screen for embedded backend
@@ -68,6 +70,12 @@ class _BackendStatusScreenState extends State<BackendStatusScreen> {
 
     try {
       await widget.backendService.startBackend();
+
+      // Update ApiService to use correct backend URL (port varies by variant)
+      final apiService = context.read<ApiService>();
+      apiService.setBaseUrl(widget.backendService.apiUrl);
+      print('📡 ApiService updated to use: ${widget.backendService.apiUrl}');
+
       _showSnackBar('Backend started successfully', isError: false);
     } catch (e) {
       _showSnackBar('Failed to start: $e', isError: true);

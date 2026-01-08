@@ -21,7 +21,7 @@ class BackendService {
   static const platform = MethodChannel('com.data20/backend');
 
   // Backend configuration
-  static const String baseUrl = 'http://127.0.0.1:8001';
+  String _baseUrl = 'http://127.0.0.1:8001';  // Default, will be updated from backend status
   static const String healthEndpoint = '/health';
   static const int maxHealthCheckAttempts = 1800; // 30 minutes (1800 seconds) - TEST MODE to measure real startup time
   static const Duration healthCheckInterval = Duration(seconds: 1);
@@ -39,7 +39,7 @@ class BackendService {
   bool get isRunning => _isRunning;
   bool get isStarting => _isStarting;
   Map<String, dynamic>? get status => _status;
-  String get apiUrl => baseUrl;
+  String get apiUrl => _baseUrl;  // Returns current backend URL (updated dynamically)
 
   // MARK: - Backend Control
 
@@ -186,6 +186,13 @@ class BackendService {
     try {
       final status = await platform.invokeMethod('getBackendStatus');
       _status = Map<String, dynamic>.from(status);
+
+      // Update base URL from backend status (port varies by variant)
+      if (_status!['url'] != null) {
+        _baseUrl = _status!['url'];
+        print('📡 Updated backend URL to: $_baseUrl');
+      }
+
       _notifyStatus(_status!);
       return _status;
     } catch (e) {
@@ -214,7 +221,7 @@ class BackendService {
       try {
         final response = await http
             .get(
-              Uri.parse('$baseUrl$healthEndpoint'),
+              Uri.parse('$_baseUrl$healthEndpoint'),
               headers: {'Accept': 'application/json'},
             )
             .timeout(Duration(seconds: 2));
@@ -250,7 +257,7 @@ class BackendService {
   Future<bool> checkHealth() async {
     try {
       final response = await http
-          .get(Uri.parse('$baseUrl$healthEndpoint'))
+          .get(Uri.parse('$_baseUrl$healthEndpoint'))
           .timeout(Duration(seconds: 5));
 
       return response.statusCode == 200;
@@ -279,7 +286,7 @@ class BackendService {
       await startBackend();
     }
 
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = Uri.parse('$_baseUrl$endpoint');
 
     http.Response response;
     final requestHeaders = {

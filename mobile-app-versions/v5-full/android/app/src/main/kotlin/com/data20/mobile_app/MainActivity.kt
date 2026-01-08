@@ -155,15 +155,15 @@ class MainActivity : FlutterActivity() {
                     result.success(mapOf(
                         "success" to true,
                         "message" to "Backend started successfully",
-                        "port" to 8001,
+                        "port" to BuildConfig.BACKEND_PORT,
                         "host" to "127.0.0.1"
                     ))
                 }
 
                 // Run server (blocks until stopped)
-                Log.i(TAG, "Running server on 127.0.0.1:8001 (this call blocks)...")
+                Log.i(TAG, "Running server on 127.0.0.1:${BuildConfig.BACKEND_PORT} (this call blocks)...")
                 val runServerStart = System.currentTimeMillis()
-                mainModule.callAttr("run_server", "127.0.0.1", 8001)
+                mainModule.callAttr("run_server", "127.0.0.1", BuildConfig.BACKEND_PORT)
                 val runServerElapsed = System.currentTimeMillis() - runServerStart
                 Log.i(TAG, "⏱️  [TIMER] run_server call finished after: ${runServerElapsed}ms")
 
@@ -231,9 +231,9 @@ class MainActivity : FlutterActivity() {
     private fun getBackendStatus(result: MethodChannel.Result) {
         val status = mapOf(
             "isRunning" to isBackendRunning,
-            "port" to 8001,
+            "port" to BuildConfig.BACKEND_PORT,
             "host" to "127.0.0.1",
-            "url" to "http://127.0.0.1:8001",
+            "url" to "http://127.0.0.1:${BuildConfig.BACKEND_PORT}",
             "databasePath" to getDatabasePath(),
             "uploadPath" to getUploadPath(),
             "logsPath" to getLogsPath()

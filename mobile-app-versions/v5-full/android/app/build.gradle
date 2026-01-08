@@ -127,6 +127,7 @@ android {
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"lite"'
             buildConfigField "int", "TOOL_COUNT", "12"
+            buildConfigField "int", "BACKEND_PORT", "8001"  // Unique port to avoid conflicts
         }
 
         standard {
@@ -144,6 +145,7 @@ android {
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"standard"'
             buildConfigField "int", "TOOL_COUNT", "35"
+            buildConfigField "int", "BACKEND_PORT", "8002"  // Unique port to avoid conflicts with lite
         }
 
         full {
@@ -161,6 +163,7 @@ android {
             // Build config fields
             buildConfigField "String", "APP_VARIANT", '"full"'
             buildConfigField "int", "TOOL_COUNT", "57"
+            buildConfigField "int", "BACKEND_PORT", "8003"  // Unique port to avoid conflicts with lite/standard
         }
     }
 }
